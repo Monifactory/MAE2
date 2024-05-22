@@ -156,9 +156,6 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     implementation fg.deobf("appeng:appliedenergistics2-forge:15.2.1")
-
-    // Fixes an issue, don't ask why cause I don't know how it works
-    implementation('cpw.mods:securejarhandler') { version { strictly '2.1.10' } }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
