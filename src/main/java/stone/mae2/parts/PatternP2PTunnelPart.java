@@ -7,6 +7,7 @@ import appeng.parts.p2p.P2PModels;
 import appeng.parts.p2p.P2PTunnelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -82,6 +83,19 @@ public class PatternP2PTunnelPart
     }
 
     public record TunneledPos(BlockPos pos, Direction dir) {
+
+        private static final String POSITION = "mae2Pos";
+        private static final String DIRECTION = "mae2Direction";
+
+        public void writeToNBT(CompoundTag tag) {
+            tag.putLong(POSITION, pos.asLong());
+            tag.putByte(DIRECTION, (byte) dir.get3DDataValue());
+        }
+
+        public static TunneledPos readFromNBT(CompoundTag tag) {
+            return new TunneledPos(BlockPos.of(tag.getLong(POSITION)),
+                Direction.from3DDataValue(tag.getByte(DIRECTION)));
+        }
     }
 
 }
