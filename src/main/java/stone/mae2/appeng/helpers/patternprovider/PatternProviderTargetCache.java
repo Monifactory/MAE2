@@ -20,6 +20,10 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Has to be like this because it's not public in ae2, and I can't figure out a
+ * way to access transform it
+ */
 public class PatternProviderTargetCache {
     private final BlockApiCache<MEStorage> cache;
     private final Direction direction;

@@ -8,6 +8,8 @@ import appeng.parts.p2p.P2PTunnelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 
 import stone.mae2.MAE2;
 
@@ -36,11 +38,10 @@ public class PatternP2PTunnelPart
     public List<TunneledPos> getTunneledPositions() {
         if (this.isOutput())
         {
-            PatternP2PTunnelPart input = this.getInput();
-            Direction inputSide = input.getSide();
-            return List.of(new TunneledPos(
-                input.getBlockEntity().getBlockPos().relative(inputSide),
-                inputSide.getOpposite()));
+            TunneledPos pos = getInputPos();
+            if (pos == null)
+                return List.of();
+            return List.of(pos);
         } else
         {
             List<TunneledPos> outputs = new ArrayList<>();
@@ -52,6 +53,31 @@ public class PatternP2PTunnelPart
                     outputSide.getOpposite()));
             }
             return outputs;
+        }
+    }
+
+    private TunneledPos getInputPos() {
+        PatternP2PTunnelPart input = this.getInput();
+        if (input == null)
+            return null;
+        Direction inputSide = input.getSide();
+        return new TunneledPos(
+            input.getBlockEntity().getBlockPos().relative(inputSide),
+            inputSide.getOpposite());
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability) {
+        if (this.isOutput())
+        {
+            TunneledPos provider = this.getInputPos();
+            if (provider == null)
+                return LazyOptional.empty();
+            return this.getLevel().getBlockEntity(provider.pos())
+                .getCapability(capability, provider.dir());
+        } else
+        {
+            return LazyOptional.empty();
         }
     }
 

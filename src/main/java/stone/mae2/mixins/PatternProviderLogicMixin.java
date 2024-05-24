@@ -89,8 +89,16 @@ public class PatternProviderLogicMixin {
     @Shadow
     private int roundRobinIndex;
 
-    private PatternProviderTargetCache[] targetCaches;
-
+    /**
+     * AE2's code is just not amenable to changes this radical, so I have to
+     * overwrite it to allow multiple pattern targets per side. This is
+     * potentially possible with finer grained overwrites (is that even
+     * possible?) or asking AE2 to change their code to allow this
+     * 
+     * @param patternDetails
+     * @param inputHolder
+     * @return
+     */
     @Overwrite
     public boolean pushPattern(IPatternDetails patternDetails,
         KeyCounter[] inputHolder) {
@@ -112,16 +120,18 @@ public class PatternProviderLogicMixin {
         }
         var possibleTargets = new ArrayList<PushTarget>();
 
+        // use a boolean like this to allow multiple machines to pushed too a
+        // tick
         // Push to crafting machines first
         for (Direction direction : getActiveSides())
         {
             var adjBeSide = direction.getOpposite();
+            // Main change to allow multiple positions to be checked per side
             List<TunneledPos> positions = getTunneledPositions(
                 be.getBlockPos().relative(direction), level, adjBeSide);
             for (TunneledPos adjPos : positions)
             {
                 var adjBe = level.getBlockEntity(adjPos.pos());
-
 
                 var craftingMachine = ICraftingMachine.of(level, adjPos.pos(),
                     adjPos.dir(), adjBe);
@@ -131,18 +141,23 @@ public class PatternProviderLogicMixin {
                         adjPos.dir()))
                     {
                         onPushPatternSuccess(patternDetails);
+                        // edit
                         return true;
                     }
-                    continue;
                 }
 
+                // find adapter had to be replaced with a pos using one instead
                 var adapter = findAdapter(adjPos);
                 if (adapter == null)
                     continue;
 
                 possibleTargets.add(new PushTarget(adjPos.dir(), adapter));
             }
-    }
+        }
+
+        // we found crafting machines, so there's nothing else to do
+        // if (didSomething)
+        // return true;
 
         // If no dedicated crafting machine could be found, and the pattern does
         // not support
@@ -153,7 +168,7 @@ public class PatternProviderLogicMixin {
         }
 
         // Rearrange for round-robin
-        rearrangeRoundRobin(possibleTargets);
+        // rearrangeRoundRobin(possibleTargets);
 
         // Push to other kinds of blocks
         for (var target : possibleTargets)
@@ -181,11 +196,44 @@ public class PatternProviderLogicMixin {
                     });
                 onPushPatternSuccess(patternDetails);
                 this.sendDirection = direction;
-                this.sendStacksOut();
+                this.sendStacksOut(adapter);
                 ++roundRobinIndex;
                 return true;
             }
         }
+
+        // return didSomething;
+        return false;
+    }
+
+    private boolean sendStacksOut(PatternProviderTarget adapter) {
+        if (adapter == null)
+        {
+            return false;
+        }
+
+        for (var it = sendList.listIterator(); it.hasNext();)
+        {
+            var stack = it.next();
+            var what = stack.what();
+            long amount = stack.amount();
+
+            long inserted = adapter.insert(what, amount, Actionable.MODULATE);
+            if (inserted >= amount)
+            {
+                it.remove();
+                return true;
+            } else if (inserted > 0)
+            {
+                it.set(new GenericStack(what, amount - inserted));
+                return true;
+            }
+        }
+
+        if (sendList.isEmpty())
+            {
+            sendDirection = null;
+            }
 
         return false;
     }
@@ -203,45 +251,16 @@ public class PatternProviderLogicMixin {
         }
 
         boolean didSomething = false;
-
-        var be = host.getBlockEntity();
-        var level = be.getLevel();
-
-        List<TunneledPos> positions = getTunneledPositions(be.getBlockPos(),
-            level, sendDirection);
+        BlockEntity thisBe = host.getBlockEntity();
+        List<TunneledPos> positions = getTunneledPositions(thisBe.getBlockPos(),
+            thisBe.getLevel(), sendDirection);
         for (TunneledPos pos : positions)
         {
-            PatternProviderTarget adapter = findAdapter(pos);
-        if (adapter == null)
-        {
-            return false;
-        }
-
-
-
-        for (var it = sendList.listIterator(); it.hasNext();)
-        {
-            var stack = it.next();
-            var what = stack.what();
-            long amount = stack.amount();
-
-            long inserted = adapter.insert(what, amount, Actionable.MODULATE);
-            if (inserted >= amount)
+            if (sendStacksOut(findAdapter(pos)))
             {
-                it.remove();
-                didSomething = true;
-            } else if (inserted > 0)
-            {
-                it.set(new GenericStack(what, amount - inserted));
-                didSomething = true;
+                return true;
             }
         }
-
-        if (sendList.isEmpty())
-        {
-            sendDirection = null;
-        }
-    }
 
         return didSomething;
     }
@@ -253,8 +272,10 @@ public class PatternProviderLogicMixin {
         {
             // can never tunnel
             return List.of(new TunneledPos(pos, adjBeSide));
-        } else {
-            IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
+        } else
+        {
+            IPart potentialTunnel = ((IPartHost) potentialPart)
+                .getPart(adjBeSide);
             if (potentialTunnel instanceof PatternP2PTunnelPart)
             {
                 return ((PatternP2PTunnelPart) potentialTunnel)
@@ -270,12 +291,10 @@ public class PatternProviderLogicMixin {
     @Nullable
     private PatternProviderTarget findAdapter(TunneledPos pos) {
         var thisBe = host.getBlockEntity();
-        return new PatternProviderTargetCache(
-                    (ServerLevel) thisBe.getLevel(),
-                    pos.pos(),
-                    pos.dir(),
-            actionSource).find();
+        return new PatternProviderTargetCache((ServerLevel) thisBe.getLevel(),
+            pos.pos(), pos.dir(), actionSource).find();
     }
+
     @Shadow
     private <T> void rearrangeRoundRobin(List<T> list) {
         // TODO Auto-generated method stub
