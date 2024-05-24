@@ -13,7 +13,7 @@ public class Config
     private static final ForgeConfigSpec.BooleanValue INTERFACE_P2P = BUILDER
             .comment("Whether the Interface P2P is enabled").define("interfaceP2P", true);
 
-    static final ForgeConfigSpec SPEC = BUILDER.build();
+    public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)

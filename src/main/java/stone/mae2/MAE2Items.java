@@ -18,31 +18,19 @@ import stone.mae2.parts.PatternP2PTunnelPart;
 
 public class MAE2Items {
 
-    private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister
+    private final DeferredRegister<CreativeModeTab> TABS = DeferredRegister
         .create(Registries.CREATIVE_MODE_TAB, MAE2.MODID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister
+    public final DeferredRegister<Item> ITEMS = DeferredRegister
         .create(ForgeRegistries.ITEMS, MAE2.MODID);
 
-    public static final RegistryObject<CreativeModeTab> CREATIVE_TAB = TABS
-        .register("main",
-            () -> CreativeModeTab.builder()
-                .title(Component
-                    .translatable("gui." + MAE2.MODID + ".creative_tab"))
-                .icon(() -> new ItemStack(MAE2Items.PATTERN_P2P_TUNNEL.get()))
-                .displayItems((params, output) ->
-                {
-                    for (var entry : ITEMS.getEntries())
-                    {
-                        output.accept(entry.get());
-                    }
-                }).build());
+
 
     public void init(IEventBus bus) {
         ITEMS.register(bus);
         TABS.register(bus);
     }
 
-    public static final RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL = Util
+    public final RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL = Util
         .make(() ->
         {
         PartModels.registerModels(PartModelsHelper.createModels(PatternP2PTunnelPart.class));
@@ -50,4 +38,18 @@ public class MAE2Items {
             () -> new PartItem<>(new Item.Properties(),
                     PatternP2PTunnelPart.class, PatternP2PTunnelPart::new));
     });
+
+    public final RegistryObject<CreativeModeTab> CREATIVE_TAB = TABS.register(
+        "main",
+        () -> CreativeModeTab.builder()
+            .title(
+                Component.translatable("gui." + MAE2.MODID + ".creative_tab"))
+            .icon(() -> new ItemStack(PATTERN_P2P_TUNNEL.get()))
+            .displayItems((params, output) ->
+            {
+                for (var entry : ITEMS.getEntries())
+                {
+                    output.accept(entry.get());
+                }
+            }).build());
 }

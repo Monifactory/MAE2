@@ -5,10 +5,13 @@ import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.P2PModels;
 import appeng.parts.p2p.P2PTunnelPart;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 
 import stone.mae2.MAE2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PatternP2PTunnelPart
@@ -28,6 +31,31 @@ public class PatternP2PTunnelPart
 
     public PatternP2PTunnelPart(IPartItem<?> partItem) {
         super(partItem);
+    }
+    
+    public List<TunneledPos> getTunneledPositions() {
+        if (this.isOutput())
+        {
+            PatternP2PTunnelPart input = this.getInput();
+            Direction inputSide = input.getSide();
+            return List.of(new TunneledPos(
+                input.getBlockEntity().getBlockPos().relative(inputSide),
+                inputSide.getOpposite()));
+        } else
+        {
+            List<TunneledPos> outputs = new ArrayList<>();
+            for (PatternP2PTunnelPart output : this.getOutputs())
+            {
+                Direction outputSide = output.getSide();
+                outputs.add(new TunneledPos(
+                    output.getBlockEntity().getBlockPos().relative(outputSide),
+                    outputSide.getOpposite()));
+            }
+            return outputs;
+        }
+    }
+
+    public record TunneledPos(BlockPos pos, Direction dir) {
     }
 
 }

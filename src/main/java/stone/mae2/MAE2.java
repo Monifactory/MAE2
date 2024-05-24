@@ -22,8 +22,8 @@ public class MAE2 {
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static ConfigHolder CONFIG = new ConfigHolder();
-    public static MAE2Items ITEMS = new MAE2Items();
+    public static final ConfigHolder CONFIG = new ConfigHolder();
+    public static final MAE2Items ITEMS = new MAE2Items();
 
     public MAE2() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
