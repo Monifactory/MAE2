@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.parts.PatternP2PTunnelPart;
 import stone.mae2.parts.PatternP2PTunnelPart.TunneledPos;
@@ -302,8 +303,24 @@ public class PatternProviderLogicMixin {
     @Inject(method = "readFromNBT", at = @At("TAIL"))
     private void onReadFromNBT(CompoundTag tag, CallbackInfo ci) {
         if (tag.contains(SEND_POS_TAG))
+        // send pos only exists if MAE2 existed before
         {
+
             sendPos = TunneledPos.readFromNBT(tag.getCompound(SEND_POS_TAG));
+        } else if (sendDirection != null)
+        // this provider is old and in an invalid state
+        {
+
+            BlockEntity be = host.getBlockEntity();
+            BlockPos pos = be.getBlockPos();
+            // there should only be one position to send to here
+            sendPos = getTunneledPositions(
+                pos.relative(sendDirection),
+                be.getLevel(), sendDirection).get(0);
+            sendDirection = null; // this'll never be reset otherwise
+            MAE2.LOGGER.info(
+                "Migrated old pattern provider NBT data to MAE2's at (%i, %i, %i)",
+                pos.getX(), pos.getY(), pos.getZ());
         }
     }
     @Shadow

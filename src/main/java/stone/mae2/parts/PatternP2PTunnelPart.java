@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -71,8 +72,15 @@ public class PatternP2PTunnelPart
             TunneledPos provider = this.getInputPos();
             if (provider == null)
                 return LazyOptional.empty();
-            return this.getLevel().getBlockEntity(provider.pos())
-                .getCapability(capability, provider.dir());
+            BlockEntity providerEntity = this.getLevel()
+                .getBlockEntity(provider.pos());
+            if (providerEntity != null)
+            {
+                return providerEntity.getCapability(capability, provider.dir());
+            } else
+            {
+                return LazyOptional.empty();
+            }
         } else
         {
             return LazyOptional.empty();

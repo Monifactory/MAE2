@@ -20,7 +20,7 @@ public class MAE2 {
     public static final String MODID = "mae2";
 
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final ConfigHolder CONFIG = new ConfigHolder();
     public static final MAE2Items ITEMS = new MAE2Items();
