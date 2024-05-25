@@ -23,6 +23,8 @@ import java.util.Set;
 /**
  * Has to be like this because it's not public in ae2, and I can't figure out a
  * way to access transform it
+ * 
+ * I claim no ownership of this code, it's a direct copy/paste from AE2.
  */
 public class PatternProviderTargetCache {
     private final BlockApiCache<MEStorage> cache;

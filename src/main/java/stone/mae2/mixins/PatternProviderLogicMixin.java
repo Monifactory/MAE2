@@ -204,6 +204,14 @@ public class PatternProviderLogicMixin {
         return false;
     }
 
+    /**
+     * This code is mainly copied from the orginal sendStackOut() method. Mostly
+     * just removed the code related to finding the adapter since it's passed in
+     * now.
+     * 
+     * @param adapter
+     * @return
+     */
     private boolean sendStacksOut(PatternProviderTarget adapter) {
         if (adapter == null)
         {
@@ -236,6 +244,14 @@ public class PatternProviderLogicMixin {
         return false;
     }
 
+    /**
+     * AE2 uses this method to send out ingredients that couldn't fit all at
+     * once and have to be put in as space is made. I had to change it to use a
+     * cached position found when the initial pattern was pushed. The position
+     * already has gone through potential p2p tunnels.
+     * 
+     * @return
+     */
     @Overwrite
     private boolean sendStacksOut() {
         if (sendPos == null)
