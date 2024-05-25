@@ -37,7 +37,6 @@ import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.parts.PatternP2PTunnelPart;
 import stone.mae2.parts.PatternP2PTunnelPart.TunneledPos;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -121,10 +120,6 @@ public class PatternProviderLogicMixin {
             return false;
         }
 
-        record PushTarget(Direction direction, PatternProviderTarget target) {
-        }
-        var possibleTargets = new ArrayList<PushTarget>();
-
         // use a boolean like this to allow multiple machines to pushed too a
         // tick
         // Push to crafting machines first
@@ -134,7 +129,11 @@ public class PatternProviderLogicMixin {
             // Main change to allow multiple positions to be checked per side
             List<TunneledPos> positions = getTunneledPositions(
                 be.getBlockPos().relative(direction), level, adjBeSide);
-            rearrangeRoundRobin(positions);
+            // prevents attempting to modify a unmodifiable singleton list
+            if (positions.size() > 1)
+            {
+                rearrangeRoundRobin(positions);
+            }
             for (TunneledPos adjPos : positions)
             {
                 BlockEntity adjBe = level.getBlockEntity(adjPos.pos());

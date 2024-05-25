@@ -39,10 +39,7 @@ public class PatternP2PTunnelPart
     public List<TunneledPos> getTunneledPositions() {
         if (this.isOutput())
         {
-            TunneledPos pos = getInputPos();
-            if (pos == null)
-                return List.of();
-            return List.of(pos);
+            return null;
         } else
         {
             List<TunneledPos> outputs = new ArrayList<>();
