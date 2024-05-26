@@ -36,8 +36,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.parts.PatternP2PTunnelPart;
+import stone.mae2.parts.PatternP2PTunnelPart.TunneledPatternProviderTarget;
 import stone.mae2.parts.PatternP2PTunnelPart.TunneledPos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +48,7 @@ import java.util.Set;
  * pattern providers
  */
 @Mixin(value = PatternProviderLogic.class, remap = false)
-public class PatternProviderLogicMixin {
+public abstract class PatternProviderLogicMixin {
 
     @Shadow
     private PatternProviderLogicHost host;
@@ -93,6 +95,7 @@ public class PatternProviderLogicMixin {
     @Shadow
     private int roundRobinIndex;
     private TunneledPos sendPos;
+    private PatternProviderTargetCache cache;
 
     /**
      * AE2's code is just not amenable to changes this radical, so I have to
@@ -121,70 +124,64 @@ public class PatternProviderLogicMixin {
             return false;
         }
 
-        // use a boolean like this to allow multiple machines to pushed too a
-        // tick
-        // Push to crafting machines first
-        for (Direction direction : getActiveSides())
+        if (!patternDetails.supportsPushInputsToExternalInventory())
         {
-            Direction adjBeSide = direction.getOpposite();
-            // Main change to allow multiple positions to be checked per side
-            List<TunneledPos> positions = getTunneledPositions(
-                be.getBlockPos().relative(direction), level, adjBeSide);
-            // prevents attempting to modify a unmodifiable singleton list
-            if (positions.size() > 1)
+            for (Direction direction : getActiveSides())
             {
-                rearrangeRoundRobin(positions);
-            }
-            for (TunneledPos adjPos : positions)
-            {
-                BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
 
-                ICraftingMachine craftingMachine = ICraftingMachine.of(level,
-                    adjPos.pos(),
-                    adjPos.dir(), adjBe);
-                if (craftingMachine != null && craftingMachine.acceptsPlans())
+                Direction adjBeSide = direction.getOpposite();
+                // Main change to allow multiple positions to be checked per
+                // side
+                List<TunneledPos> positions = getTunneledPositions(
+                    be.getBlockPos().relative(direction), level, adjBeSide);
+                for (TunneledPos adjPos : positions)
                 {
-                    if (craftingMachine.pushPattern(patternDetails, inputHolder,
-                        adjPos.dir()))
+                    BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
+
+                    ICraftingMachine craftingMachine = ICraftingMachine
+                        .of(level, adjPos.pos(), adjPos.dir(), adjBe);
+                    if (craftingMachine != null
+                        && craftingMachine.acceptsPlans())
                     {
-                        onPushPatternSuccess(patternDetails);
-                        // edit
-                        return true;
+                        if (craftingMachine.pushPattern(patternDetails,
+                            inputHolder, adjPos.dir()))
+                        {
+                            onPushPatternSuccess(patternDetails);
+                            // edit
+                            return true;
+                        }
                     }
                 }
+            }
+        } else
+        {
+            // first gather up every adapter, to round robin out patterns
+            List<TunneledPatternProviderTarget> adapters = new ArrayList<>();
+            for (Direction direction : getActiveSides())
+            {
+                findAdapters(be, level, adapters, direction);
+            }
+            MAE2.LOGGER.debug("Found {} adapters", adapters.size());
+            rearrangeRoundRobin(adapters);
 
-
-
-                // we found crafting machines, so there's nothing else to do
-                // if (didSomething)
-                // return true;
-
-                // If no dedicated crafting machine could be found, and the
-                // pattern does
-                // not support
-                // generic external inventories, stop here.
-                if (!patternDetails.supportsPushInputsToExternalInventory())
+            for (TunneledPatternProviderTarget adapter : adapters)
+            {
+                if (adapter.target() == null)
+                {
+                    continue;
+                }
+                if (this.isBlocking() && adapter.target()
+                    .containsPatternInput(this.patternInputs))
                 {
                     continue;
                 }
 
-                // find adapter had to be replaced with a pos using one instead
-                var adapter = findAdapter(adjPos);
-                if (adapter == null)
-                    continue;
-
-                if (this.isBlocking()
-                    && adapter.containsPatternInput(this.patternInputs))
-                {
-                    continue;
-                }
-
-                if (this.adapterAcceptsAll(adapter, inputHolder))
+                if (this.adapterAcceptsAll(adapter.target(), inputHolder))
                 {
                     patternDetails.pushInputsToExternalInventory(inputHolder,
                         (what, amount) ->
                         {
-                            var inserted = adapter.insert(what, amount,
+                            var inserted = adapter.target().insert(what, amount,
                                 Actionable.MODULATE);
                             if (inserted < amount)
                             {
@@ -192,8 +189,9 @@ public class PatternProviderLogicMixin {
                             }
                         });
                     onPushPatternSuccess(patternDetails);
-                    this.sendPos = adjPos;
-                    this.sendStacksOut(adapter);
+                    this.sendPos = adapter.pos();
+                    this.cache = findAdapter(sendPos);
+                    this.sendStacksOut(adapter.target());
                     ++roundRobinIndex;
                     return true;
                 }
@@ -202,6 +200,43 @@ public class PatternProviderLogicMixin {
 
         // return didSomething;
         return false;
+
+    }
+
+    private void findAdapters(BlockEntity be, Level level,
+        List<TunneledPatternProviderTarget> adapters, Direction direction) {
+        BlockEntity potentialPart = level
+            .getBlockEntity(be.getBlockPos().relative(direction));
+
+        if (potentialPart == null || !(potentialPart instanceof IPartHost))
+        {
+            // no chance of tunneling
+            adapters
+                .add(new TunneledPatternProviderTarget(findAdapter(direction),
+                    new TunneledPos(be.getBlockPos(), direction)));
+        } else
+        {
+            IPart potentialTunnel = ((IPartHost) potentialPart)
+                .getPart(direction.getOpposite());
+            if (potentialTunnel != null
+                && potentialTunnel instanceof PatternP2PTunnelPart)
+            {
+                List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnelPart) potentialTunnel)
+                    .getTargets();
+                MAE2.LOGGER.debug("newTargets != null = {}",
+                    newTargets != null);
+                if (newTargets != null)
+                {
+                    adapters.addAll(newTargets);
+                }
+            } else
+            {
+                // not a pattern p2p tunnel
+                adapters.add(
+                    new TunneledPatternProviderTarget(findAdapter(direction),
+                        new TunneledPos(be.getBlockPos(), direction)));
+            }
+        }
     }
 
     /**
@@ -266,7 +301,11 @@ public class PatternProviderLogicMixin {
 
         boolean didSomething = false;
 
-        if (sendStacksOut(findAdapter(sendPos)))
+        if (cache == null)
+        {
+            cache = findAdapter(sendPos);
+        }
+        if (sendStacksOut(cache.find()))
         {
             return true;
         }
@@ -298,11 +337,16 @@ public class PatternProviderLogicMixin {
     }
 
     @Nullable
-    private PatternProviderTarget findAdapter(TunneledPos pos) {
+    private PatternProviderTargetCache findAdapter(TunneledPos pos) {
         var thisBe = host.getBlockEntity();
         return new PatternProviderTargetCache((ServerLevel) thisBe.getLevel(),
-            pos.pos(), pos.dir(), actionSource).find();
+            pos.pos(), pos.dir().getOpposite(), actionSource);
     }
+
+    @Shadow
+    private PatternProviderTarget findAdapter(Direction side) {
+        throw new RuntimeException("HOW, HOW DID YOU LOAD THIS!");
+    };
 
     private static final String SEND_POS_TAG = "sendPos";
 
@@ -330,15 +374,15 @@ public class PatternProviderLogicMixin {
             BlockEntity be = host.getBlockEntity();
             BlockPos pos = be.getBlockPos();
             // there should only be one position to send to here
-            sendPos = getTunneledPositions(
-                pos.relative(sendDirection),
+            sendPos = getTunneledPositions(pos.relative(sendDirection),
                 be.getLevel(), sendDirection).get(0);
             sendDirection = null; // this'll never be reset otherwise
             MAE2.LOGGER.info(
-                "Migrated old pattern provider NBT data to MAE2's at (%i, %i, %i)",
+                "Migrated old pattern provider NBT data to MAE2's at ({}, {}, {})",
                 pos.getX(), pos.getY(), pos.getZ());
         }
     }
+
     @Shadow
     private <T> void rearrangeRoundRobin(List<T> list) {
         // TODO Auto-generated method stub
