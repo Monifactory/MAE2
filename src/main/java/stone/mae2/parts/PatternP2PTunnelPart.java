@@ -23,6 +23,8 @@ import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
 
     private static final P2PModels MODELS = new P2PModels(
@@ -57,6 +59,7 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
         }
     }
 
+    @Nullable
     public List<TunneledPatternProviderTarget> getTargets() {
         if (this.isOutput())
         // you can't go through a output tunnel (duh)
@@ -72,10 +75,12 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
             .filter((target) -> target.target() != null).toList();
     }
 
+    @Nullable
     private PatternProviderTarget getTarget() {
         return cache.find();
     }
 
+    @Nullable
     public List<TunneledPos> getTunneledPositions() {
         if (this.isOutput())
         {
