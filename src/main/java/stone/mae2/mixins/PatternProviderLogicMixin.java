@@ -105,6 +105,9 @@ public abstract class PatternProviderLogicMixin {
      * 
      * @param patternDetails
      * @param inputHolder
+     * @author Stone
+     * @reason Had to rewrite it to be p2p aware, The original method just isn't
+     *         flexible enough to do this with usual mixins
      * @return
      */
     @Overwrite
@@ -161,7 +164,6 @@ public abstract class PatternProviderLogicMixin {
             {
                 findAdapters(be, level, adapters, direction);
             }
-            MAE2.LOGGER.debug("Found {} adapters", adapters.size());
             rearrangeRoundRobin(adapters);
 
             for (TunneledPatternProviderTarget adapter : adapters)
@@ -190,7 +192,7 @@ public abstract class PatternProviderLogicMixin {
                         });
                     onPushPatternSuccess(patternDetails);
                     this.sendPos = adapter.pos();
-                    this.cache = findAdapter(sendPos);
+                    this.cache = findCache(sendPos);
                     this.sendStacksOut(adapter.target());
                     ++roundRobinIndex;
                     return true;
@@ -223,8 +225,6 @@ public abstract class PatternProviderLogicMixin {
             {
                 List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnelPart) potentialTunnel)
                     .getTargets();
-                MAE2.LOGGER.debug("newTargets != null = {}",
-                    newTargets != null);
                 if (newTargets != null)
                 {
                     adapters.addAll(newTargets);
@@ -285,6 +285,9 @@ public abstract class PatternProviderLogicMixin {
      * cached position found when the initial pattern was pushed. The position
      * already has gone through potential p2p tunnels.
      * 
+     * @author Stone
+     * @reason This method needs to be aware of the pattern p2p, and the
+     *         original isn't flexible enough to allow that
      * @return
      */
     @Overwrite
@@ -303,7 +306,7 @@ public abstract class PatternProviderLogicMixin {
 
         if (cache == null)
         {
-            cache = findAdapter(sendPos);
+            cache = findCache(sendPos);
         }
         if (sendStacksOut(cache.find()))
         {
@@ -337,7 +340,7 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Nullable
-    private PatternProviderTargetCache findAdapter(TunneledPos pos) {
+    private PatternProviderTargetCache findCache(TunneledPos pos) {
         var thisBe = host.getBlockEntity();
         return new PatternProviderTargetCache((ServerLevel) thisBe.getLevel(),
             pos.pos(), pos.dir().getOpposite(), actionSource);
@@ -350,6 +353,20 @@ public abstract class PatternProviderLogicMixin {
 
     private static final String SEND_POS_TAG = "sendPos";
 
+    /**
+     * Writes the send position to nbt data
+     * 
+     * Writes the current send position to disk to allow it to persist through
+     * unloads. Currently this is why MAE2 can't be removed from a save due to
+     * running crafts saving that they're crafting, but not where they're
+     * crafting. I don't know if there's a clean way to do it (at least no
+     * without incurring costs). Preferably I'd like it to be done without any
+     * costs because the solution is just to stop all autocrafts before removing
+     * MAE2.
+     * 
+     * @param tag
+     * @param ci
+     */
     @Inject(method = "writeToNBT", at = @At("TAIL"))
     private void onWriteToNBT(CompoundTag tag, CallbackInfo ci) {
         if (sendPos != null)
@@ -360,6 +377,16 @@ public abstract class PatternProviderLogicMixin {
         }
     }
 
+    /**
+     * Reads the send pos from the nbt data
+     * 
+     * Reads the saved data off the disk to reconstruct the pattern provider.
+     * Note that this will also migrate old pattern providers from AE2 without
+     * MAE2 to prevent crashes.
+     * 
+     * @param tag
+     * @param ci
+     */
     @Inject(method = "readFromNBT", at = @At("TAIL"))
     private void onReadFromNBT(CompoundTag tag, CallbackInfo ci) {
         if (tag.contains(SEND_POS_TAG))
@@ -390,10 +417,7 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Shadow
-    private boolean isBlocking() {
-        // TODO Auto-generated method stub
-        return false;
-    }
+    public abstract boolean isBlocking();
 
     @Shadow
     private boolean adapterAcceptsAll(PatternProviderTarget adapter,
@@ -421,7 +445,5 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Shadow
-    private LockCraftingMode getCraftingLockedReason() {
-        return null;
-    }
+    public abstract LockCraftingMode getCraftingLockedReason();
 }
