@@ -20,35 +20,35 @@ import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.parts.PatternP2PTunnelPart;
 
-public class MAE2Items {
+public abstract class MAE2Items {
 
-    private final DeferredRegister<CreativeModeTab> TABS = DeferredRegister
+    private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister
         .create(Registries.CREATIVE_MODE_TAB, MAE2.MODID);
-    public final DeferredRegister<Item> ITEMS = DeferredRegister
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister
         .create(ForgeRegistries.ITEMS, MAE2.MODID);
 
-    public RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL;
-    public RegistryObject<StorageComponentItem>[] STORAGE_COMPONENTS;
-    public RegistryObject<BasicStorageCell>[] STORAGE_CELLS;
+    public static RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL;
+    public static RegistryObject<StorageComponentItem>[] STORAGE_COMPONENTS;
+    public static RegistryObject<BasicStorageCell>[] STORAGE_CELLS;
 
-    public void init(IEventBus bus) {
-        this.register();
+    public static void init(IEventBus bus) {
+        register();
         ITEMS.register(bus);
         TABS.register(bus);
 
         bus.addListener((FMLCommonSetupEvent event) ->
         {
 
-            if (MAE2.CONFIG.isInterfaceP2PEnabled)
+            if (MAE2Config.isInterfaceP2PEnabled)
             {
                 P2PTunnelAttunement
-                    .registerAttunementTag(this.PATTERN_P2P_TUNNEL.get());
+                    .registerAttunementTag(PATTERN_P2P_TUNNEL.get());
             }
         });
     }
 
-    public void register() {
-        MAE2Config config = MAE2.CONFIG;
+    @SuppressWarnings("unchecked")
+    public static void register() {
         // always registers pattern p2p for the creative tab's icon
         // TODO figure something out for that
         PATTERN_P2P_TUNNEL = Util.make(() ->
@@ -60,11 +60,13 @@ public class MAE2Items {
                     PatternP2PTunnelPart.class, PatternP2PTunnelPart::new));
         });
         
-        if (config.areExtraTiersEnabled)
+        if (MAE2Config.areExtraTiersEnabled)
         {
+            STORAGE_COMPONENTS = new RegistryObject[MAE2Config.extraStorageTiers];
+            STORAGE_CELLS = new RegistryObject[MAE2Config.extraStorageTiers];
             MAE2.LOGGER.debug("Registering {} exra storage tiers!",
-                config.extraStorageTiers);
-            for (int i = 0; i < config.extraStorageTiers; i++)
+                MAE2Config.extraStorageTiers);
+            for (int i = 0; i < MAE2Config.extraStorageTiers; i++)
             {
                 final int tier = i;
                 STORAGE_COMPONENTS[i] = ITEMS.register("storage_component_" + i,
@@ -75,7 +77,8 @@ public class MAE2Items {
 
     }
 
-    public final RegistryObject<CreativeModeTab> CREATIVE_TAB = TABS.register(
+    public static final RegistryObject<CreativeModeTab> CREATIVE_TAB = TABS
+        .register(
         "main",
         () -> CreativeModeTab.builder()
             .title(

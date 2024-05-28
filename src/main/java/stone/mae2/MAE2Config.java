@@ -1,10 +1,10 @@
 package stone.mae2;
 
-public class MAE2Config {
-    public boolean isInterfaceP2PEnabled;
+public abstract class MAE2Config {
+    public static boolean isInterfaceP2PEnabled;
 
-    public boolean maxTierEnabled;
-    public boolean areExtraTiersEnabled;
-    public int extraStorageTiers;
+    public static boolean maxTierEnabled;
+    public static boolean areExtraTiersEnabled;
+    public static int extraStorageTiers;
 
 }

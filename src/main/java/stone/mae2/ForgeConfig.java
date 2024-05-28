@@ -41,17 +41,21 @@ public class ForgeConfig
         onReload();
     }
 
-    private static void onReload() {
+    public static void onReload() {
 
+    }
+
+    public static void onLoad() {
+        onReload();
+        MAE2Config.isInterfaceP2PEnabled = INTERFACE_P2P.get();
+
+        MAE2Config.areExtraTiersEnabled = STORAGE_TIERS_ENABLED.get();
+        MAE2Config.extraStorageTiers = STORAGE_TIERS.get();
     }
 
     @SubscribeEvent
     static void onload(final ModConfigEvent.Loading event) {
-        onReload();
-        MAE2.CONFIG.isInterfaceP2PEnabled = INTERFACE_P2P.get();
-
-        MAE2.CONFIG.areExtraTiersEnabled = STORAGE_TIERS_ENABLED.get();
-        MAE2.CONFIG.extraStorageTiers = STORAGE_TIERS.get();
+        onLoad();
     }
 
 }
