@@ -1,5 +1,7 @@
 package stone.mae2;
 
+import java.util.stream.Stream;
+
 import appeng.api.features.P2PTunnelAttunement;
 import appeng.api.parts.PartModels;
 import appeng.items.materials.StorageComponentItem;
@@ -12,25 +14,28 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
+import stone.mae2.items.DynamicStorageComponentItem;
 import stone.mae2.parts.PatternP2PTunnelPart;
 
 public abstract class MAE2Items {
 
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister
         .create(Registries.CREATIVE_MODE_TAB, MAE2.MODID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister
         .create(ForgeRegistries.ITEMS, MAE2.MODID);
 
     public static RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL;
-    public static RegistryObject<StorageComponentItem>[] STORAGE_COMPONENTS;
-    public static RegistryObject<BasicStorageCell>[] STORAGE_CELLS;
+    public static RegistryObject<DynamicStorageComponentItem>[][] STORAGE_COMPONENTS;
+    public static RegistryObject<BasicStorageCell>[][] STORAGE_CELLS;
 
+    @SuppressWarnings("unchecked")
     public static void init(IEventBus bus) {
         register();
         ITEMS.register(bus);
@@ -44,6 +49,15 @@ public abstract class MAE2Items {
                 P2PTunnelAttunement
                     .registerAttunementTag(PATTERN_P2P_TUNNEL.get());
             }
+        });
+
+        bus.addListener((RegisterColorHandlersEvent.Item event) -> {               
+                event.register((ItemStack stack, int tint) -> {
+                        return ((DynamicStorageComponentItem)stack.getItem()).getColor();
+                    }, (ItemLike[]) Stream.of(STORAGE_COMPONENTS)
+                    .flatMap(tiers -> Stream.of(tiers))
+                    .<ItemLike>map(component -> component.get())
+                    .toArray());
         });
     }
 
@@ -62,16 +76,20 @@ public abstract class MAE2Items {
         
         if (MAE2Config.areExtraTiersEnabled)
         {
-            STORAGE_COMPONENTS = new RegistryObject[MAE2Config.extraStorageTiers];
-            STORAGE_CELLS = new RegistryObject[MAE2Config.extraStorageTiers];
+            STORAGE_COMPONENTS = new RegistryObject[MAE2Config.extraStorageTiers][5];
+            STORAGE_CELLS = new RegistryObject[MAE2Config.extraStorageTiers][5];
             MAE2.LOGGER.debug("Registering {} exra storage tiers!",
                 MAE2Config.extraStorageTiers);
             for (int i = 0; i < MAE2Config.extraStorageTiers; i++)
             {
-                final int tier = i;
-                STORAGE_COMPONENTS[i] = ITEMS.register("storage_component_" + i,
-                    () -> new StorageComponentItem(new Item.Properties(),
-                        256 * (tier + 1) * 4));
+                for (int j = 0; j < 5; j++) {
+                    final int tier = i + 1;
+                    final int subTier = j;
+                    STORAGE_COMPONENTS[i][j] = ITEMS.register("storage_component" + i + j,
+                            () -> new DynamicStorageComponentItem(new Item.Properties(),
+                                                                  tier, subTier));
+                    
+                }
             }
         }
 

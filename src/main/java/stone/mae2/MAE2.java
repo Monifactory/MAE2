@@ -21,9 +21,7 @@ public class MAE2 {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public MAE2() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON,
-            ForgeConfig.SPEC);
-
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ForgeConfig.SPEC);
         // terrible, but forge doesn't want dynamic item registration for *some*
         // reason
         Path configPath = FMLPaths.CONFIGDIR.get().resolve("mae2-common.toml");
