@@ -1,23 +1,31 @@
 package stone.mae2;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 import stone.mae2.items.DynamicStorageComponentItem;
+import stone.mae2.util.TranslationHelper;
 
 import java.util.stream.Stream;
 
 public interface MAE2Proxy {
     public class Client implements MAE2Proxy {
 
+        static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister
+        .create(Registries.CREATIVE_MODE_TAB, MAE2.MODID);
+        static RegistryObject<CreativeModeTab> CREATIVE_TAB;
+
         @Override
         public void init(IEventBus bus) {
             // the server always exists for clients, right?
             new MAE2Proxy.Server().init(bus);
+            TABS.register(bus);
 
             if (MAE2Config.areExtraTiersEnabled)
             {
@@ -33,10 +41,10 @@ public interface MAE2Proxy {
                 });
             }
 
-            MAE2Items.CREATIVE_TAB = MAE2Items.TABS.register("main",
+            MAE2Proxy.Client.CREATIVE_TAB = MAE2Proxy.Client.TABS.register("main",
                 () -> CreativeModeTab.builder()
                     .title(Component
-                        .translatable("gui." + MAE2.MODID + ".creative_tab"))
+                           .translatable(TranslationHelper.GUI.toKey("creativeTab")))
                     .icon(
                         () -> new ItemStack(MAE2Items.PATTERN_P2P_TUNNEL.get()))
                     .displayItems((params, output) ->

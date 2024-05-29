@@ -7,4 +7,8 @@ public abstract class MAE2Config {
     public static boolean areExtraTiersEnabled;
     public static int extraStorageTiers;
 
+    public static Boolean isMaxTierEnabled;
+
+    public static boolean isExtraCoproccesorsEnabled;
+
 }
