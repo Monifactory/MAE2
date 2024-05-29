@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -34,7 +35,11 @@ public class MAE2 {
         }
 
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        MAE2Items.init(bus);
+
+
+        DistExecutor.safeRunForDist(() -> MAE2Proxy.Client::new,
+            () -> MAE2Proxy.Server::new).init(bus);
+
     }
 
 }
