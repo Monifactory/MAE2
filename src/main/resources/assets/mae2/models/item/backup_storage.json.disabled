@@ -1,0 +1,7 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "mae2:item/storage_component0",
+        "layer1": "mae2:item/storage_component0_overlay"
+    }
+}

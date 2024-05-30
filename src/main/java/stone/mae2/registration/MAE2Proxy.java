@@ -1,14 +1,20 @@
-package stone.mae2;
+package stone.mae2.registration;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.DataGenerator.PackGenerator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
+
+import stone.mae2.MAE2;
 import stone.mae2.items.DynamicStorageComponentItem;
 import stone.mae2.util.TranslationHelper;
 
@@ -27,17 +33,34 @@ public interface MAE2Proxy {
             new MAE2Proxy.Server().init(bus);
             TABS.register(bus);
 
+
+
             if (MAE2Config.areExtraTiersEnabled)
             {
                 bus.addListener((RegisterColorHandlersEvent.Item event) ->
                 {
                     event.register((ItemStack stack, int tint) ->
                     {
-                        return ((DynamicStorageComponentItem) stack.getItem())
-                            .getColor();
-                    }, (ItemLike[]) Stream.of(MAE2Items.STORAGE_COMPONENTS)
+                        return tint > 0
+                            ? ((DynamicStorageComponentItem) stack.getItem())
+                            .getColor() : -1;
+                    }, Stream.of(MAE2Items.STORAGE_COMPONENTS)
                         .flatMap(tiers -> Stream.of(tiers))
-                        .<ItemLike>map(component -> component.get()).toArray());
+                        .<ItemLike>map(component -> component.get())
+                        .toArray(ItemLike[]::new));
+                });
+
+                bus.addListener((GatherDataEvent event) ->
+                {
+                    MAE2.LOGGER.debug("Gathering Data");
+                    DataGenerator gen = event.getGenerator();
+                    ExistingFileHelper efh = event.getExistingFileHelper();
+
+                    gen.addProvider(event.includeClient(),
+                        new MAE2ItemModelProvider(null, efh));
+                    PackGenerator pack = gen.getVanillaPack(false);
+                    pack.addProvider((packOutput) -> new MAE2ItemModelProvider(
+                        packOutput, efh));
                 });
             }
 
@@ -62,6 +85,7 @@ public interface MAE2Proxy {
 
         @Override
         public void init(IEventBus bus) {
+            MAE2Blocks.init(bus);
             MAE2Items.init(bus);
         }
 

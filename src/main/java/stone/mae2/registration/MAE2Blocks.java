@@ -1,4 +1,4 @@
-package stone.mae2;
+package stone.mae2.registration;
 
 import appeng.block.AEBaseBlockItem;
 import appeng.block.crafting.CraftingUnitBlock;
@@ -8,6 +8,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import stone.mae2.MAE2;
 import stone.mae2.blocks.crafting.DynamicCraftingUnitType;
 
 public abstract class MAE2Blocks {

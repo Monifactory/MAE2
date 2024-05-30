@@ -1,10 +1,11 @@
-package stone.mae2;
+package stone.mae2.registration;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
+import stone.mae2.MAE2;
 import stone.mae2.util.TranslationHelper;
 
 @Mod.EventBusSubscriber(modid = MAE2.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)

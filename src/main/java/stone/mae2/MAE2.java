@@ -13,6 +13,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
+import stone.mae2.registration.ForgeConfig;
+import stone.mae2.registration.MAE2Proxy;
+
 import java.nio.file.Path;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -35,6 +38,7 @@ public class MAE2 {
         }
 
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+
 
 
         DistExecutor.safeRunForDist(() -> MAE2Proxy.Client::new,
