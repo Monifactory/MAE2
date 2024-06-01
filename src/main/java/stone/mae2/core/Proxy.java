@@ -1,7 +1,11 @@
 package stone.mae2.core;
 
+import appeng.client.render.crafting.CraftingCubeModel;
+import appeng.core.AppEng;
+import appeng.hooks.BuiltInModelHooks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -9,12 +13,15 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.MAE2;
+import stone.mae2.block.crafting.DynamicCraftingUnitType;
+import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
 
 public interface Proxy {
     public class Server implements Proxy {
         public void init(IEventBus bus) {
             MAE2Blocks.init(bus);
             MAE2Items.init(bus);
+            MAE2Recipes.init(bus);
         }
     }
 
@@ -39,6 +46,38 @@ public interface Proxy {
                             output.accept(entry.get());
                         }
                     }).build());
+            
+
+            // have to use AE2's id because their model loader checks for the id
+            BuiltInModelHooks.addBuiltInModel(
+                new ResourceLocation(AppEng.MOD_ID, "block/crafting/4x_accelerator_formed"),
+                new CraftingCubeModel(
+                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_4x)));
+
+            BuiltInModelHooks.addBuiltInModel(
+                new ResourceLocation(AppEng.MOD_ID, "block/crafting/16x_accelerator_formed"),
+                new CraftingCubeModel(
+                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_16x)));
+
+            BuiltInModelHooks.addBuiltInModel(
+                new ResourceLocation(AppEng.MOD_ID, "block/crafting/64x_accelerator_formed"),
+                new CraftingCubeModel(
+                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_64x)));
+
+            BuiltInModelHooks.addBuiltInModel(
+                new ResourceLocation(AppEng.MOD_ID, "block/crafting/256x_accelerator_formed"),
+                new CraftingCubeModel(new DynamicCraftingCubeModelProvider(
+                    DynamicCraftingUnitType.ACCELERATOR_256x)));
+
+            BuiltInModelHooks.addBuiltInModel(
+                new ResourceLocation(AppEng.MOD_ID, "block/crafting/max_storage_formed"),
+                new CraftingCubeModel(
+                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.STORAGE_MAX)));
+
+            BuiltInModelHooks.addBuiltInModel(
+                new ResourceLocation(AppEng.MOD_ID, "block/crafting/max_accelerator_formed"),
+                new CraftingCubeModel(
+                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_MAX)));
         }
     }
 

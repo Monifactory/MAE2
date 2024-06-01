@@ -27,12 +27,17 @@ public abstract class MAE2Items {
     public static RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL;
 
 
-    public static RegistryObject<CraftingBlockItem>[] DENSE_ACCELERATORS;
-    public static RegistryObject<StorageComponentItem> MAX_COMPONENT;
-    public static RegistryObject<BasicStorageCell> MAX_CELL;
+    public static RegistryObject<CraftingBlockItem> ACCELERATOR_4x;
+    public static RegistryObject<CraftingBlockItem> ACCELERATOR_16x;
+    public static RegistryObject<CraftingBlockItem> ACCELERATOR_64x;
+    public static RegistryObject<CraftingBlockItem> ACCELERATOR_256x;
 
-    public static RegistryObject<CraftingBlockItem> MAX_STORAGE;
-    public static RegistryObject<CraftingBlockItem> MAX_ACCELERATOR;
+    public static RegistryObject<StorageComponentItem> COMPONENT_MAX;
+    public static RegistryObject<BasicStorageCell> CELL_MAX;
+
+    public static RegistryObject<CraftingBlockItem> STORAGE_MAX;
+    public static RegistryObject<CraftingBlockItem> ACCELERATOR_MAX;
+
 
     public static void init(IEventBus bus) {
         register();
@@ -62,6 +67,15 @@ public abstract class MAE2Items {
                 () -> new PartItem<>(new Item.Properties(),
                     PatternP2PTunnelPart.class, PatternP2PTunnelPart::new));
         });
+
+        if (MAE2Config.isMAXTierEnabled)
+        {
+            COMPONENT_MAX = ITEMS.register("cell_component_max",
+                () -> new StorageComponentItem(new Item.Properties(),
+                    Integer.MAX_VALUE / 8096));
+            // MAX_CELL = ITEMS.register("universal_storage_cell_max", () -> new
+            // BasicStorageCell(null, null, null, 0, 0, 0, 0, null));
+        }
     }
 
 

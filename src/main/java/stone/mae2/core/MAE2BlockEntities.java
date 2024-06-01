@@ -1,20 +1,16 @@
 package stone.mae2.core;
 
-import appeng.block.AEBaseEntityBlock;
 import appeng.blockentity.AEBaseBlockEntity;
 import appeng.blockentity.ClientTickingBlockEntity;
 import appeng.blockentity.ServerTickingBlockEntity;
 import appeng.blockentity.crafting.CraftingBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
-
-import java.util.stream.Stream;
 
 public abstract class MAE2BlockEntities {
 
@@ -34,9 +30,8 @@ public abstract class MAE2BlockEntities {
                             (BlockPos pos,
                                 BlockState state) -> new CraftingBlockEntity(
                                     DENSE_ACCELERATOR, pos, state),
-                            Stream.of(MAE2Blocks.DENSE_ACCELERATORS)
-                                .map((registryObject) -> registryObject.get())
-                                .toArray(Block[]::new))
+                            MAE2Blocks.ACCELERATOR_4x.get(), MAE2Blocks.ACCELERATOR_16x.get(),
+                            MAE2Blocks.ACCELERATOR_64x.get(), MAE2Blocks.ACCELERATOR_256x.get())
                             .build(null);
                         helper.register("dense_accelerator", DENSE_ACCELERATOR);
 
@@ -60,14 +55,14 @@ public abstract class MAE2BlockEntities {
                                     .clientTick();
                             };
                         }
-
-                        for (var block : MAE2Blocks.DENSE_ACCELERATORS)
-                        {
-                            AEBaseEntityBlock<CraftingBlockEntity> baseBlock = (AEBaseEntityBlock<CraftingBlockEntity>) block
-                                .get();
-                            baseBlock.setBlockEntity(CraftingBlockEntity.class,
+                            MAE2Blocks.ACCELERATOR_4x.get().setBlockEntity(CraftingBlockEntity.class,
                                 DENSE_ACCELERATOR, clientTicker, serverTicker);
-                        }
+                        MAE2Blocks.ACCELERATOR_16x.get().setBlockEntity(CraftingBlockEntity.class,
+                            DENSE_ACCELERATOR, clientTicker, serverTicker);
+                        MAE2Blocks.ACCELERATOR_64x.get().setBlockEntity(CraftingBlockEntity.class,
+                            DENSE_ACCELERATOR, clientTicker, serverTicker);
+                        MAE2Blocks.ACCELERATOR_256x.get().setBlockEntity(CraftingBlockEntity.class,
+                            DENSE_ACCELERATOR, clientTicker, serverTicker);
                     });
             });
         }
@@ -84,12 +79,12 @@ public abstract class MAE2BlockEntities {
                             (BlockPos pos,
                                 BlockState state) -> new CraftingBlockEntity(
                                     MAX_STORAGE, pos, state),
-                            MAE2Blocks.MAX_STORAGE.get())
+                            MAE2Blocks.STORAGE_MAX.get())
                             .build(null);
                         helper.register("max_storage", MAX_STORAGE);
                             AEBaseBlockEntity.registerBlockEntityItem(
                                 MAX_STORAGE,
-                                MAE2Items.MAX_STORAGE.get());
+                                MAE2Items.STORAGE_MAX.get());
 
                         BlockEntityTicker<CraftingBlockEntity> serverTicker = null;
                         if (ServerTickingBlockEntity.class
@@ -112,9 +107,7 @@ public abstract class MAE2BlockEntities {
                             };
                         }
 
-                        AEBaseEntityBlock<CraftingBlockEntity> baseBlock = MAE2Blocks.MAX_STORAGE
-                                .get();
-                            baseBlock.setBlockEntity(CraftingBlockEntity.class,
+                            MAE2Blocks.STORAGE_MAX.get().setBlockEntity(CraftingBlockEntity.class,
                             MAX_STORAGE, clientTicker, serverTicker);
 
                         }
@@ -122,10 +115,10 @@ public abstract class MAE2BlockEntities {
                             (BlockPos pos,
                                 BlockState state) -> new CraftingBlockEntity(
                                     MAX_ACCELERATOR, pos, state),
-                            MAE2Blocks.MAX_ACCELERATOR.get()).build(null);
+                            MAE2Blocks.ACCELERATOR_MAX.get()).build(null);
                         helper.register("max_accelerator", MAX_ACCELERATOR);
                         AEBaseBlockEntity.registerBlockEntityItem(
-                            MAX_ACCELERATOR, MAE2Items.MAX_ACCELERATOR.get());
+                            MAX_ACCELERATOR, MAE2Items.ACCELERATOR_MAX.get());
 
                         BlockEntityTicker<CraftingBlockEntity> serverTicker = null;
                         if (ServerTickingBlockEntity.class
@@ -147,9 +140,8 @@ public abstract class MAE2BlockEntities {
                                     .clientTick();
                             };
                         }
-                        AEBaseEntityBlock<CraftingBlockEntity> baseBlock = MAE2Blocks.MAX_ACCELERATOR
-                            .get();
-                        baseBlock.setBlockEntity(CraftingBlockEntity.class,
+
+                        MAE2Blocks.ACCELERATOR_MAX.get().setBlockEntity(CraftingBlockEntity.class,
                             MAX_ACCELERATOR, clientTicker, serverTicker);
                     });
             });

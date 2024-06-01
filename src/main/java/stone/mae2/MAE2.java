@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.logging.LogUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -43,6 +44,10 @@ public class MAE2 {
         DistExecutor.safeRunForDist(() -> Proxy.Client::new,
             () -> Proxy.Server::new).init(bus);
 
+    }
+
+    public static ResourceLocation toKey(String path) {
+        return new ResourceLocation(MAE2.MODID, path);
     }
 
 }

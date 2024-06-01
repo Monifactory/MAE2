@@ -5,12 +5,14 @@ import net.minecraft.world.item.Item;
 
 import stone.mae2.core.MAE2Items;
 
-public class DynamicCraftingUnitType implements ICraftingUnitType {
+public enum DynamicCraftingUnitType implements ICraftingUnitType {
+    ACCELERATOR_4x(0, 4), ACCELERATOR_16x(0, 16), ACCELERATOR_64x(0, 64), ACCELERATOR_256x(0, 256),
+    STORAGE_MAX(Long.MAX_VALUE, 0), ACCELERATOR_MAX(0, Integer.MAX_VALUE - 1);
 
     private final long storage;
     private final int threads;
 
-    public DynamicCraftingUnitType(long storage, int threads) {
+    DynamicCraftingUnitType(long storage, int threads) {
         this.storage = storage;
         this.threads = threads;
     }
@@ -20,42 +22,22 @@ public class DynamicCraftingUnitType implements ICraftingUnitType {
         return this.storage;
     }
 
-    private boolean flag = false;
-
     @Override
     public int getAcceleratorThreads() {
-        if (flag)
-        {
-            flag = !flag;
-            return this.threads;
-        } else
-        {
-            flag = !flag;
-            return 1;
-        }
+        return this.threads;
     }
 
     @Override
     public Item getItemFromType() {
-        if (threads > 0)
-        {
-            switch (threads) {
-            case 4:
-                return MAE2Items.DENSE_ACCELERATORS[0].get();
-            case 16:
-                return MAE2Items.DENSE_ACCELERATORS[0].get();
-            case 64:
-                return MAE2Items.DENSE_ACCELERATORS[0].get();
-            case 256:
-                return MAE2Items.DENSE_ACCELERATORS[0].get();
-            case Integer.MAX_VALUE:
-                return MAE2Items.MAX_ACCELERATOR.get();
-            }
-        } else
-        {
-            return MAE2Items.MAX_STORAGE.get();
-        }
-        return null;
+        var item = switch (this) {
+        case ACCELERATOR_4x -> MAE2Items.ACCELERATOR_4x;
+        case ACCELERATOR_16x -> MAE2Items.ACCELERATOR_16x;
+        case ACCELERATOR_64x -> MAE2Items.ACCELERATOR_64x;
+        case ACCELERATOR_256x -> MAE2Items.ACCELERATOR_256x;
+        case ACCELERATOR_MAX -> MAE2Items.ACCELERATOR_MAX;
+        case STORAGE_MAX -> MAE2Items.STORAGE_MAX;
+        };
+        return item.get();
     }
 
 }

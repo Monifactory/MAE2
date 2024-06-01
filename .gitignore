@@ -1,3 +1,6 @@
+src/generated/
+run-data/
+
 # eclipse
 bin
 *.launch
