@@ -1,0 +1,28 @@
+List of things to do/planned to add
+list is in no particular order
+
+* Additions
+** Pattern Multitool
+ - From NAE2
+ - Edits patterns in bulk
+   - Ingredient/Output swapping
+     - Maybe include amounts in this? or multiplcation on swapped stuff
+     - ie replace Rubber with Silicone Rubber and half the needed amount since
+       its twice as efficent
+   - Multiplying the whole pattern amounts
+     - if you Upgrade your setup so you need every pattern to move stacks at a
+       time instead of just 1
+       - Maybe get AE2 to natively push as much as possible (would cost
+         performance tho)
+   - Click on interface to open up its patterns for editing
+   - Put patterns in tool for editing
+   - Maybe for substituting allow the whole network to be edited?
+     - How often would you not want to use your new ingredient everywhere?
+
+* Optimizations
+** Pattern P2P caching
+ - Currently it rebuilds the whole list of outputs which time its queryed
+ - Useful for if it changes, not useful when it's inside a tick and impossible
+   to change
+   - Or at least, I don't really care if someone does something so technical its
+     editing the p2p outputs inside of the craft being outputted

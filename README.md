@@ -7,7 +7,9 @@ thing. Sometimes the mixins just have to be done in a way that's incompatible.
 
 Pull requests are welcome, either for new features or bug fixes, as long as new
 features are relatively tame and within vanilla AE2's scope. Maybe for bug fixes
-make an issue first to link with the PR and make sure its really a bug.
+make an issue first to link with the PR and make sure its really a bug. If you
+want ideas peruse the TODO list at TODO.org, its got new feature ideas, and
+optimizations to implement
 
 Along with code additions, if some artist wants to work for free and make assets
 for MAE2, I'd welcome them. Even if you just think the colors of something is
