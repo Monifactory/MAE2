@@ -68,16 +68,6 @@ public interface Proxy {
                 new ResourceLocation(AppEng.MOD_ID, "block/crafting/256x_accelerator_formed"),
                 new CraftingCubeModel(new DynamicCraftingCubeModelProvider(
                     DynamicCraftingUnitType.ACCELERATOR_256x)));
-
-            BuiltInModelHooks.addBuiltInModel(
-                new ResourceLocation(AppEng.MOD_ID, "block/crafting/max_storage_formed"),
-                new CraftingCubeModel(
-                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.STORAGE_MAX)));
-
-            BuiltInModelHooks.addBuiltInModel(
-                new ResourceLocation(AppEng.MOD_ID, "block/crafting/max_accelerator_formed"),
-                new CraftingCubeModel(
-                    new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_MAX)));
         }
     }
 

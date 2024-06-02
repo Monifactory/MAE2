@@ -3,10 +3,8 @@ package stone.mae2.core;
 import appeng.api.features.P2PTunnelAttunement;
 import appeng.api.parts.PartModels;
 import appeng.block.crafting.CraftingBlockItem;
-import appeng.items.materials.StorageComponentItem;
 import appeng.items.parts.PartItem;
 import appeng.items.parts.PartModelsHelper;
-import appeng.items.storage.BasicStorageCell;
 import net.minecraft.Util;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -32,13 +30,6 @@ public abstract class MAE2Items {
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_64x;
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_256x;
 
-    public static RegistryObject<StorageComponentItem> COMPONENT_MAX;
-    public static RegistryObject<BasicStorageCell> CELL_MAX;
-
-    public static RegistryObject<CraftingBlockItem> STORAGE_MAX;
-    public static RegistryObject<CraftingBlockItem> ACCELERATOR_MAX;
-
-
     public static void init(IEventBus bus) {
         register();
         ITEMS.register(bus);
@@ -46,19 +37,13 @@ public abstract class MAE2Items {
 
         bus.addListener((FMLCommonSetupEvent event) ->
         {
-
-            if (MAE2Config.isInterfaceP2PEnabled)
-            {
                 P2PTunnelAttunement
                     .registerAttunementTag(PATTERN_P2P_TUNNEL.get());
-            }
         });
     }
 
     @SuppressWarnings("unchecked")
     public static void register() {
-        // always registers pattern p2p for the creative tab's icon
-        // TODO figure something out for that
         PATTERN_P2P_TUNNEL = Util.make(() ->
         {
             PartModels.registerModels(
@@ -67,15 +52,6 @@ public abstract class MAE2Items {
                 () -> new PartItem<>(new Item.Properties(),
                     PatternP2PTunnelPart.class, PatternP2PTunnelPart::new));
         });
-
-        if (MAE2Config.isMAXTierEnabled)
-        {
-            COMPONENT_MAX = ITEMS.register("cell_component_max",
-                () -> new StorageComponentItem(new Item.Properties(),
-                    Integer.MAX_VALUE / 8096));
-            // MAX_CELL = ITEMS.register("universal_storage_cell_max", () -> new
-            // BasicStorageCell(null, null, null, 0, 0, 0, 0, null));
-        }
     }
 
 

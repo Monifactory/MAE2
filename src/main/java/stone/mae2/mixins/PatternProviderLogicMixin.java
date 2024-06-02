@@ -417,10 +417,7 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Shadow
-    private boolean isBlocking() {
-        // TODO Auto-generated method stub
-        return false;
-    }
+    public abstract boolean isBlocking();
 
     @Shadow
     private boolean adapterAcceptsAll(PatternProviderTarget adapter,
@@ -448,7 +445,5 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Shadow
-    private LockCraftingMode getCraftingLockedReason() {
-        return null;
-    }
+    public abstract LockCraftingMode getCraftingLockedReason();
 }

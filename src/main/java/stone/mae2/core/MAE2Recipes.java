@@ -38,8 +38,6 @@ public abstract class MAE2Recipes {
         protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
             // TODO Auto-generated method stub
 
-            if (MAE2Config.areDenseCoprocessersEnabled)
-            {
                 buildAcceleratorRecipe(consumer, MAE2Items.ACCELERATOR_4x.get(),
                     AEItems.CELL_COMPONENT_4K, "network/crafting/4x_crafting_accelerator");
                 buildAcceleratorRecipe(consumer, MAE2Items.ACCELERATOR_16x.get(),
@@ -48,18 +46,6 @@ public abstract class MAE2Recipes {
                     AEItems.CELL_COMPONENT_64K, "network/crafting/64x_crafting_accelerator");
                 buildAcceleratorRecipe(consumer, MAE2Items.ACCELERATOR_256x.get(),
                     AEItems.CELL_COMPONENT_256K, "network/crafting/256x_crafting_accelerator");
-            }
-
-            if (MAE2Config.isMAXTierEnabled)
-            {
-                ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, MAE2Items.STORAGE_MAX.get())
-                    .requires(MAE2Items.COMPONENT_MAX.get())
-                    .requires(AEBlocks.CRAFTING_UNIT.asItem())
-                    .unlockedBy("has_crafting_unit", has(AEBlocks.CRAFTING_UNIT))
-                    .save(consumer, MAE2.toKey("network/crafting/max_crafting_storage"));
-                buildAcceleratorRecipe(consumer, MAE2Items.ACCELERATOR_MAX.get(),
-                    MAE2Items.COMPONENT_MAX.get(), "network/crafting/max_crafting_accelerator");
-            }
         }
 
         public static void buildAcceleratorRecipe(Consumer<FinishedRecipe> consumer,

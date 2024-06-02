@@ -42,10 +42,6 @@ public class DynamicCraftingCubeModelProvider
     protected final static Material ACCELERATOR_256x_LIGHT = texture(MAE2.MODID,
         "256x_accelerator_light");
 
-    protected final static Material STORAGE_MAX_LIGHT = texture(MAE2.MODID, "max_storage_light");
-    protected final static Material ACCELERATOR_MAX_LIGHT = texture(MAE2.MODID,
-        "max_accelerator_light");
-
     public DynamicCraftingCubeModelProvider(DynamicCraftingUnitType type) {
         super(type);
     }
@@ -77,8 +73,6 @@ public class DynamicCraftingCubeModelProvider
         case ACCELERATOR_16x -> textureGetter.apply(ACCELERATOR_16x_LIGHT);
         case ACCELERATOR_64x -> textureGetter.apply(ACCELERATOR_64x_LIGHT);
         case ACCELERATOR_256x -> textureGetter.apply(ACCELERATOR_256x_LIGHT);
-        case STORAGE_MAX -> textureGetter.apply(STORAGE_MAX_LIGHT);
-        case ACCELERATOR_MAX -> textureGetter.apply(ACCELERATOR_MAX_LIGHT);
         default -> throw new IllegalArgumentException(
             "Crafting unit type " + this.type + " does not use a light texture.");
         };
