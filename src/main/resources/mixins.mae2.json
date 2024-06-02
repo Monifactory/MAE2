@@ -6,8 +6,7 @@
   "compatibilityLevel": "JAVA_11",
   "mixins": [
       "PatternProviderLogicMixin",
-      "CraftingCPUClusterMixin",
-      "TooltipsMixin"
+      "CraftingCPUClusterMixin"
   ],
   "client": [],
   "server": []
