@@ -1,8 +1,17 @@
 List of things to do/planned to add
+Also works as a features list
 list is in no particular order
 
-* Additions
-** Pattern Multitool
+* Additions [16%]
+** DONE Pattern P2P Tunnel [2/3]
+*** DONE Effectively copies pattern providers from the input(s) to the outputs
+ - Works by letting pattern provider tunnel from the input to every output and
+   seeing those as potential targets
+*** DONE Alllows stuff to be input from the output, to tunnel back to the pattern provider on the input
+*** TODO Keep track of which output goes to which input to allow sharing setups between ME systems
+** TODO Pattern Multitool
+ - Already exists in ExtendedAE, might PR an improved version that works with GT
+   patterns tho
  - From NAE2
  - Edits patterns in bulk
    - Ingredient/Output swapping
@@ -19,10 +28,40 @@ list is in no particular order
    - Maybe for substituting allow the whole network to be edited?
      - How often would you not want to use your new ingredient everywhere?
 
+** TODO GregTech Patterns
+ - Processing patterns that can also set circuit numbers in GT machines
+ - Being a seperate pattern makes it nicer internally, and would allow the
+   circuit number to be included in blocking mode
+   - ie allow patterns to be sent multiple times, but only if the circuit
+     numbers match, so the circuits don't interfere
+
+** TODO Sticky Card
+ - Card that goes in storage things
+   - Storage bus
+   - Storage cells
+ - Makes it so that items that can enter the sticky storage will only ever enter the
+   sticky storage, even if there's free space elsewhere
+
+** TODO Beam Former [0/2]
+*** TODO Allows a connenction to be formed through transparent blocks via a laser beam
+*** TODO Beam has bloom to look cooler
+ - Not much use aside from looking cool
+   - Would make nicer looking cabling inside transparent blocks, since they'd be
+     no need for facades on the laser traveling through transparent blocks
+
+** TODO Guide Book Entries [0/6]
+ - [ ] Pattern P2P Tunnel
+ - [ ] Dense CPU Components
+ - [ ] Pattern Multitool
+ - [ ] GregTech Patterns
+ - [ ] Sitcky Card
+ - [ ] Beam Former
+
+
 * Optimizations
 ** Pattern P2P caching
  - Currently it rebuilds the whole list of outputs which time its queryed
- - Useful for if it changes, not useful when it's inside a tick and impossible
-   to change
-   - Or at least, I don't really care if someone does something so technical its
-     editing the p2p outputs inside of the craft being outputted
+   - Useful for if it changes, not useful when it's inside a tick and impossible
+     to change
+     - Or at least, I don't really care if someone does something so technical its
+       editing the p2p outputs inside of the craft being outputted
