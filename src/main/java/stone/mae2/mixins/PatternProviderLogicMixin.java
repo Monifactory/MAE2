@@ -22,6 +22,8 @@ import appeng.util.inv.AppEngInternalInventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -68,9 +70,9 @@ public abstract class PatternProviderLogicMixin {
     @Shadow
     private List<IPatternDetails> patterns;
     /**
-     * Keeps track of the inputs of all the patterns. When blocking mode is
-     * enabled, if any of these is contained in the target, the pattern won't be
-     * pushed. Always contains keys with the secondary component dropped.
+     * Keeps track of the inputs of all the patterns. When blocking mode is enabled,
+     * if any of these is contained in the target, the pattern won't be pushed.
+     * Always contains keys with the secondary component dropped.
      */
     @Shadow
     private Set<AEKey> patternInputs;
@@ -94,14 +96,15 @@ public abstract class PatternProviderLogicMixin {
     private GenericStack unlockStack;
     @Shadow
     private int roundRobinIndex;
-    private TunneledPos sendPos;
+
+    private BlockPos sendPos;
     private PatternProviderTargetCache cache;
 
     /**
      * AE2's code is just not amenable to changes this radical, so I have to
-     * overwrite it to allow multiple pattern targets per side. This is
-     * potentially possible with finer grained overwrites (is that even
-     * possible?) or asking AE2 to change their code to allow this
+     * overwrite it to allow multiple pattern targets per side. This is potentially
+     * possible with finer grained overwrites (is that even possible?) or asking AE2
+     * to change their code to allow this
      * 
      * @param patternDetails
      * @param inputHolder
@@ -111,8 +114,7 @@ public abstract class PatternProviderLogicMixin {
      * @return
      */
     @Overwrite
-    public boolean pushPattern(IPatternDetails patternDetails,
-        KeyCounter[] inputHolder) {
+    public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
         if (!sendList.isEmpty() || !this.mainNode.isActive()
             || !this.patterns.contains(patternDetails))
         {
@@ -141,13 +143,11 @@ public abstract class PatternProviderLogicMixin {
                 {
                     BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
 
-                    ICraftingMachine craftingMachine = ICraftingMachine
-                        .of(level, adjPos.pos(), adjPos.dir(), adjBe);
-                    if (craftingMachine != null
-                        && craftingMachine.acceptsPlans())
+                    ICraftingMachine craftingMachine = ICraftingMachine.of(level, adjPos.pos(),
+                        adjPos.dir(), adjBe);
+                    if (craftingMachine != null && craftingMachine.acceptsPlans())
                     {
-                        if (craftingMachine.pushPattern(patternDetails,
-                            inputHolder, adjPos.dir()))
+                        if (craftingMachine.pushPattern(patternDetails, inputHolder, adjPos.dir()))
                         {
                             onPushPatternSuccess(patternDetails);
                             // edit
@@ -168,32 +168,35 @@ public abstract class PatternProviderLogicMixin {
 
             for (TunneledPatternProviderTarget adapter : adapters)
             {
-                if (adapter.target() == null)
+                PatternProviderTargetCache targetCache = adapter.target();
+                PatternProviderTarget target = targetCache == null
+                    ? findAdapter(adapter.pos().dir())
+                    : targetCache.find();
+
+                if (target == null)
                 {
                     continue;
                 }
-                if (this.isBlocking() && adapter.target()
-                    .containsPatternInput(this.patternInputs))
+                if (this.isBlocking() && target.containsPatternInput(this.patternInputs))
                 {
                     continue;
                 }
 
-                if (this.adapterAcceptsAll(adapter.target(), inputHolder))
+                if (this.adapterAcceptsAll(target, inputHolder))
                 {
-                    patternDetails.pushInputsToExternalInventory(inputHolder,
-                        (what, amount) ->
+                    patternDetails.pushInputsToExternalInventory(inputHolder, (what, amount) ->
+                    {
+                        long inserted = target.insert(what, amount, Actionable.MODULATE);
+                        if (inserted < amount)
                         {
-                            var inserted = adapter.target().insert(what, amount,
-                                Actionable.MODULATE);
-                            if (inserted < amount)
-                            {
-                                this.addToSendList(what, amount - inserted);
-                            }
-                        });
+                            this.addToSendList(what, amount - inserted);
+                        }
+                    });
                     onPushPatternSuccess(patternDetails);
-                    this.sendPos = adapter.pos();
-                    this.cache = findCache(sendPos);
-                    this.sendStacksOut(adapter.target());
+                    this.sendPos = targetCache == null ? null : adapter.pos().pos();
+                    this.sendDirection = adapter.pos().dir();
+                    this.cache = targetCache;
+                    // this.sendStacksOut(target);
                     ++roundRobinIndex;
                     return true;
                 }
@@ -207,21 +210,17 @@ public abstract class PatternProviderLogicMixin {
 
     private void findAdapters(BlockEntity be, Level level,
         List<TunneledPatternProviderTarget> adapters, Direction direction) {
-        BlockEntity potentialPart = level
-            .getBlockEntity(be.getBlockPos().relative(direction));
+        BlockEntity potentialPart = level.getBlockEntity(be.getBlockPos().relative(direction));
 
         if (potentialPart == null || !(potentialPart instanceof IPartHost))
         {
             // no chance of tunneling
-            adapters
-                .add(new TunneledPatternProviderTarget(findAdapter(direction),
-                    new TunneledPos(be.getBlockPos(), direction)));
+            adapters.add(new TunneledPatternProviderTarget(null,
+                new TunneledPos(be.getBlockPos(), direction)));
         } else
         {
-            IPart potentialTunnel = ((IPartHost) potentialPart)
-                .getPart(direction.getOpposite());
-            if (potentialTunnel != null
-                && potentialTunnel instanceof PatternP2PTunnelPart)
+            IPart potentialTunnel = ((IPartHost) potentialPart).getPart(direction.getOpposite());
+            if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnelPart)
             {
                 List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnelPart) potentialTunnel)
                     .getTargets();
@@ -232,9 +231,8 @@ public abstract class PatternProviderLogicMixin {
             } else
             {
                 // not a pattern p2p tunnel
-                adapters.add(
-                    new TunneledPatternProviderTarget(findAdapter(direction),
-                        new TunneledPos(be.getBlockPos(), direction)));
+                adapters.add(new TunneledPatternProviderTarget(null,
+                    new TunneledPos(be.getBlockPos(), direction)));
             }
         }
     }
@@ -280,44 +278,43 @@ public abstract class PatternProviderLogicMixin {
     }
 
     /**
-     * AE2 uses this method to send out ingredients that couldn't fit all at
-     * once and have to be put in as space is made. I had to change it to use a
-     * cached position found when the initial pattern was pushed. The position
-     * already has gone through potential p2p tunnels.
+     * AE2 uses this method to send out ingredients that couldn't fit all at once
+     * and have to be put in as space is made. I had to change it to use a cached
+     * position found when the initial pattern was pushed. The position already has
+     * gone through potential p2p tunnels.
      * 
      * @author Stone
-     * @reason This method needs to be aware of the pattern p2p, and the
-     *         original isn't flexible enough to allow that
-     * @return
+     * @reason This method needs to be aware of the pattern p2p, and the original
+     *         isn't flexible enough to allow that
+     * @return true if it succeeded pushing out stacks
      */
     @Overwrite
     private boolean sendStacksOut() {
-        if (sendPos == null)
+        if (sendDirection == null)
         {
             if (!sendList.isEmpty())
             {
-                throw new IllegalStateException(
-                    "Invalid pattern provider state, this is a bug.");
+                throw new IllegalStateException("Invalid pattern provider state, this is a bug.");
             }
             return false;
         }
 
-        boolean didSomething = false;
-
         if (cache == null)
         {
-            cache = findCache(sendPos);
+            if (this.sendPos == null)
+            {
+                return sendStacksOut(findAdapter(this.sendDirection));
+            } else
+            {
+                // when crafts are saved through a load, the cache won't exist but the send pos
+                // will
+                this.cache = findCache(sendPos, sendDirection);
+            }
         }
-        if (sendStacksOut(cache.find()))
-        {
-            return true;
-        }
-
-        return didSomething;
+        return sendStacksOut(cache.find());
     }
 
-    private List<TunneledPos> getTunneledPositions(BlockPos pos, Level level,
-        Direction adjBeSide) {
+    private List<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
         BlockEntity potentialPart = level.getBlockEntity(pos);
         if (potentialPart == null || !(potentialPart instanceof IPartHost))
         {
@@ -325,12 +322,10 @@ public abstract class PatternProviderLogicMixin {
             return List.of(new TunneledPos(pos, adjBeSide));
         } else
         {
-            IPart potentialTunnel = ((IPartHost) potentialPart)
-                .getPart(adjBeSide);
+            IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
             if (potentialTunnel instanceof PatternP2PTunnelPart)
             {
-                return ((PatternP2PTunnelPart) potentialTunnel)
-                    .getTunneledPositions();
+                return ((PatternP2PTunnelPart) potentialTunnel).getTunneledPositions();
             } else
             {
                 // not a pattern p2p tunnel
@@ -340,10 +335,10 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Nullable
-    private PatternProviderTargetCache findCache(TunneledPos pos) {
+    private PatternProviderTargetCache findCache(BlockPos pos, Direction dir) {
         var thisBe = host.getBlockEntity();
-        return new PatternProviderTargetCache((ServerLevel) thisBe.getLevel(),
-            pos.pos(), pos.dir().getOpposite(), actionSource);
+        return new PatternProviderTargetCache((ServerLevel) thisBe.getLevel(), pos, dir,
+            actionSource);
     }
 
     @Shadow
@@ -357,12 +352,12 @@ public abstract class PatternProviderLogicMixin {
      * Writes the send position to nbt data
      * 
      * Writes the current send position to disk to allow it to persist through
-     * unloads. Currently this is why MAE2 can't be removed from a save due to
-     * running crafts saving that they're crafting, but not where they're
-     * crafting. I don't know if there's a clean way to do it (at least no
-     * without incurring costs). Preferably I'd like it to be done without any
-     * costs because the solution is just to stop all autocrafts before removing
-     * MAE2.
+     * unloads. Steals the vanilla sendDirection to determine from where it's
+     * pushing to this postion. Currently this is why MAE2 can't be removed from a
+     * save due to running crafts saving that they're crafting, but not where
+     * they're crafting. I don't know if there's a clean way to do it (at least no
+     * without incurring costs). Preferably I'd like it to be done without any costs
+     * because the solution is just to stop all autocrafts before removing MAE2.
      * 
      * @param tag
      * @param ci
@@ -371,18 +366,16 @@ public abstract class PatternProviderLogicMixin {
     private void onWriteToNBT(CompoundTag tag, CallbackInfo ci) {
         if (sendPos != null)
         {
-            CompoundTag sendPosTag = new CompoundTag();
-            sendPos.writeToNBT(sendPosTag);
-            tag.put(SEND_POS_TAG, sendPosTag);
+            tag.putLong(SEND_POS_TAG, sendPos.asLong());
         }
     }
 
     /**
      * Reads the send pos from the nbt data
      * 
-     * Reads the saved data off the disk to reconstruct the pattern provider.
-     * Note that this will also migrate old pattern providers from AE2 without
-     * MAE2 to prevent crashes.
+     * Reads the saved data off the disk to reconstruct the pattern provider. Note
+     * that this will also migrate old pattern providers from <1.2.0 MAE2 to
+     * prevent crashes.
      * 
      * @param tag
      * @param ci
@@ -392,21 +385,15 @@ public abstract class PatternProviderLogicMixin {
         if (tag.contains(SEND_POS_TAG))
         // send pos only exists if MAE2 existed before
         {
-
-            sendPos = TunneledPos.readFromNBT(tag.getCompound(SEND_POS_TAG));
-        } else if (sendDirection != null)
-        // this provider is old and in an invalid state
-        {
-
-            BlockEntity be = host.getBlockEntity();
-            BlockPos pos = be.getBlockPos();
-            // there should only be one position to send to here
-            sendPos = getTunneledPositions(pos.relative(sendDirection),
-                be.getLevel(), sendDirection).get(0);
-            sendDirection = null; // this'll never be reset otherwise
-            MAE2.LOGGER.info(
-                "Migrated old pattern provider NBT data to MAE2's at ({}, {}, {})",
-                pos.getX(), pos.getY(), pos.getZ());
+            Tag sendPosTag = tag.get(SEND_POS_TAG);
+            if (sendPosTag instanceof NumericTag numericTag) {
+                sendPos = BlockPos.of(numericTag.getAsLong());
+            } else if (sendPosTag instanceof CompoundTag compoundTag) {
+                MAE2.LOGGER.debug("Migrated Pattern Provider from MAE2 1.2.0!");
+                TunneledPos tunnelPos = TunneledPos.readFromNBT(compoundTag);
+                this.sendPos = tunnelPos.pos();
+                this.sendDirection = tunnelPos.dir();
+            }
         }
     }
 
@@ -420,8 +407,7 @@ public abstract class PatternProviderLogicMixin {
     public abstract boolean isBlocking();
 
     @Shadow
-    private boolean adapterAcceptsAll(PatternProviderTarget adapter,
-        KeyCounter[] inputHolder) {
+    private boolean adapterAcceptsAll(PatternProviderTarget adapter, KeyCounter[] inputHolder) {
         // TODO Auto-generated method stub
         return false;
     }

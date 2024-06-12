@@ -2,7 +2,6 @@ package stone.mae2.parts;
 
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
-import appeng.helpers.patternprovider.PatternProviderTarget;
 import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
 import appeng.parts.p2p.P2PModels;
@@ -76,8 +75,8 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
     }
 
     @Nullable
-    private PatternProviderTarget getTarget() {
-        return cache.find();
+    private PatternProviderTargetCache getTarget() {
+        return cache;
     }
 
     @Nullable
@@ -147,7 +146,13 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
         }
     }
 
-    public record TunneledPatternProviderTarget(PatternProviderTarget target,
+    /**
+     * A holder for a pattern provider target through a pattern P2P
+     * 
+     * if target is null it means this is actually for the default blocks around the
+     * provider (ie its not tunneled and should act like normal)
+     */
+    public record TunneledPatternProviderTarget(PatternProviderTargetCache target,
         TunneledPos pos) {
     }
 
