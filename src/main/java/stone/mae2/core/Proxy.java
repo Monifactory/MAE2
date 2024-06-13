@@ -4,10 +4,12 @@ import appeng.client.render.crafting.CraftingCubeModel;
 import appeng.core.AppEng;
 import appeng.hooks.BuiltInModelHooks;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -15,13 +17,21 @@ import net.minecraftforge.registries.RegistryObject;
 import stone.mae2.MAE2;
 import stone.mae2.block.crafting.DynamicCraftingUnitType;
 import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
+import stone.mae2.core.datagen.MAE2RecipeProvider;
 
 public interface Proxy {
     public class Server implements Proxy {
         public void init(IEventBus bus) {
             MAE2Blocks.init(bus);
             MAE2Items.init(bus);
-            MAE2Recipes.init(bus);
+
+            bus.addListener((GatherDataEvent event) ->
+            {
+                DataGenerator gen = event.getGenerator();
+                DataGenerator.PackGenerator pack = gen.getVanillaPack(true);
+
+                pack.addProvider(MAE2RecipeProvider::new);
+            });
         }
     }
 
