@@ -49,6 +49,12 @@ list is in no particular order
    - Would make nicer looking cabling inside transparent blocks, since they'd be
      no need for facades on the laser traveling through transparent blocks
 
+** TODO Interface Capacity Card
+ - Kinda crazy that is capped to 4 buckets of fluid
+ - Either increase the native amount or just allow capacity cards to multiply it
+
+
+
 ** TODO Guide Book Entries [0/6]
  - [ ] Pattern P2P Tunnel
  - [ ] Dense CPU Components
@@ -56,6 +62,8 @@ list is in no particular order
  - [ ] GregTech Patterns
  - [ ] Sitcky Card
  - [ ] Beam Former
+ - [ ] Interface Capacity Card
+   - Can guide entries be added too?
 
 
 * Optimizations
