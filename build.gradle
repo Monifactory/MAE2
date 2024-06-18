@@ -88,6 +88,11 @@ repositories {
         }
     }
 
+    maven {// emi
+          name = "TerraformersMC"
+          url = "https://maven.terraformersmc.com/"
+    }
+    
     maven {
         name "Modmaven"
         url "https://modmaven.dev/"
@@ -121,6 +126,8 @@ dependencies {
 
     modRuntimeOnly("dev.toma.configuration:configuration-forge-$project.minecraft_version:$project.configuration_version")
     modRuntimeOnly("mezz.jei:jei-$project.minecraft_version-forge:$project.jei_version") { transitive = false }
+
+    modRuntimeOnly "dev.emi:emi-forge:1.1.7+1.20.1"
 
     // Mixin Extras
     implementation(annotationProcessor("io.github.llamalad7:mixinextras-common:$project.mixinextras_version"))
