@@ -19,7 +19,7 @@ public class MAE2 {
     public MAE2() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         DistExecutor.safeRunForDist(() -> Proxy.Client::new,
-            () -> Proxy.Server::new).init(bus);
+                                    () -> Proxy.Server::new).init(bus);
 
     }
 

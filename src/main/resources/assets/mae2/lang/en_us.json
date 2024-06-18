@@ -6,5 +6,6 @@
     "block.mae2.max_crafting_storage": "MAX Crafting Storage",
     "block.mae2.max_crafting_accelerator": "MAX Crafting Co-Processing Unit",
     "gui.mae2.creative_tab": "Modern AE2 Additions",
-    "item.mae2.pattern_p2p_tunnel": "Pattern P2P Tunnel"
+    "item.mae2.pattern_p2p_tunnel": "Pattern P2P Tunnel",
+    "item.mae2.pattern_multi_p2p_tunnel": "Pattern Multi P2P Tunnel"
 }

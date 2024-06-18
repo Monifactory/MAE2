@@ -1,4 +1,4 @@
-package stone.mae2.parts;
+package stone.mae2.parts.p2p;
 
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
@@ -6,9 +6,7 @@ import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
 import appeng.parts.p2p.P2PModels;
 import appeng.parts.p2p.P2PTunnelPart;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -24,9 +22,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
+public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> implements PatternP2PTunnel {
 
-    private static final P2PModels MODELS = new P2PModels(
+    public static final P2PModels MODELS = new P2PModels(
         new ResourceLocation(MAE2.MODID, "part/p2p/p2p_tunnel_pattern"));
 
     private PatternProviderTargetCache cache;
@@ -128,32 +126,6 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> {
         {
             return LazyOptional.empty();
         }
-    }
-
-    public record TunneledPos(BlockPos pos, Direction dir) {
-
-        private static final String POSITION = "mae2Pos";
-        private static final String DIRECTION = "mae2Direction";
-
-        public void writeToNBT(CompoundTag tag) {
-            tag.putLong(POSITION, pos.asLong());
-            tag.putByte(DIRECTION, (byte) dir.get3DDataValue());
-        }
-
-        public static TunneledPos readFromNBT(CompoundTag tag) {
-            return new TunneledPos(BlockPos.of(tag.getLong(POSITION)),
-                Direction.from3DDataValue(tag.getByte(DIRECTION)));
-        }
-    }
-
-    /**
-     * A holder for a pattern provider target through a pattern P2P
-     * 
-     * if target is null it means this is actually for the default blocks around the
-     * provider (ie its not tunneled and should act like normal)
-     */
-    public record TunneledPatternProviderTarget(PatternProviderTargetCache target,
-        TunneledPos pos) {
     }
 
 }

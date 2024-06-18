@@ -37,9 +37,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
-import stone.mae2.parts.PatternP2PTunnelPart;
-import stone.mae2.parts.PatternP2PTunnelPart.TunneledPatternProviderTarget;
-import stone.mae2.parts.PatternP2PTunnelPart.TunneledPos;
+import stone.mae2.parts.p2p.PatternP2PTunnel;
+import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPatternProviderTarget;
+import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPos;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,6 +139,7 @@ public abstract class PatternProviderLogicMixin {
                 // side
                 List<TunneledPos> positions = getTunneledPositions(
                     be.getBlockPos().relative(direction), level, adjBeSide);
+                MAE2.LOGGER.info("positions.size() = {}", positions.size());
                 for (TunneledPos adjPos : positions)
                 {
                     BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
@@ -220,9 +221,9 @@ public abstract class PatternProviderLogicMixin {
         } else
         {
             IPart potentialTunnel = ((IPartHost) potentialPart).getPart(direction.getOpposite());
-            if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnelPart)
+            if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnel)
             {
-                List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnelPart) potentialTunnel)
+                List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnel) potentialTunnel)
                     .getTargets();
                 if (newTargets != null)
                 {
@@ -323,9 +324,9 @@ public abstract class PatternProviderLogicMixin {
         } else
         {
             IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
-            if (potentialTunnel instanceof PatternP2PTunnelPart)
+            if (potentialTunnel instanceof PatternP2PTunnel tunnel)
             {
-                return ((PatternP2PTunnelPart) potentialTunnel).getTunneledPositions();
+                return tunnel.getTunneledPositions();
             } else
             {
                 // not a pattern p2p tunnel
@@ -398,35 +399,24 @@ public abstract class PatternProviderLogicMixin {
     }
 
     @Shadow
-    private <T> void rearrangeRoundRobin(List<T> list) {
-        // TODO Auto-generated method stub
-
-    }
+    private <T> void rearrangeRoundRobin(List<T> list) {}
 
     @Shadow
     public abstract boolean isBlocking();
 
     @Shadow
     private boolean adapterAcceptsAll(PatternProviderTarget adapter, KeyCounter[] inputHolder) {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Shadow
-    private void addToSendList(AEKey what, long l) {
-        // TODO Auto-generated method stub
-
-    }
+    private void addToSendList(AEKey what, long l) {}
 
     @Shadow
-    private void onPushPatternSuccess(IPatternDetails patternDetails) {
-        // TODO Auto-generated method stub
-
-    }
+    private void onPushPatternSuccess(IPatternDetails patternDetails) {}
 
     @Shadow
     private Set<Direction> getActiveSides() {
-        // TODO Auto-generated method stub
         return null;
     }
 
