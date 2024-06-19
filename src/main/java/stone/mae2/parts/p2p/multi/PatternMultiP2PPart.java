@@ -12,7 +12,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
-import stone.mae2.parts.p2p.MultiP2PTunnelPart;
 import stone.mae2.parts.p2p.PatternP2PTunnel;
 import stone.mae2.parts.p2p.PatternP2PTunnelPart;
 

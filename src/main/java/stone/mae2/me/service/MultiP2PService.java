@@ -14,8 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.Nullable;
 
 import stone.mae2.MAE2;
-import stone.mae2.parts.p2p.MEMultiP2PTunnelPart;
-import stone.mae2.parts.p2p.MultiP2PTunnelPart;
+import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
 import java.util.Collection;
 import java.util.Random;
@@ -57,10 +56,10 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
         var tm = this.myGrid.getTickManager();
         for (var tunnel : this.inputs.values())
         {
-            if (tunnel instanceof MEMultiP2PTunnelPart)
-            {
-                tm.wakeDevice(tunnel.getGridNode());
-            }
+            //if (tunnel instanceof MEMultiP2PTunnelPart)
+            //{
+            //    tm.wakeDevice(tunnel.getGridNode());
+            //}
         }
     }
 
@@ -68,10 +67,12 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     public void removeNode(IGridNode node) {
         if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
         {
+            /*
             if (tunnel instanceof MEMultiP2PTunnelPart && !node.hasFlag(GridFlags.REQUIRE_CHANNEL))
             {
                 return;
             }
+            */
 
             if (tunnel.isOutput())
             {
@@ -89,10 +90,10 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     public void addNode(IGridNode node, @Nullable CompoundTag savedData) {
         if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
         {
-            if (tunnel instanceof MEMultiP2PTunnelPart && !node.hasFlag(GridFlags.REQUIRE_CHANNEL))
-            {
-                return;
-            }
+            //if (tunnel instanceof MEMultiP2PTunnelPart && !node.hasFlag(GridFlags.REQUIRE_CHANNEL))
+            //{
+            //    return;
+            //}
 
             // AELog.info( "add-" + (t.output ? "output: " : "input: ") + t.freq );
 

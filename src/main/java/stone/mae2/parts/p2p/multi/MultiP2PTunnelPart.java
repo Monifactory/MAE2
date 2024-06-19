@@ -1,4 +1,4 @@
-package stone.mae2.parts.p2p;
+package stone.mae2.parts.p2p.multi;
 
 import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;

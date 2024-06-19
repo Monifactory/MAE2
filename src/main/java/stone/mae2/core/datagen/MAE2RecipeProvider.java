@@ -22,8 +22,6 @@ public class MAE2RecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
-        // TODO Auto-generated method stub
-
             buildAcceleratorRecipe(consumer, MAE2Items.ACCELERATOR_4x.get(),
                 AEItems.CELL_COMPONENT_4K, "network/crafting/4x_crafting_accelerator");
             buildAcceleratorRecipe(consumer, MAE2Items.ACCELERATOR_16x.get(),
