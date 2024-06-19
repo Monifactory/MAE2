@@ -45,6 +45,8 @@ repositories {
         dir 'libs'
     }
     mavenCentral()
+
+    maven { url "https://maven.neoforged.net/releases/" }
     maven {
         name 'FirstDarkDev'
         url "https://maven.firstdarkdev.xyz/snapshots/"
@@ -105,7 +107,7 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:$project.minecraft_version"
-    forge "net.minecraftforge:forge:$project.minecraft_version-$project.forge_version"
+    forge "net.neoforged:forge:$project.minecraft_version-$project.forge_version"
     // layered mappings - Mojmap names, parchment and QM docs and parameters
     mappings loom.layered {
         it.mappings("org.quiltmc:quilt-mappings:$project.minecraft_version+build.$project.quilt_mappings:intermediary-v2")
@@ -126,6 +128,7 @@ dependencies {
 
     modRuntimeOnly("dev.toma.configuration:configuration-forge-$project.minecraft_version:$project.configuration_version")
     modRuntimeOnly("mezz.jei:jei-$project.minecraft_version-forge:$project.jei_version") { transitive = false }
+    modRuntimeOnly("curse.maven:jade-324717:5339264")
 
     modRuntimeOnly "dev.emi:emi-forge:1.1.7+1.20.1"
 
