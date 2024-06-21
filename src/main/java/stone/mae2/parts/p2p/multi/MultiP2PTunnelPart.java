@@ -170,25 +170,27 @@ public abstract class MultiP2PTunnelPart<T extends MultiP2PTunnelPart<T>> extend
         }
 
         // Attunement via held item replaces the tunnel part with the desired target part type
-        Item newType = MultiP2PTunnelAttunement.getMultiPartBySinglePart(P2PTunnelAttunement.getTunnelPartByTriggerItem(is).getItem());
-        if (newType != null && newType != getPartItem()
-                && newType instanceof IPartItem<?> partItem) {
-            boolean oldOutput = isOutput();
-            short myFreq = getFrequency();
+        if (P2PTunnelAttunement.getTunnelPartByTriggerItem(is)
+                .getItem() instanceof IPartItem singleType) {
+            IPartItem<? extends MultiP2PTunnelPart<?>> newType = MultiP2PTunnelAttunement.getMultiPartBySinglePart(singleType);
+            if (newType != null && newType != getPartItem()) {
+                boolean oldOutput = isOutput();
+                short myFreq = getFrequency();
 
-            // If we were able to replace the tunnel part, copy over frequency/output state
-            var tunnel = getHost().replacePart(partItem, getSide(), player, hand);
-            if (tunnel instanceof MultiP2PTunnelPart newTunnel) {
-                newTunnel.setOutput(oldOutput);
-                newTunnel.onTunnelNetworkChange();
+                // If we were able to replace the tunnel part, copy over frequency/output state
+                MultiP2PTunnelPart<?> tunnel = getHost().replacePart(newType, getSide(), player, hand);
+                //if (tunnel instanceof MultiP2PTunnelPart newTunnel) {
+                    tunnel.setOutput(oldOutput);
+                    tunnel.onTunnelNetworkChange();
 
-                newTunnel.getMainNode().ifPresent(grid -> {
-                    grid.getService(MultiP2PService.class).updateFreq(newTunnel, myFreq);
-                });
+                    tunnel.getMainNode().ifPresent(grid -> {
+                        grid.getService(MultiP2PService.class).updateFreq(tunnel, myFreq);
+                    });
+                    //}
+
+                Platform.notifyBlocksOfNeighbors(getLevel(), getBlockEntity().getBlockPos());
+                return true;
             }
-
-            Platform.notifyBlocksOfNeighbors(getLevel(), getBlockEntity().getBlockPos());
-            return true;
         }
 
         return false;

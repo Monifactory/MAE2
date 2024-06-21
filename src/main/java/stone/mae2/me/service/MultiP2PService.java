@@ -172,7 +172,7 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
 
         do
         {
-            newFrequency = (short) this.frequencyGenerator.nextInt(1 << 16);
+            newFrequency = normalizeMultiFrequency((short) this.frequencyGenerator.nextInt(1 << 16));
             cycles++;
         } while (newFrequency == 0 || this.inputs.containsKey(newFrequency));
 
@@ -184,6 +184,21 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
         }
 
         return newFrequency;
+    }
+
+    /**
+     * Normalizes a single p2p's frequency to one that works with multi p2ps
+     *
+     * Odd frequencies are used for former single p2ps, even frequencies are used
+     * for multi p2ps
+     */
+    
+    public static short normalizeSingleFrequency(short freq) {
+        return (short) (freq % 2 == 1 ? freq : freq + 1);
+    }
+
+    public static short normalizeMultiFrequency(short freq) {
+        return (short) (freq % 2 == 0 ? freq : freq + 1);
     }
 
     public <T extends MultiP2PTunnelPart<T>> Stream<T> getOutputs(short freq, Class<T> c) {
