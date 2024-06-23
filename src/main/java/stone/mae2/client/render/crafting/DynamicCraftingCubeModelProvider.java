@@ -28,10 +28,10 @@ public class DynamicCraftingCubeModelProvider
     public static final ChunkRenderTypeSet CUTOUT = ChunkRenderTypeSet.of(RenderType.cutout());
     private static final List<Material> MATERIALS = new ArrayList<>();
 
-    protected final static Material RING_CORNER = texture(AppEng.MOD_ID, "ring_corner");
-    protected final static Material RING_SIDE_HOR = texture(AppEng.MOD_ID, "ring_side_hor");
-    protected final static Material RING_SIDE_VER = texture(AppEng.MOD_ID, "ring_side_ver");
-    protected final static Material LIGHT_BASE = texture(AppEng.MOD_ID, "light_base");
+    protected final static Material RING_CORNER = texture(MAE2.MODID, "ring_corner");
+    protected final static Material RING_SIDE_HOR = texture(MAE2.MODID, "ring_side_hor");
+    protected final static Material RING_SIDE_VER = texture(MAE2.MODID, "ring_side_ver");
+    protected final static Material LIGHT_BASE = texture(MAE2.MODID, "light_base");
 
     protected final static Material ACCELERATOR_4x_LIGHT = texture(MAE2.MODID,
         "4x_accelerator_light");
