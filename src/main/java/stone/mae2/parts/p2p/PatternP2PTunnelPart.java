@@ -20,11 +20,12 @@ import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> implements PatternP2PTunnel {
 
-    public static final P2PModels MODELS = new P2PModels(
+    private static final P2PModels MODELS = new P2PModels(
         new ResourceLocation(MAE2.MODID, "part/p2p/p2p_tunnel_pattern"));
 
     private PatternProviderTargetCache cache;
@@ -56,20 +57,20 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> im
         }
     }
 
-    @Nullable
+    @Nonnull
     public List<TunneledPatternProviderTarget> getTargets() {
         if (this.isOutput())
         // you can't go through a output tunnel (duh)
         {
-            return null;
+            return List.of();
+        } else {
+            return this.getOutputStream()
+                    .map((output) -> new TunneledPatternProviderTarget(
+                            output.getTarget(),
+                            new TunneledPos(output.getBlockEntity().getBlockPos()
+                                    .relative(output.getSide()), output.getSide())))
+                    .filter((target) -> target.target() != null).toList();
         }
-
-        return this.getOutputStream()
-            .map((output) -> new TunneledPatternProviderTarget(
-                output.getTarget(),
-                new TunneledPos(output.getBlockEntity().getBlockPos()
-                    .relative(output.getSide()), output.getSide())))
-            .filter((target) -> target.target() != null).toList();
     }
 
     @Nullable
@@ -81,7 +82,7 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> im
     public List<TunneledPos> getTunneledPositions() {
         if (this.isOutput())
         {
-            return null;
+            return List.of();
         } else
         {
             List<TunneledPos> outputs = new ArrayList<>();

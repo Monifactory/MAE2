@@ -5,8 +5,6 @@
     "refmap": "mae2.mixins.refmap.json",
     "compatibilityLevel": "JAVA_11",
     "mixins": [
-        "P2PServiceMixin",
-        "P2PTunnelPartMixin",
         "PatternProviderLogicMixin",
         "CraftingCPUClusterMixin"
     ],

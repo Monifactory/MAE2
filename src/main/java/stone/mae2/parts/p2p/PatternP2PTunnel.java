@@ -2,14 +2,18 @@ package stone.mae2.parts.p2p;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 
 public interface PatternP2PTunnel {
+    @Nonnull
     public List<TunneledPatternProviderTarget> getTargets();
 
+    @Nonnull
     public List<TunneledPos> getTunneledPositions();
     
 

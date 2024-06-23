@@ -139,7 +139,9 @@ public abstract class PatternProviderLogicMixin {
                 // side
                 List<TunneledPos> positions = getTunneledPositions(
                     be.getBlockPos().relative(direction), level, adjBeSide);
-                MAE2.LOGGER.info("positions.size() = {}", positions.size());
+                if (positions == null) {
+                    continue;
+                }
                 for (TunneledPos adjPos : positions)
                 {
                     BlockEntity adjBe = level.getBlockEntity(adjPos.pos());

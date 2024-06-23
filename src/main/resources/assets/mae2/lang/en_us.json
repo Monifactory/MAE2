@@ -7,5 +7,10 @@
     "block.mae2.max_crafting_accelerator": "MAX Crafting Co-Processing Unit",
     "gui.mae2.creative_tab": "Modern AE2 Additions",
     "item.mae2.pattern_p2p_tunnel": "Pattern P2P Tunnel",
-    "item.mae2.pattern_multi_p2p_tunnel": "Pattern Multi P2P Tunnel"
+    "item.mae2.pattern_multi_p2p_tunnel": "Pattern Multi P2P Tunnel",
+    "item.mae2.fe_multi_p2p_tunnel": "FE Multi P2P Tunnel",
+    "item.mae2.fluid_multi_p2p_tunnel": "Fluid Multi P2P Tunnel",
+    "item.mae2.item_multi_p2p_tunnel": "Item Multi P2P Tunnel",
+    "item.mae2.redstone_multi_p2p_tunnel": "Redstone Multi P2P Tunnel"
+    
 }
