@@ -3,8 +3,6 @@ package stone.mae2.core;
 import appeng.api.networking.GridServices;
 import appeng.client.render.crafting.CraftingCubeModel;
 import appeng.core.AppEng;
-import appeng.core.definitions.AEItems;
-import appeng.core.definitions.AEParts;
 import appeng.hooks.BuiltInModelHooks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
@@ -33,12 +31,7 @@ public interface Proxy {
 
             bus.addListener((FMLCommonSetupEvent event) -> {
                 GridServices.register(MultiP2PService.class, MultiP2PService.class);
-                // Stock Multi P2P Attunements
-                    MultiP2PTunnelAttunement.registerAttunementItem(MAE2Items.PATTERN_P2P_TUNNEL.get(), MAE2Items.PATTERN_MULTI_P2P_TUNNEL.get());
-                    MultiP2PTunnelAttunement.registerAttunementItem(AEParts.REDSTONE_P2P_TUNNEL.asItem(), MAE2Items.REDSTONE_MULTI_P2P_TUNNEL.get());
-
-                    MultiP2PTunnelAttunement.registerAttunementItem(AEParts.FE_P2P_TUNNEL.asItem(), MAE2Items.FE_MULTI_P2P_TUNNEL.get());
-
+                MultiP2PTunnelAttunement.registerStockAttunements();
             });
 
             bus.addListener((GatherDataEvent event) -> {
