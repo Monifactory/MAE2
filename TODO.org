@@ -54,7 +54,6 @@ list is in no particular order
  - Either increase the native amount or just allow capacity cards to multiply it
 
 
-
 ** TODO Guide Book Entries [0/6]
  - [ ] Pattern P2P Tunnel
  - [ ] Dense CPU Components
@@ -73,3 +72,14 @@ list is in no particular order
      to change
      - Or at least, I don't really care if someone does something so technical its
        editing the p2p outputs inside of the craft being outputted
+
+** Multi P2P Optimizations
+ - Currently acts like a linked list when extracted from the output with the
+   capability tunnel
+ - There was some thing in AE2 UEL that combined all item p2p outputs into one
+   inventory or something
+   - Big thing would be getting it so accessing a slot out of all the input
+     inventories is done in constant time, without getting all the inputs over
+     and over
+ - Maybe like mark it dirty on network change and rebuild it next time the
+   output is interated with

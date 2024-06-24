@@ -1,19 +1,18 @@
 package stone.mae2.parts.p2p.multi;
 
-import java.util.List;
-
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
-import stone.mae2.MAE2;
 import appeng.api.config.PowerUnits;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.api.stacks.AEKeyType;
-import appeng.core.AppEng;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.P2PModels;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+
+import stone.mae2.MAE2;
+
+import java.util.List;
 
 public class FluidMultiP2PPart extends CapabilityMultiP2PPart<FluidMultiP2PPart, IFluidHandler> {
 
@@ -157,19 +156,6 @@ public class FluidMultiP2PPart extends CapabilityMultiP2PPart<FluidMultiP2PPart,
 
         @Override
         public boolean isFluidValid(int tank, FluidStack stack) {
-            List<FluidMultiP2PPart> inputs = FluidMultiP2PPart.this.getInputs();
-            int currentTank = tank;
-            for (FluidMultiP2PPart input : inputs) {
-                try (CapabilityGuard guard = input.getAdjacentCapability()) {
-                    IFluidHandler handler = guard.get();
-                    int slotCount = handler.getTanks();
-                    if (currentTank < slotCount) {
-                        return handler.isFluidValid(currentTank, stack);
-                    } else {
-                        currentTank -= slotCount;
-                    }
-                }
-            }
             return false;
 
         }
@@ -205,7 +191,24 @@ public class FluidMultiP2PPart extends CapabilityMultiP2PPart<FluidMultiP2PPart,
 
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
-            return FluidStack.EMPTY;
+            if (maxDrain == 0)
+            {
+                return FluidStack.EMPTY;
+            }
+
+            FluidStack potential = FluidStack.EMPTY;
+            List<FluidMultiP2PPart> inputs = FluidMultiP2PPart.this.getInputs();
+            for (FluidMultiP2PPart input : inputs) {
+                try (CapabilityGuard guard = input.getAdjacentCapability()) {
+                    potential = guard.get().drain(maxDrain, action);
+                    if (potential != FluidStack.EMPTY)
+                        break;
+                }
+            }
+
+            FluidStack toDrain = potential.copy();
+            toDrain.setAmount(maxDrain - potential.getAmount());
+            return this.drain(toDrain, action);
         }
     }
 
