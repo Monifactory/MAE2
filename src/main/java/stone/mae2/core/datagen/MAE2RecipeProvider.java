@@ -2,11 +2,13 @@ package stone.mae2.core.datagen;
 
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
+import appeng.core.definitions.AEParts;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ItemLike;
 
 import stone.mae2.MAE2;
@@ -36,14 +38,16 @@ public class MAE2RecipeProvider extends RecipeProvider {
         for (var tunnelPair : MultiP2PTunnelAttunement.getRegistry().entrySet())
         {
             String simpleName = tunnelPair.getValue().getPartClass().getSimpleName();
-            ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, tunnelPair.getValue())
-                .requires(tunnelPair.getKey()).requires(AEItems.ENGINEERING_PROCESSOR)
-                .unlockedBy("has_engineering_processor", has(AEItems.ENGINEERING_PROCESSOR))
-                .save(consumer, MAE2.toKey(
-                    "network/parts/multi_p2p_tunnel_"
-                        + simpleName.substring(0, simpleName.length() - "MultiP2PPart".length())
-                            .toLowerCase()));
+            buildMultiP2PRecipe(consumer, tunnelPair.getValue(), tunnelPair.getKey(),
+                    MAE2.toKey("network/parts/multi_p2p_tunnel_"
+                            + simpleName.substring(0, simpleName.length() - "MultiP2PPart".length())
+                                    .toLowerCase()));
         }
+
+        // stopgap for the fact that ME Multi P2Ps don't exist (so there's no direct
+        // crafting recipe to Multi P2Ps, you'd need to attune a ME P2P to something
+        // else before crafting the Multi P2P)
+        buildMultiP2PRecipe(consumer, MAE2Items.ITEM_MULTI_P2P_TUNNEL.get(), AEParts.ME_P2P_TUNNEL, MAE2.toKey("network/parts/multi_p2p_tunnel_workaround"));
     }
 
     public static void buildAcceleratorRecipe(Consumer<FinishedRecipe> consumer, ItemLike output,
@@ -54,12 +58,12 @@ public class MAE2RecipeProvider extends RecipeProvider {
             .save(consumer, MAE2.toKey(id));
     }
 
-    public static void buildMultiP2PRecipe(Consumer<FinishedRecipe> consumer, ItemLike output,
-        ItemLike component, String id) {
-        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, output).requires(component)
-            .requires(AEBlocks.CRAFTING_ACCELERATOR.asItem())
-            .unlockedBy("has_acceleration_unit", has(AEBlocks.CRAFTING_ACCELERATOR))
-            .save(consumer, MAE2.toKey(id));
+    public static void buildMultiP2PRecipe(Consumer<FinishedRecipe> consumer, ItemLike multi,
+        ItemLike single, ResourceLocation id) {
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, multi).requires(single)
+            .requires(AEItems.ENGINEERING_PROCESSOR)
+            .unlockedBy("has_me_p2p", has(AEParts.ME_P2P_TUNNEL))
+            .save(consumer, id);
     }
 
 }
