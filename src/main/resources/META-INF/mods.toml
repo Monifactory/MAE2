@@ -38,3 +38,9 @@ license = "${mod_license}"
         versionRange = "[${ae2_version},)"
         ordering = "AFTER"
         side = "BOTH"
+    [[dependencies.${mod_id}]]
+        modId = "gtceu"
+        mandatory = false
+        versionRange = "[${ae2_version},)"
+        ordering = "AFTER"
+        side = "BOTH"
