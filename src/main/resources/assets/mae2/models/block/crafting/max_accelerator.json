@@ -1,6 +1,0 @@
-{
-    "parent": "minecraft:block/cube_all",
-    "textures": {
-        "all": "mae2:block/crafting/max_accelerator"
-    }
-}
