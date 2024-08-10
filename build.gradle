@@ -152,7 +152,8 @@ processResources {
             "mod_author": mod_author,
             "forge_version": forge_version.split("\\.")[0], // only specify major version of forge
             "minecraft_version": minecraft_version,
-            "ae2_version": ae2_version
+            "ae2_version": ae2_version,
+            "gtceu_version": gtceu_version
     ]
     inputs.properties(properties)
 

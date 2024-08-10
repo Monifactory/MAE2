@@ -21,6 +21,7 @@ import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.block.crafting.DynamicCraftingUnitType;
 import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
 import stone.mae2.core.datagen.MAE2RecipeProvider;
+import stone.mae2.integration.GregTechIntegration;
 import stone.mae2.me.service.MultiP2PService;
 
 public interface Proxy {
@@ -28,6 +29,8 @@ public interface Proxy {
         public void init(IEventBus bus) {
             MAE2Blocks.init(bus);
             MAE2Items.init(bus);
+            
+            GregTechIntegration.init(bus);
 
             bus.addListener((FMLCommonSetupEvent event) -> {
                 GridServices.register(MultiP2PService.class, MultiP2PService.class);

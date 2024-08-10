@@ -41,6 +41,6 @@ license = "${mod_license}"
     [[dependencies.${mod_id}]]
         modId = "gtceu"
         mandatory = false
-        versionRange = "[${ae2_version},)"
+        versionRange = "[${gtceu_version},)"
         ordering = "AFTER"
         side = "BOTH"
