@@ -1,21 +1,17 @@
 package stone.mae2.parts.p2p;
 
-import java.util.List;
-
-import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
-import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
-
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
-import appeng.core.AppEng;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.CapabilityP2PTunnelPart;
 import appeng.parts.p2p.P2PModels;
-import appeng.parts.p2p.P2PTunnelPart;
+import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
+import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.energy.IEnergyStorage;
+
 import stone.mae2.MAE2;
+
+import java.util.List;
 
 public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IEnergyContainer> {
 	private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/p2p_tunnel_eu"));

@@ -1,23 +1,21 @@
 package stone.mae2.integration;
 
-import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
-
 import appeng.api.features.P2PTunnelAttunement;
 import appeng.api.parts.PartModels;
 import appeng.items.parts.PartItem;
 import appeng.items.parts.PartModelsHelper;
+import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
+
 import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.core.MAE2Items;
 import stone.mae2.parts.p2p.EUP2PTunnelPart;
-import stone.mae2.parts.p2p.PatternP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.EUMultiP2PPart;
-import stone.mae2.parts.p2p.multi.PatternMultiP2PPart;
 import stone.mae2.util.TransHelper;
 
 public abstract class GregTechIntegration {
@@ -42,7 +40,9 @@ public abstract class GregTechIntegration {
         });
 		
 		bus.addListener((FMLCommonSetupEvent event) -> {
-			P2PTunnelAttunement.registerAttunementApi(EU_P2P_TUNNEL.get(), GTCapability.CAPABILITY_ENERGY_CONTAINER, Component.translatable(TransHelper.GUI.toKey("attunement", "euzz")));
+            P2PTunnelAttunement.registerAttunementApi(EU_P2P_TUNNEL.get(),
+                GTCapability.CAPABILITY_ENERGY_CONTAINER,
+                Component.translatable(TransHelper.GUI.toKey("attunement", "eu")));
 			MultiP2PTunnelAttunement.registerAttunementItem(EU_P2P_TUNNEL.get(), EU_MULTI_P2P_TUNNEL.get());
 		});
 	}
