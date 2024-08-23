@@ -16,7 +16,6 @@ import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.core.MAE2Items;
 import stone.mae2.parts.p2p.EUP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.EUMultiP2PPart;
-import stone.mae2.util.TransHelper;
 
 public abstract class GregTechIntegration {
 	public static RegistryObject<PartItem<EUP2PTunnelPart>> EU_P2P_TUNNEL;
@@ -40,9 +39,10 @@ public abstract class GregTechIntegration {
         });
 		
 		bus.addListener((FMLCommonSetupEvent event) -> {
-            P2PTunnelAttunement.registerAttunementApi(EU_P2P_TUNNEL.get(),
-                GTCapability.CAPABILITY_ENERGY_CONTAINER,
-                Component.translatable(TransHelper.GUI.toKey("attunement", "eu")));
+		    P2PTunnelAttunement.registerAttunementTag(EU_P2P_TUNNEL.get());
+            P2PTunnelAttunement
+                .registerAttunementApi(EU_P2P_TUNNEL.get(), GTCapability.CAPABILITY_ELECTRIC_ITEM,
+                    Component.literal("Item with EU storage"));
 			MultiP2PTunnelAttunement.registerAttunementItem(EU_P2P_TUNNEL.get(), EU_MULTI_P2P_TUNNEL.get());
 		});
 	}

@@ -12,6 +12,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -30,7 +31,10 @@ public interface Proxy {
             MAE2Blocks.init(bus);
             MAE2Items.init(bus);
             
-            GregTechIntegration.init(bus);
+            if (ModList.get().isLoaded("gtceu"))
+            {
+                GregTechIntegration.init(bus);
+            }
 
             bus.addListener((FMLCommonSetupEvent event) -> {
                 GridServices.register(MultiP2PService.class, MultiP2PService.class);

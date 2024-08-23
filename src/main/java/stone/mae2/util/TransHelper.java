@@ -8,7 +8,7 @@ public enum TransHelper {
     String namespace;
 
     TransHelper(String namespace) {
-        this.namespace = namespace + MAE2.MODID + '.';
+        this.namespace = namespace + '.' + MAE2.MODID + '.';
     }
 
     TransHelper(String namespace, String subspace) {
