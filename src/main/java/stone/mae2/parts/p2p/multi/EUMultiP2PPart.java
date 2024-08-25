@@ -1,16 +1,18 @@
 package stone.mae2.parts.p2p.multi;
 
-import java.util.List;
-
-import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
-import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
-
+import appeng.api.config.PowerUnits;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.P2PModels;
+import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
+import com.gregtechceu.gtceu.api.capability.compat.FeCompat;
+import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
+
 import stone.mae2.MAE2;
+
+import java.util.List;
 
 public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEnergyContainer> {
 
@@ -47,20 +49,26 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                 return 0;
             }
 
-            final long packetsPerOutput = voltage / outputTunnels;
-            long overflow = packetsPerOutput == 0 ? voltage : voltage % packetsPerOutput;
+            long toSend = voltage;
 
-            for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs()) {
+            for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs())
+            {
                 try (CapabilityGuard capabilityGuard = target.getAdjacentCapability()) {
                     final IEnergyContainer output = capabilityGuard.get();
-                    final long toSend = packetsPerOutput + overflow;
                     final long received = output.acceptEnergyFromNetwork(target.getSide().getOpposite(), toSend, amperage);
 
-                    overflow = toSend - received;
+                    toSend -= received;
                     total += received;
+                    if (toSend == 0)
+                    {
+                        break;
+                    }
                 }
             }
 
+            EUMultiP2PPart.this
+                .queueTunnelDrain(PowerUnits.FE, FeCompat
+                    .toFeBounded(total * amperage, FeCompat.ratio(false), Integer.MAX_VALUE));
             return total;
         }
 

@@ -1,11 +1,13 @@
 package stone.mae2.parts.p2p;
 
+import appeng.api.config.PowerUnits;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.CapabilityP2PTunnelPart;
 import appeng.parts.p2p.P2PModels;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
+import com.gregtechceu.gtceu.api.capability.compat.FeCompat;
 import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 
@@ -47,20 +49,27 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
                 return 0;
             }
 
-            final long packetsPerOutput = voltage / outputTunnels;
-            long overflow = packetsPerOutput == 0 ? voltage : voltage % packetsPerOutput;
+            long toSend = voltage;
 
             for (EUP2PTunnelPart target : EUP2PTunnelPart.this.getOutputs()) {
                 try (CapabilityGuard capabilityGuard = target.getAdjacentCapability()) {
                     final IEnergyContainer output = capabilityGuard.get();
-                    final long toSend = packetsPerOutput + overflow;
                     final long received = output.acceptEnergyFromNetwork(target.getSide().getOpposite(), toSend, amperage);
 
-                    overflow = toSend - received;
+                    toSend -= received;
                     total += received;
+                    if (toSend == 0)
+                    {
+                        break;
+                    }
                 }
             }
 
+            EUP2PTunnelPart.this
+                .queueTunnelDrain(PowerUnits.FE,
+                    FeCompat
+                        .toFeBounded(total * amperage, FeCompat.ratio(false),
+                            Integer.MAX_VALUE));
             return total;
         }
 
