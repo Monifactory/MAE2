@@ -179,12 +179,20 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
 
 		@Override
 		public long getEnergyStored() {
-			return EUP2PTunnelPart.this.getInput().getAdjacentCapability().get().getEnergyStored();
+			EUP2PTunnelPart input = EUP2PTunnelPart.this.getInput();
+			if (input != null)
+					return input.getAdjacentCapability().get().getEnergyStored();
+			else
+				return 0;
 		}
 
 		@Override
 		public long getEnergyCapacity() {
-			return EUP2PTunnelPart.this.getInput().getAdjacentCapability().get().getEnergyCapacity();
+			EUP2PTunnelPart input = EUP2PTunnelPart.this.getInput();
+			if (input != null)
+					return input.getAdjacentCapability().get().getEnergyCapacity();
+			else
+				return 0;
 		}
 
 		@Override

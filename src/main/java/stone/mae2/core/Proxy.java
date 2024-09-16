@@ -1,5 +1,6 @@
 package stone.mae2.core;
 
+import appeng.api.integrations.igtooltip.PartTooltips;
 import appeng.api.networking.GridServices;
 import appeng.client.render.crafting.CraftingCubeModel;
 import appeng.core.AppEng;
@@ -23,7 +24,9 @@ import stone.mae2.block.crafting.DynamicCraftingUnitType;
 import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
 import stone.mae2.core.datagen.MAE2RecipeProvider;
 import stone.mae2.integration.GregTechIntegration;
+import stone.mae2.integration.MultiP2PStateDataProvider;
 import stone.mae2.me.service.MultiP2PService;
+import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
 public interface Proxy {
     public class Server implements Proxy {
@@ -47,6 +50,8 @@ public interface Proxy {
 
                 pack.addProvider(MAE2RecipeProvider::new);
             });
+
+            PartTooltips.addServerData(MultiP2PTunnelPart.class, new MultiP2PStateDataProvider());
         }
     }
 
@@ -90,6 +95,8 @@ public interface Proxy {
                     new ResourceLocation(AppEng.MOD_ID, "block/crafting/256x_accelerator_formed"),
                     new CraftingCubeModel(new DynamicCraftingCubeModelProvider(
                             DynamicCraftingUnitType.ACCELERATOR_256x)));
+
+            PartTooltips.addBody(MultiP2PTunnelPart.class, new MultiP2PStateDataProvider());
         }
     }
 
