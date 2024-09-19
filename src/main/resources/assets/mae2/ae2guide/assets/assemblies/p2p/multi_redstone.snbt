@@ -1,0 +1,36 @@
+{
+    DataVersion: 3465,
+    size: [6, 2, 3],
+    data: [
+        {pos: [0, 0, 0], state: "minecraft:stone_bricks"},
+        {pos: [0, 0, 1], state: "minecraft:stone_bricks"},
+        {pos: [0, 0, 2], state: "minecraft:stone_bricks"},
+        {pos: [1, 0, 0], state: "minecraft:stone_bricks"},
+        {pos: [1, 0, 1], state: "minecraft:stone_bricks"},
+        {pos: [1, 0, 2], state: "minecraft:stone_bricks"},
+        {pos: [4, 0, 1], state: "minecraft:stone_bricks"},
+        {pos: [5, 0, 1], state: "minecraft:stone_bricks"},
+        {pos: [0, 1, 0], state: "minecraft:lever{face:floor,facing:east,powered:true}"},
+        {pos: [0, 1, 1], state: "minecraft:lever{face:floor,facing:east,powered:false}"},
+        {pos: [0, 1, 2], state: "minecraft:lever{face:floor,facing:east,powered:true}"},
+        {pos: [1, 1, 0], state: "minecraft:repeater{delay:1,facing:west,locked:false,powered:true}"},
+        {pos: [1, 1, 1], state: "minecraft:repeater{delay:1,facing:west,locked:false,powered:false}"},
+        {pos: [1, 1, 2], state: "minecraft:repeater{delay:1,facing:west,locked:false,powered:true}"},
+        {pos: [2, 1, 0], state: "ae2:cable_bus{light_level:0,waterlogged:false}", nbt: {ForgeCaps: {}, cable: {gn: {p: 0}, id: "ae2:white_smart_cable", visual: {channelsSouth: 4, connections: ["south"], missingChannel: 0b, powered: 1b}}, hasRedstone: 2, id: "ae2:cable_bus", visual: {}, west: {freq: -1486s, gn: {p: 0}, id: "mae2:redstone_multi_p2p_tunnel", output: 0b, power: 15, visual: {missingChannel: 0b, powered: 1b}}}},
+        {pos: [2, 1, 1], state: "ae2:cable_bus{light_level:0,waterlogged:false}", nbt: {ForgeCaps: {}, cable: {gn: {p: 0}, id: "ae2:white_smart_cable", visual: {channelsEast: 4, channelsNorth: 4, channelsSouth: 4, connections: ["north", "south", "east"], missingChannel: 0b, powered: 1b}}, hasRedstone: 2, id: "ae2:cable_bus", visual: {}, west: {freq: -1486s, gn: {p: 0}, id: "mae2:redstone_multi_p2p_tunnel", output: 0b, power: 0, visual: {missingChannel: 0b, powered: 1b}}}},
+        {pos: [2, 1, 2], state: "ae2:cable_bus{light_level:0,waterlogged:false}", nbt: {ForgeCaps: {}, cable: {gn: {p: 0}, id: "ae2:white_smart_cable", visual: {channelsNorth: 4, connections: ["north"], missingChannel: 0b, powered: 1b}}, hasRedstone: 2, id: "ae2:cable_bus", visual: {}, west: {freq: -1486s, gn: {p: 0}, id: "mae2:redstone_multi_p2p_tunnel", output: 0b, power: 15, visual: {missingChannel: 0b, powered: 1b}}}},
+        {pos: [3, 1, 1], state: "ae2:cable_bus{light_level:0,waterlogged:false}", nbt: {ForgeCaps: {}, cable: {gn: {p: 0}, id: "ae2:white_smart_cable", visual: {channelsWest: 4, connections: ["west"], missingChannel: 0b, powered: 1b}}, east: {freq: -1486s, gn: {p: 0}, id: "mae2:redstone_multi_p2p_tunnel", output: 1b, power: 15, visual: {missingChannel: 0b, powered: 1b}}, hasRedstone: 2, id: "ae2:cable_bus", visual: {}}},
+        {pos: [4, 1, 1], state: "minecraft:repeater{delay:1,facing:west,locked:false,powered:true}"},
+        {pos: [5, 1, 1], state: "minecraft:redstone_lamp{lit:true}"}
+    ],
+    entities: [],
+    palette: [
+        "minecraft:stone_bricks",
+        "minecraft:redstone_lamp{lit:true}",
+        "minecraft:lever{face:floor,facing:east,powered:true}",
+        "minecraft:lever{face:floor,facing:east,powered:false}",
+        "minecraft:repeater{delay:1,facing:west,locked:false,powered:true}",
+        "minecraft:repeater{delay:1,facing:west,locked:false,powered:false}",
+        "ae2:cable_bus{light_level:0,waterlogged:false}"
+    ]
+}
