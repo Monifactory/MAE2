@@ -14,7 +14,6 @@ import appeng.api.util.AECableType;
 import appeng.client.render.cablebus.P2PTunnelFrequencyModelData;
 import appeng.core.AEConfig;
 import appeng.parts.AEBasePart;
-import appeng.parts.p2p.P2PTunnelPart;
 import appeng.util.Platform;
 import appeng.util.SettingsFrom;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +22,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
@@ -151,15 +149,12 @@ public abstract class MultiP2PTunnelPart<T extends MultiP2PTunnelPart<T>> extend
 
             // Change the actual tunnel type and import settings when the encoded type is a P2P
             IPartItem<?> partItem = IPartItem.byId(new ResourceLocation(configData.getString(CONFIG_NBT_TYPE)));
-            if (partItem != null && (P2PTunnelPart.class.isAssignableFrom(partItem.getPartClass()) || MultiP2PTunnelPart.class.isAssignableFrom(partItem.getPartClass()))) {
+            if (partItem != null && MultiP2PTunnelPart.class.isAssignableFrom(partItem.getPartClass())) {
                 IPart newBus = this;
                 if (newBus.getPartItem() != partItem) {
                     newBus = this.getHost().replacePart(partItem, this.getSide(), player, hand);
                 }
-
-                if (newBus instanceof P2PTunnelPart<?> newTunnel) {
-                    newTunnel.importSettings(SettingsFrom.MEMORY_CARD, configData, player);
-                } else if (newBus instanceof MultiP2PTunnelPart<?> newTunnel) {
+                if (newBus instanceof MultiP2PTunnelPart<?> newTunnel) {
                     newTunnel.importSettings(SettingsFrom.MEMORY_CARD, configData, player, settingOutput);
                 }
                 mc.notifyUser(player, MemoryCardMessages.SETTINGS_LOADED);

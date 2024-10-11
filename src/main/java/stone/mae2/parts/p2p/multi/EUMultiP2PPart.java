@@ -40,7 +40,6 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
 
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
-        	// TODO tax the power somehow
             int total = 0;
 
             final int outputTunnels = EUMultiP2PPart.this.getOutputs().size();
@@ -67,8 +66,8 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
             }
 
             EUMultiP2PPart.this
-                .queueTunnelDrain(PowerUnits.FE, FeCompat
-                    .toFeBounded(total * amperage, FeCompat.ratio(false), Integer.MAX_VALUE));
+                .queueTunnelDrain(PowerUnits.FE,
+                            (double) total * amperage * FeCompat.ratio(false));
             return total;
         }
 

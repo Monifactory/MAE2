@@ -40,7 +40,6 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
 
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
-        	// TODO tax the power somehow
             int total = 0;
 
             final int outputTunnels = EUP2PTunnelPart.this.getOutputs().size();
@@ -58,7 +57,7 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
 
                     toSend -= received;
                     total += received;
-                    if (toSend == 0)
+                    if (toSend <= 0)
                     {
                         break;
                     }
@@ -67,9 +66,7 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
 
             EUP2PTunnelPart.this
                 .queueTunnelDrain(PowerUnits.FE,
-                    FeCompat
-                        .toFeBounded(total * amperage, FeCompat.ratio(false),
-                            Integer.MAX_VALUE));
+                            (double) total * amperage * FeCompat.ratio(false));
             return total;
         }
 
