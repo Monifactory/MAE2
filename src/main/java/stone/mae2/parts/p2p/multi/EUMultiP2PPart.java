@@ -16,21 +16,21 @@ import java.util.List;
 
 public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEnergyContainer> {
 
-	private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/multi_p2p_tunnel_eu"));
-	private static final IEnergyContainer EMPTY_HANDLER = new EmptyHandler();
-	
+    private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/multi_p2p_tunnel_eu"));
+    private static final IEnergyContainer EMPTY_HANDLER = new EmptyHandler();
+
     public EUMultiP2PPart(IPartItem<?> partItem) {
         super(partItem, GTCapability.CAPABILITY_ENERGY_CONTAINER);
         this.inputHandler = new InputHandler();
         this.outputHandler = new OutputHandler();
         this.emptyHandler = EMPTY_HANDLER;
     }
-    
+
     @PartModels
     public static List<IPartModel> getModels() {
         return MODELS.getModels();
     }
-    
+
     @Override
     public IPartModel getStaticModels() {
         return MODELS.getModel(this.isPowered(), this.isActive());
@@ -48,26 +48,25 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                 return 0;
             }
 
-            long toSend = voltage;
+            long toSend = amperage;
 
-            for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs())
-            {
+            for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard capabilityGuard = target.getAdjacentCapability()) {
                     final IEnergyContainer output = capabilityGuard.get();
-                    final long received = output.acceptEnergyFromNetwork(target.getSide().getOpposite(), toSend, amperage);
+                    final long received = output.acceptEnergyFromNetwork(target.getSide().getOpposite(), voltage,
+                            toSend);
 
                     toSend -= received;
                     total += received;
-                    if (toSend == 0)
-                    {
+                    if (toSend == 0) {
                         break;
                     }
                 }
             }
 
             EUMultiP2PPart.this
-                .queueTunnelDrain(PowerUnits.FE,
-                            (double) total * amperage * FeCompat.ratio(false));
+                    .queueTunnelDrain(PowerUnits.FE,
+                            (double) total * voltage * FeCompat.ratio(false));
             return total;
         }
 
@@ -85,7 +84,6 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         public long getEnergyStored() {
             long total = 0;
 
-            
             for (EUMultiP2PPart part : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard guard = part.getAdjacentCapability()) {
                     try {
@@ -106,13 +104,13 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         public long getEnergyCapacity() {
             long total = 0;
 
-            
             for (EUMultiP2PPart part : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard guard = part.getAdjacentCapability()) {
                     try {
                         total = Math.addExact(total, guard.get().getEnergyCapacity());
                     } catch (ArithmeticException e) {
-                        // combined output's capacity is more than a long's worth of power, return max long
+                        // combined output's capacity is more than a long's worth of power, return max
+                        // long
                         // instead, because otherwise it'll look like it'll look full, ie storing a long
                         // of power, has a max capacity of a long -> full storage
                         return Long.MAX_VALUE;
@@ -127,7 +125,6 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         public long getInputAmperage() {
             long total = 0;
 
-            
             for (EUMultiP2PPart part : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard guard = part.getAdjacentCapability()) {
                     try {
@@ -146,7 +143,6 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         public long getInputVoltage() {
             long maxVoltage = 0;
 
-            
             for (EUMultiP2PPart part : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard guard = part.getAdjacentCapability()) {
                     maxVoltage = Math.max(maxVoltage, guard.get().getInputVoltage());
@@ -157,29 +153,28 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         }
 
     }
-    
+
     public class OutputHandler implements IEnergyContainer {
 
-		@Override
-		public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
-			return 0;
-		}
+        @Override
+        public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
+            return 0;
+        }
 
-		@Override
-		public boolean inputsEnergy(Direction side) {
-			return false;
-		}
+        @Override
+        public boolean inputsEnergy(Direction side) {
+            return false;
+        }
 
-		@Override
-		public long changeEnergy(long differenceAmount) {
-			return 0;
-		}
+        @Override
+        public long changeEnergy(long differenceAmount) {
+            return 0;
+        }
 
-		@Override
-		public long getEnergyStored() {
-long total = 0;
+        @Override
+        public long getEnergyStored() {
+            long total = 0;
 
-            
             for (EUMultiP2PPart part : EUMultiP2PPart.this.getInputs()) {
                 try (CapabilityGuard guard = part.getAdjacentCapability()) {
                     try {
@@ -194,19 +189,19 @@ long total = 0;
             }
 
             return total;
-		}
+        }
 
-		@Override
-		public long getEnergyCapacity() {
-long total = 0;
+        @Override
+        public long getEnergyCapacity() {
+            long total = 0;
 
-            
             for (EUMultiP2PPart part : EUMultiP2PPart.this.getInputs()) {
                 try (CapabilityGuard guard = part.getAdjacentCapability()) {
                     try {
                         total = Math.addExact(total, guard.get().getEnergyCapacity());
                     } catch (ArithmeticException e) {
-                        // combined output's capacity is more than a long's worth of power, return max long
+                        // combined output's capacity is more than a long's worth of power, return max
+                        // long
                         // instead, because otherwise it'll look like it'll look full, ie storing a long
                         // of power, has a max capacity of a long -> full storage
                         return Long.MAX_VALUE;
@@ -215,58 +210,57 @@ long total = 0;
             }
 
             return total;
-		}
+        }
 
-		@Override
-		public long getInputAmperage() {
-			return 0;
-		}
+        @Override
+        public long getInputAmperage() {
+            return 0;
+        }
 
-		@Override
-		public long getInputVoltage() {
-			return 0;
-		}
-    	
+        @Override
+        public long getInputVoltage() {
+            return 0;
+        }
+
     }
-    
+
     private static class EmptyHandler implements IEnergyContainer {
 
-		@Override
-		public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
-			return 0;
-		}
+        @Override
+        public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
+            return 0;
+        }
 
-		@Override
-		public boolean inputsEnergy(Direction side) {
-			return false;
-		}
+        @Override
+        public boolean inputsEnergy(Direction side) {
+            return false;
+        }
 
-		@Override
-		public long changeEnergy(long differenceAmount) {
-			return 0;
-		}
+        @Override
+        public long changeEnergy(long differenceAmount) {
+            return 0;
+        }
 
-		@Override
-		public long getEnergyStored() {
-			return 0;
-		}
+        @Override
+        public long getEnergyStored() {
+            return 0;
+        }
 
-		@Override
-		public long getEnergyCapacity() {
-			return 0;
-		}
+        @Override
+        public long getEnergyCapacity() {
+            return 0;
+        }
 
-		@Override
-		public long getInputAmperage() {
-			return 0;
-		}
+        @Override
+        public long getInputAmperage() {
+            return 0;
+        }
 
-		@Override
-		public long getInputVoltage() {
-			return 0;
-		}
-    	
+        @Override
+        public long getInputVoltage() {
+            return 0;
+        }
+
     }
-    
-}
 
+}
