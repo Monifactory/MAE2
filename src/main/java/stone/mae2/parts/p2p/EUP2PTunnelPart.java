@@ -59,7 +59,7 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
                     }
                 }
             }
-            if (total <= 0) {
+            if (total > 0) {
                 EUP2PTunnelPart.this
                         .queueTunnelDrain(PowerUnits.FE,
                                 (double) total * voltage * FeCompat.ratio(false));

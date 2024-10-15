@@ -64,9 +64,11 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                 }
             }
 
-            EUMultiP2PPart.this
-                    .queueTunnelDrain(PowerUnits.FE,
-                            (double) total * voltage * FeCompat.ratio(false));
+            if (total > 0) {
+                EUMultiP2PPart.this
+                        .queueTunnelDrain(PowerUnits.FE,
+                                (double) total * voltage * FeCompat.ratio(false));
+            }
             return total;
         }
 
