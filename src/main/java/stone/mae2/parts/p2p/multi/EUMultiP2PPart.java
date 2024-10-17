@@ -15,7 +15,6 @@ import stone.mae2.MAE2;
 import java.util.List;
 
 public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEnergyContainer> {
-
     private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/multi_p2p_tunnel_eu"));
     private static final IEnergyContainer EMPTY_HANDLER = new EmptyHandler();
 
@@ -37,19 +36,10 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
     }
 
     public class InputHandler implements IEnergyContainer {
-
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
-            int total = 0;
-
-            final int outputTunnels = EUMultiP2PPart.this.getOutputs().size();
-
-            if (outputTunnels == 0 | voltage == 0) {
-                return 0;
-            }
-
             long toSend = amperage;
-
+            int total = 0;
             for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard capabilityGuard = target.getAdjacentCapability()) {
                     final IEnergyContainer output = capabilityGuard.get();
@@ -153,11 +143,9 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
 
             return maxVoltage;
         }
-
     }
 
     public class OutputHandler implements IEnergyContainer {
-
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
             return 0;
@@ -223,11 +211,9 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         public long getInputVoltage() {
             return 0;
         }
-
     }
 
     private static class EmptyHandler implements IEnergyContainer {
-
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
             return 0;
@@ -262,7 +248,5 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         public long getInputVoltage() {
             return 0;
         }
-
     }
-
 }

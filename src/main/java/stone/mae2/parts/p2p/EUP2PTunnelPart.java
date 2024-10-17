@@ -39,18 +39,12 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
     public class InputHandler implements IEnergyContainer {
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
-            int total = 0;
-            final int outputTunnels = EUP2PTunnelPart.this.getOutputs().size();
-
-            if (outputTunnels == 0 || side == EUP2PTunnelPart.this.getSide().getOpposite()) {
-                return 0;
-            }
-
             long toSend = amperage;
-
+            int total = 0;
             for (EUP2PTunnelPart target : EUP2PTunnelPart.this.getOutputs()) {
                 try (CapabilityGuard guard = target.getAdjacentCapability()) {
-                    final long received = guard.get().acceptEnergyFromNetwork(target.getSide().getOpposite(), voltage, toSend);
+                    final long received = guard.get().acceptEnergyFromNetwork(target.getSide().getOpposite(), voltage,
+                            toSend);
 
                     toSend -= received;
                     total += received;
@@ -148,7 +142,6 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
 
             return maxVoltage;
         }
-
     }
 
     public class OutputHandler implements IEnergyContainer {
@@ -225,11 +218,9 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
         public long getInputVoltage() {
             return 0;
         }
-
     }
 
     private static class EmptyHandler implements IEnergyContainer {
-
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
             return 0;
@@ -264,7 +255,5 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
         public long getInputVoltage() {
             return 0;
         }
-
     }
-
 }
