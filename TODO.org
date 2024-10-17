@@ -1,14 +1,24 @@
 List of things to do/planned to add
-Also works as a features list
+
+Also works as a features list (doesn't look nice on GitHub tho)
+
 list is in no particular order
 
 * Additions [16%]
-** DONE Pattern P2P Tunnel [2/3]
+** DONE Pattern P2P Tunnel [2/4]
 *** DONE Effectively copies pattern providers from the input(s) to the outputs
  - Works by letting pattern provider tunnel from the input to every output and
    seeing those as potential targets
 *** DONE Alllows stuff to be input from the output, to tunnel back to the pattern provider on the input
 *** TODO Keep track of which output goes to which input to allow sharing setups between ME systems
+*** TODO A way to passively (not via autocrafting) use pattern p2ps
+ - Somehow let you push patterns through the p2p to help with parallel passive setups
+ - Maybe an inverter card inverts the provider to need a redstone signal to push
+   instead??
+   - Or maybe just a redstone card?
+   - Maybe inverter card makes it act like an export bus constantly pushing,
+     then a redstone lets you control it
+ - I don't want to add new things just for this, but I still want it to make sense
 ** TODO Pattern Multitool
  - Already exists in ExtendedAE, might PR an improved version that works with GT
    patterns tho
@@ -53,27 +63,39 @@ list is in no particular order
  - Kinda crazy that is capped to 4 buckets of fluid
  - Either increase the native amount or just allow capacity cards to multiply it
 
+** TODO Faulty Memory Card
+ - Memory card to help with repetative tasks
+ - Things like incrementing priority with each paste
+   - or increment level emitter amount
+   - Maybe try a generic way that lets players pick numbers in the paste to change??
+ - Also AoE pasting?
+   - Like 3x3 paste like a hammer
+ - and/or affect every device on the network
+   - Like set every non input p2p as an output of the frequency
+   - Or paste to every device of the same type to quickly copy repeated setups
+   - Need to be careful these pastes don't fuck up mainnet easily
+     - Undo? idk how possible that is
 
-** TODO Guide Book Entries [0/6]
- - [ ] Pattern P2P Tunnel
+** TODO Guide Book Entries [25%]
+ - [X] Pattern P2P Tunnel
+ - [X] Multi P2P Tunnels
  - [ ] Dense CPU Components
  - [ ] Pattern Multitool
  - [ ] GregTech Patterns
  - [ ] Sitcky Card
  - [ ] Beam Former
  - [ ] Interface Capacity Card
-   - Can guide entries be added too?
 
 
 * Optimizations
-** Pattern P2P caching
+** TODO Pattern P2P caching
  - Currently it rebuilds the whole list of outputs which time its queryed
    - Useful for if it changes, not useful when it's inside a tick and impossible
      to change
      - Or at least, I don't really care if someone does something so technical its
        editing the p2p outputs inside of the craft being outputted
 
-** Multi P2P Optimizations
+** TODO Multi P2P Optimizations
  - Currently acts like a linked list when extracted from the output with the
    capability tunnel
  - There was some thing in AE2 UEL that combined all item p2p outputs into one
