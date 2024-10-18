@@ -1,5 +1,11 @@
 package stone.mae2.parts.p2p;
 
+import java.util.List;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
@@ -13,15 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-
 import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> implements PatternP2PTunnel {
 
@@ -58,18 +57,18 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> im
     }
 
     @Nonnull
-    public List<TunneledPatternProviderTarget> getTargets() {
+    public Stream<TunneledPatternProviderTarget> getTargets() {
         if (this.isOutput())
         // you can't go through a output tunnel (duh)
         {
-            return List.of();
+            return Stream.empty();
         } else {
             return this.getOutputStream()
                     .map((output) -> new TunneledPatternProviderTarget(
                             output.getTarget(),
                             new TunneledPos(output.getBlockEntity().getBlockPos()
                                     .relative(output.getSide()), output.getSide())))
-                    .filter((target) -> target.target() != null).toList();
+                    .filter((target) -> target.target() != null);
         }
     }
 
@@ -78,22 +77,19 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> im
         return cache;
     }
 
-    @Nullable
-    public List<TunneledPos> getTunneledPositions() {
+    @Override
+    public Stream<TunneledPos> getTunneledPositions() {
         if (this.isOutput())
         {
-            return List.of();
+            return Stream.empty();
         } else
         {
-            List<TunneledPos> outputs = new ArrayList<>();
-            for (PatternP2PTunnelPart output : this.getOutputs())
-            {
+            return this.getOutputStream().map(output -> {
                 Direction outputSide = output.getSide();
-                outputs.add(new TunneledPos(
+                return new TunneledPos(
                     output.getBlockEntity().getBlockPos().relative(outputSide),
-                    outputSide.getOpposite()));
-            }
-            return outputs;
+                    outputSide.getOpposite());
+                });
         }
     }
 

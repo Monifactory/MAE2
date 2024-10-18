@@ -1,6 +1,6 @@
 package stone.mae2.parts.p2p;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -11,10 +11,10 @@ import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 
 public interface PatternP2PTunnel {
     @Nonnull
-    public List<TunneledPatternProviderTarget> getTargets();
+    public Stream<TunneledPatternProviderTarget> getTargets();
 
     @Nonnull
-    public List<TunneledPos> getTunneledPositions();
+    public Stream<TunneledPos> getTunneledPositions();
     
 
     public record TunneledPos(BlockPos pos, Direction dir) {

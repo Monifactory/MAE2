@@ -1,5 +1,12 @@
 package stone.mae2.parts.p2p.multi;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
@@ -14,13 +21,6 @@ import net.minecraftforge.common.util.LazyOptional;
 import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.parts.p2p.PatternP2PTunnel;
-import stone.mae2.parts.p2p.PatternP2PTunnelPart;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class PatternMultiP2PPart extends MultiP2PTunnelPart<PatternMultiP2PPart> implements PatternP2PTunnel {
     private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/multi_p2p_tunnel_pattern"));
@@ -55,11 +55,11 @@ public class PatternMultiP2PPart extends MultiP2PTunnelPart<PatternMultiP2PPart>
 
     @Nonnull
     @Override
-    public List<TunneledPatternProviderTarget> getTargets() {
+    public Stream<TunneledPatternProviderTarget> getTargets() {
         if (this.isOutput())
         // you can't go through a output tunnel (duh)
         {
-            return List.of();
+            return Stream.empty();
         } else {
 
         return this.getOutputStream()
@@ -67,7 +67,7 @@ public class PatternMultiP2PPart extends MultiP2PTunnelPart<PatternMultiP2PPart>
                         output.getTarget(),
                         new TunneledPos(output.getBlockEntity().getBlockPos()
                                 .relative(output.getSide()), output.getSide())))
-                .filter((target) -> target.target() != null).toList();
+                .filter((target) -> target.target() != null);
         }
     }
 
@@ -78,32 +78,32 @@ public class PatternMultiP2PPart extends MultiP2PTunnelPart<PatternMultiP2PPart>
 
     @Nullable
     @Override
-    public List<TunneledPos> getTunneledPositions() {
+    public Stream<TunneledPos> getTunneledPositions() {
         if (this.isOutput()) {
-            return List.of();
+            return Stream.empty();
         } else {
-            List<TunneledPos> outputs = new ArrayList<>();
-            for (PatternMultiP2PPart output : this.getOutputs()) {
+            return this.getOutputStream().map(output -> {
                 Direction outputSide = output.getSide();
-                outputs.add(new TunneledPos(
+                return new TunneledPos(
                         output.getBlockEntity().getBlockPos().relative(outputSide),
-                        outputSide.getOpposite()));
-            }
-            return outputs;
+                        outputSide.getOpposite());
+            });
         }
     }
 
     // TODO make the outputs link to every input, for the rare case 1 provider can't
     // keep up with it
     private TunneledPos getInputPos() {
-        List<PatternMultiP2PPart> inputList = this.getInputs();
-        if (inputList.isEmpty())
+        Optional<PatternMultiP2PPart> maybeInput = this.getInputStream().findAny();
+        if (maybeInput.isEmpty()) {
             return null;
-        PatternMultiP2PPart input = inputList.get(0);
-        Direction inputSide = input.getSide();
-        return new TunneledPos(
-            input.getBlockEntity().getBlockPos().relative(inputSide),
-            inputSide.getOpposite());
+        } else {
+            PatternMultiP2PPart input = maybeInput.get();
+            Direction inputSide = input.getSide();
+            return new TunneledPos(
+                    input.getBlockEntity().getBlockPos().relative(inputSide),
+                    inputSide.getOpposite());
+        }
     }
 
     @Override

@@ -44,6 +44,7 @@ import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPos;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Overwriting a method is terrible, but hopefully no one else is messing with
@@ -137,12 +138,12 @@ public abstract class PatternProviderLogicMixin {
                 Direction adjBeSide = direction.getOpposite();
                 // Main change to allow multiple positions to be checked per
                 // side
-                List<TunneledPos> positions = getTunneledPositions(
+                Stream<TunneledPos> positions = getTunneledPositions(
                     be.getBlockPos().relative(direction), level, adjBeSide);
                 if (positions == null) {
                     continue;
                 }
-                for (TunneledPos adjPos : positions)
+                for (TunneledPos adjPos : positions.toArray(TunneledPos[]::new))
                 {
                     BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
 
@@ -223,10 +224,10 @@ public abstract class PatternProviderLogicMixin {
         } else
         {
             IPart potentialTunnel = ((IPartHost) potentialPart).getPart(direction.getOpposite());
-            if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnel)
+            if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnel patternTunnel)
             {
-                List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnel) potentialTunnel)
-                    .getTargets();
+                List<TunneledPatternProviderTarget> newTargets = patternTunnel
+                    .getTargets().toList();
                 if (newTargets != null)
                 {
                     adapters.addAll(newTargets);
@@ -317,12 +318,12 @@ public abstract class PatternProviderLogicMixin {
         return sendStacksOut(cache.find());
     }
 
-    private List<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
+    private Stream<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
         BlockEntity potentialPart = level.getBlockEntity(pos);
         if (potentialPart == null || !(potentialPart instanceof IPartHost))
         {
             // can never tunnel
-            return List.of(new TunneledPos(pos, adjBeSide));
+            return Stream.of(new TunneledPos(pos, adjBeSide));
         } else
         {
             IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
@@ -332,7 +333,7 @@ public abstract class PatternProviderLogicMixin {
             } else
             {
                 // not a pattern p2p tunnel
-                return List.of(new TunneledPos(pos, adjBeSide));
+                return Stream.of(new TunneledPos(pos, adjBeSide));
             }
         }
     }
