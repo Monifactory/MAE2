@@ -1,4 +1,4 @@
-src/generated/
+src/generated/resources/.cache
 run-data/
 
 # eclipse
