@@ -46,4 +46,6 @@ public abstract class FaultyCardMode {
     static {
         register(MAE2.toKey(new AoEPaste().getType()), AoEPaste::new);
     }
+
+    public abstract int getTintColor();
 }

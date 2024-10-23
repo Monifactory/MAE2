@@ -64,4 +64,9 @@ public class AoEPaste extends FaultyCardMode {
     public String getType() {
         return "aoe_paste";
     }
+
+    @Override
+    public int getTintColor() {
+        return 0xFF0000;
+    }
 }

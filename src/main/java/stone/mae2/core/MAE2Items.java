@@ -97,7 +97,7 @@ public abstract class MAE2Items {
                             ItemMultiP2PPart.class, ItemMultiP2PPart::new));
         });
         
-        FAULTY_MEMORY_CARD = ITEMS.register("faulty_memory_card", FaultyMemoryCardItem::new);
+        FAULTY_MEMORY_CARD = ITEMS.register("faulty_card", FaultyMemoryCardItem::new);
     }
 
 }
