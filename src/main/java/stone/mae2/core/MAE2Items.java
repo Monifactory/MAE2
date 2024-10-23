@@ -14,6 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.MAE2;
+import stone.mae2.item.FaultyMemoryCardItem;
 import stone.mae2.parts.p2p.PatternP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.FEMultiP2PPart;
 import stone.mae2.parts.p2p.multi.FluidMultiP2PPart;
@@ -38,6 +39,8 @@ public abstract class MAE2Items {
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_16x;
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_64x;
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_256x;
+
+    public static RegistryObject<FaultyMemoryCardItem> FAULTY_MEMORY_CARD;
 
     public static void init(IEventBus bus) {
         register();
@@ -96,6 +99,7 @@ public abstract class MAE2Items {
                             ItemMultiP2PPart.class, ItemMultiP2PPart::new));
         });
 
+        FAULTY_MEMORY_CARD = ITEMS.register("faulty_memory_card", FaultyMemoryCardItem::new);
     }
 
 }
