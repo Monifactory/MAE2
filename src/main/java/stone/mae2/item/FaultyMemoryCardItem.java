@@ -26,4 +26,11 @@ public class FaultyMemoryCardItem extends MemoryCardItem {
 
         return InteractionResult.sidedSuccess(level.isClientSide());
     }
+
+    public static int getTintColor(ItemStack stack, int index) {
+        if (index == 1 && stack.getItem() instanceof FaultyMemoryCardItem card) {
+            return FaultyCardMode.of(stack.getTag()).getTintColor();
+        }
+        return 0xFFFFFF;
+    }
 }

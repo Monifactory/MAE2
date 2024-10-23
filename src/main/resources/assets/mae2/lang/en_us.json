@@ -13,5 +13,6 @@
     "item.mae2.fluid_multi_p2p_tunnel": "Fluid Multi P2P Tunnel",
     "item.mae2.item_multi_p2p_tunnel": "Item Multi P2P Tunnel",
     "item.mae2.redstone_multi_p2p_tunnel": "Redstone Multi P2P Tunnel",
+    "item.mae2.faulty_memory_card": "Faulty Memory Card",
     "waila.mae2.P2POutputManyInputs": "Linked (Output Side) - %s Outputs"
 }

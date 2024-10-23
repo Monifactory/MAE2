@@ -8,9 +8,9 @@ import appeng.hooks.BuiltInModelHooks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
@@ -22,9 +22,11 @@ import stone.mae2.MAE2;
 import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.block.crafting.DynamicCraftingUnitType;
 import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
+import stone.mae2.client.render.model.FaultyCardModel;
 import stone.mae2.core.datagen.MAE2RecipeProvider;
 import stone.mae2.integration.GregTechIntegration;
 import stone.mae2.integration.MultiP2PStateDataProvider;
+import stone.mae2.item.FaultyMemoryCardItem;
 import stone.mae2.me.service.MultiP2PService;
 import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
@@ -96,7 +98,13 @@ public interface Proxy {
                     new CraftingCubeModel(new DynamicCraftingCubeModelProvider(
                             DynamicCraftingUnitType.ACCELERATOR_256x)));
 
+            BuiltInModelHooks.addBuiltInModel(MAE2.toKey("item/faulty_card"), new FaultyCardModel() );
+
             PartTooltips.addBody(MultiP2PTunnelPart.class, new MultiP2PStateDataProvider());
+
+            bus.addListener((RegisterColorHandlersEvent.Item event) -> {
+                    event.register(FaultyMemoryCardItem::getTintColor, MAE2Items.FAULTY_MEMORY_CARD.get());
+                });
         }
     }
 

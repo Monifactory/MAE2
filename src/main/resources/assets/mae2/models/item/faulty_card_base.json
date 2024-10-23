@@ -1,0 +1,7 @@
+{
+    "parent": "minecraft:item/generated",
+    "textures": {
+        "layer0": "mae2:item/faulty_card_base",
+        "layer1": "mae2:item/faulty_card_crystal"
+    }
+}

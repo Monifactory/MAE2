@@ -68,7 +68,6 @@ public abstract class MAE2Items {
             return ITEMS.register("pattern_multi_p2p_tunnel",
                     () -> new PartItem<>(new Item.Properties(), PatternMultiP2PPart.class, PatternMultiP2PPart::new));
         });
-
         REDSTONE_MULTI_P2P_TUNNEL = Util.make(() -> {
             PartModels.registerModels(
                     PartModelsHelper.createModels(RedstoneMultiP2PPart.class));
@@ -76,7 +75,6 @@ public abstract class MAE2Items {
                     () -> new PartItem<>(new Item.Properties(),
                             RedstoneMultiP2PPart.class, RedstoneMultiP2PPart::new));
         });
-
         FE_MULTI_P2P_TUNNEL = Util.make(() -> {
             PartModels.registerModels(
                     PartModelsHelper.createModels(FEMultiP2PPart.class));
@@ -98,8 +96,8 @@ public abstract class MAE2Items {
                     () -> new PartItem<>(new Item.Properties(),
                             ItemMultiP2PPart.class, ItemMultiP2PPart::new));
         });
-
-        FAULTY_MEMORY_CARD = ITEMS.register("faulty_memory_card", FaultyMemoryCardItem::new);
+        
+        FAULTY_MEMORY_CARD = ITEMS.register("faulty_card", FaultyMemoryCardItem::new);
     }
 
 }
