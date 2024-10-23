@@ -3,8 +3,6 @@ package stone.mae2.core;
 import appeng.api.integrations.igtooltip.PartTooltips;
 import appeng.api.networking.GridServices;
 import appeng.client.render.crafting.CraftingCubeModel;
-import appeng.core.AppEng;
-import appeng.hooks.BuiltInModelHooks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
@@ -24,6 +22,7 @@ import stone.mae2.block.crafting.DynamicCraftingUnitType;
 import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
 import stone.mae2.client.render.model.FaultyCardModel;
 import stone.mae2.core.datagen.MAE2RecipeProvider;
+import stone.mae2.hooks.BuiltInModelHooks;
 import stone.mae2.integration.GregTechIntegration;
 import stone.mae2.integration.MultiP2PStateDataProvider;
 import stone.mae2.item.FaultyMemoryCardItem;
@@ -35,9 +34,8 @@ public interface Proxy {
         public void init(IEventBus bus) {
             MAE2Blocks.init(bus);
             MAE2Items.init(bus);
-            
-            if (ModList.get().isLoaded("gtceu"))
-            {
+
+            if (ModList.get().isLoaded("gtceu")) {
                 GregTechIntegration.init(bus);
             }
 
@@ -77,26 +75,27 @@ public interface Proxy {
                                 }
                             }).build());
 
-            // have to use AE2's id because their model loader checks for the id
             BuiltInModelHooks.addBuiltInModel(
-                    new ResourceLocation(AppEng.MOD_ID, "block/crafting/4x_accelerator_formed"),
+                    MAE2.toKey("block/crafting/4x_accelerator_formed"),
                     new CraftingCubeModel(
                             new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_4x)));
 
             BuiltInModelHooks.addBuiltInModel(
-                    new ResourceLocation(AppEng.MOD_ID, "block/crafting/16x_accelerator_formed"),
+                    MAE2.toKey("block/crafting/16x_accelerator_formed"),
                     new CraftingCubeModel(
                             new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_16x)));
 
             BuiltInModelHooks.addBuiltInModel(
-                    new ResourceLocation(AppEng.MOD_ID, "block/crafting/64x_accelerator_formed"),
+                    MAE2.toKey("block/crafting/64x_accelerator_formed"),
                     new CraftingCubeModel(
                             new DynamicCraftingCubeModelProvider(DynamicCraftingUnitType.ACCELERATOR_64x)));
 
-            BuiltInModelHooks.addBuiltInModel(
-                    new ResourceLocation(AppEng.MOD_ID, "block/crafting/256x_accelerator_formed"),
-                    new CraftingCubeModel(new DynamicCraftingCubeModelProvider(
-                            DynamicCraftingUnitType.ACCELERATOR_256x)));
+            BuiltInModelHooks
+                    .addBuiltInModel(
+                            MAE2.toKey("block/crafting/256x_accelerator_formed"),
+                            new CraftingCubeModel(
+                                    new DynamicCraftingCubeModelProvider(
+                                            DynamicCraftingUnitType.ACCELERATOR_256x)));
 
             BuiltInModelHooks.addBuiltInModel(MAE2.toKey("item/faulty_card"), new FaultyCardModel() );
 

@@ -4,7 +4,7 @@
             "model": "mae2:block/crafting/64x_accelerator"
         },
         "formed=true": {
-            "model": "ae2:block/crafting/64x_accelerator_formed"
+            "model": "mae2:block/crafting/64x_accelerator_formed"
         }
     }
 }
