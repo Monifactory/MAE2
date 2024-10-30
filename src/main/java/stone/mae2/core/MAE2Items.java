@@ -14,7 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.MAE2;
-import stone.mae2.item.FaultyMemoryCardItem;
+import stone.mae2.item.faulty.FaultyMemoryCardItem;
 import stone.mae2.parts.p2p.PatternP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.FEMultiP2PPart;
 import stone.mae2.parts.p2p.multi.FluidMultiP2PPart;

@@ -25,7 +25,7 @@ import stone.mae2.core.datagen.MAE2RecipeProvider;
 import stone.mae2.hooks.BuiltInModelHooks;
 import stone.mae2.integration.GregTechIntegration;
 import stone.mae2.integration.MultiP2PStateDataProvider;
-import stone.mae2.item.FaultyMemoryCardItem;
+import stone.mae2.item.faulty.FaultyMemoryCardItem;
 import stone.mae2.me.service.MultiP2PService;
 import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 

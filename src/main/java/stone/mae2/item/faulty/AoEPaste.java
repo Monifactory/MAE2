@@ -9,29 +9,53 @@ import appeng.api.util.AEColor;
 import appeng.items.tools.MemoryCardItem;
 import appeng.util.SettingsFrom;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import stone.mae2.item.FaultyCardMode;
+import stone.mae2.MAE2;
+import stone.mae2.util.TransHelper;
 
 public class AoEPaste extends FaultyCardMode {
-    private static final String RADIUS = "radius";
+	private static final String RADIUS = "radius";
+	private static final int MAX_RADIUS = 8;
     
-    private final byte radius;
+    private byte radius;
 
     public AoEPaste() {
         this.radius = 1;
     }
     
-    public AoEPaste(CompoundTag tag) {
-        this.radius = tag.getByte(RADIUS);
-    }
-
     @Override
-    public InteractionResult onItemUse(ItemStack stack, UseOnContext context) {
+    protected FaultyCardMode load(CompoundTag tag) {
+    	this.radius = tag.getByte(RADIUS);
+    	return this;
+    }
+    
+    @Override
+	public CompoundTag save(CompoundTag tag) {
+		CompoundTag data = super.save(tag);
+		data.putByte(RADIUS, this.radius);
+		return data;
+	}
+    
+    @Override
+	public InteractionResultHolder<ItemStack> onItemUse(Level level, Player player, InteractionHand hand) {
+		ItemStack stack = player.getItemInHand(hand);
+		radius = (byte) (radius > MAX_RADIUS ? 1 : radius + 1);
+		this.save(stack.getOrCreateTag());
+		player.displayClientMessage(Component.translatable(TransHelper.GUI.toKey("faulty", "radius"), 2 * radius + 1, 2 * radius + 1), true);
+		return InteractionResultHolder.consume(stack);
+	}
+    
+    @Override
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         BlockEntity be = level.getBlockEntity(context.getClickedPos());
         if (be instanceof IPartHost partHost) {
@@ -41,6 +65,7 @@ public class AoEPaste extends FaultyCardMode {
                 int x = selectedPart.side.getStepX() != 0 ? 0 : 1;
                 int y = selectedPart.side.getStepY() != 0 ? 0 : 1;
                 int z = selectedPart.side.getStepZ() != 0 ? 0 : 1;
+                // TODO optimize the iteration, maybe something that just iterates radius^2 times and converts the index to coords
                 for (int i = -radius; i <= radius; i++) {
                     for (int j = -radius; j <= radius; j++) {
                         for (int k = -radius; k <= radius; k++) {
@@ -48,7 +73,8 @@ public class AoEPaste extends FaultyCardMode {
                             if (aoeBE instanceof IPartHost aoePartHost) {
                                 IPart part = aoePartHost.getPart(selectedPart.side);
                                 if (part != null) {
-                                    part.importSettings(SettingsFrom.MEMORY_CARD, data, context.getPlayer());
+                                	// no idea what the Vec pos argument does here, doesn't seem used in any implementation
+                                	part.onActivate(context.getPlayer(), context.getHand(), context.getClickLocation());
                                 }
                             }
                         }
@@ -61,8 +87,8 @@ public class AoEPaste extends FaultyCardMode {
     }
 
     @Override
-    public String getType() {
-        return "aoe_paste";
+    public ResourceLocation getType() {
+        return MAE2.toKey("aoe_paste");
     }
 
     @Override
