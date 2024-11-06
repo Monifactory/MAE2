@@ -1,13 +1,10 @@
 package stone.mae2.item.faulty;
 
 import appeng.api.implementations.items.IMemoryCard;
-import appeng.api.implementations.items.MemoryCardMessages;
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
 import appeng.api.parts.SelectedPart;
 import appeng.api.util.AEColor;
-import appeng.items.tools.MemoryCardItem;
-import appeng.util.SettingsFrom;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,8 +20,8 @@ import stone.mae2.MAE2;
 import stone.mae2.util.TransHelper;
 
 public class AoEPaste extends FaultyCardMode {
-	private static final String RADIUS = "radius";
-	private static final int MAX_RADIUS = 8;
+    private static final String RADIUS = "radius";
+    private static final int MAX_RADIUS = (16 + 1) / 2 - 1;
     
     private byte radius;
 
@@ -39,20 +36,20 @@ public class AoEPaste extends FaultyCardMode {
     }
     
     @Override
-	public CompoundTag save(CompoundTag tag) {
-		CompoundTag data = super.save(tag);
-		data.putByte(RADIUS, this.radius);
-		return data;
-	}
+    public CompoundTag save(CompoundTag tag) {
+        CompoundTag data = super.save(tag);
+        data.putByte(RADIUS, this.radius);
+        return data;
+    }
     
     @Override
-	public InteractionResultHolder<ItemStack> onItemUse(Level level, Player player, InteractionHand hand) {
-		ItemStack stack = player.getItemInHand(hand);
-		radius = (byte) (radius > MAX_RADIUS ? 1 : radius + 1);
-		this.save(stack.getOrCreateTag());
-		player.displayClientMessage(Component.translatable(TransHelper.GUI.toKey("faulty", "radius"), 2 * radius + 1, 2 * radius + 1), true);
-		return InteractionResultHolder.consume(stack);
-	}
+    public InteractionResultHolder<ItemStack> onItemUse(Level level, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        radius = (byte) (radius > MAX_RADIUS ? 1 : radius + 1);
+        this.save(stack.getOrCreateTag());
+        player.displayClientMessage(Component.translatable(TransHelper.GUI.toKey("faulty", "radius"), 2 * radius + 1), true);
+        return InteractionResultHolder.consume(stack);
+    }
     
     @Override
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
@@ -73,17 +70,18 @@ public class AoEPaste extends FaultyCardMode {
                             if (aoeBE instanceof IPartHost aoePartHost) {
                                 IPart part = aoePartHost.getPart(selectedPart.side);
                                 if (part != null) {
-                                	// no idea what the Vec pos argument does here, doesn't seem used in any implementation
-                                	part.onActivate(context.getPlayer(), context.getHand(), context.getClickLocation());
+                                    // no idea what the Vec pos argument does here, doesn't seem used in any implementation
+                                    part.onActivate(context.getPlayer(), context.getHand(), context.getClickLocation());
                                 }
                             }
                         }
                     }
                 }
             }
+            return InteractionResult.SUCCESS;
         }
 
-        return InteractionResult.SUCCESS;
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -93,6 +91,11 @@ public class AoEPaste extends FaultyCardMode {
 
     @Override
     public int getTintColor() {
-        return 0xFF0000;
+        return AEColor.WHITE.mediumVariant;
+    }
+
+    @Override
+    protected Component getName() {
+        return Component.translatable(TransHelper.GUI.toKey("faulty", "aoe"), 2*radius+1);
     }
 }
