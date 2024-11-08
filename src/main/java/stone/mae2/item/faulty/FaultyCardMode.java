@@ -83,8 +83,13 @@ public abstract class FaultyCardMode {
     }
 
     static {
+        // List of Colors in use
+
+        // Black > White to show the size of AoE + Grays might be hard to discern
         register(new AoEPaste().getType(), AoEPaste::new);
+        // Orange
         register(new GlobalPaste().getType(), GlobalPaste::new);
+        // Magenta
         register(new Incrementing().getType(), Incrementing::new);
     }
 

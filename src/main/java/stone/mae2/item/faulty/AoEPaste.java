@@ -46,9 +46,10 @@ public class AoEPaste extends FaultyCardMode {
     @Override
     public InteractionResultHolder<ItemStack> onItemUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        radius = (byte) (radius > MAX_RADIUS ? 1 : radius + 1);
+        radius = (byte) (radius >= MAX_RADIUS ? 1 : radius + 1);
         this.save(stack.getOrCreateTag());
         player.displayClientMessage(Component.translatable(TransHelper.GUI.toKey("faulty", "radius"), 2 * radius + 1), true);
+        MAE2.LOGGER.info("Radius: {}/{}", this.radius, MAX_RADIUS);
         return InteractionResultHolder.consume(stack);
     }
     
@@ -96,7 +97,7 @@ public class AoEPaste extends FaultyCardMode {
 
     @Override
     public int getTintColor() {
-        return AEColor.WHITE.mediumVariant;
+        return 0xFF000000 | 0x111111 * (int) (15 * ((double) radius / MAX_RADIUS));
     }
 
     @Override
