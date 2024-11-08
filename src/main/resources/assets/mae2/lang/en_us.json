@@ -8,6 +8,8 @@
     "gui.mae2.faulty.aoe": "AoE Paste: %1$sx%1$s",
     "gui.mae2.faulty.radius": "%1$sx%1$s",
     "gui.mae2.faulty.global": "Global Paste",
+    "gui.mae2.faulty.incrementing": "Incrementing",
+    "gui.mae2.faulty.decrementing": "Decrementing",
     "item.mae2.pattern_p2p_tunnel": "Pattern P2P Tunnel",
     "item.mae2.eu_p2p_tunnel": "EU P2P Tunnel",
     "item.mae2.eu_multi_p2p_tunnel": "EU Multi P2P Tunnel",

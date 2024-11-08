@@ -85,6 +85,7 @@ public abstract class FaultyCardMode {
     static {
         register(new AoEPaste().getType(), AoEPaste::new);
         register(new GlobalPaste().getType(), GlobalPaste::new);
+        register(new Incrementing().getType(), Incrementing::new);
     }
 
     protected abstract Component getName();
