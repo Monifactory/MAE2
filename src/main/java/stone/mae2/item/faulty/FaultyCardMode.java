@@ -34,10 +34,9 @@ public abstract class FaultyCardMode {
         }
     }
 
-    public static ResourceLocation getResourceLocation(CompoundTag tag) {
-        return new ResourceLocation(tag.getString(MODE_TYPE));
-    }
-
+    /**
+     * Extract out the {@link CompoundTag} for this {@link FaultyMemoryCardItem}'s data
+     */ 
     public static CompoundTag getData(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         return tag == null ? new CompoundTag() : tag.getCompound(FAULTY_DATA);
@@ -55,8 +54,21 @@ public abstract class FaultyCardMode {
     // I don't like this, but it works. Really should be static somehow
     public abstract ResourceLocation getType();
 
+    /**
+     * Called from the onItemUseFirst method in the {@link FaultyMemoryCardItem}
+     *
+     * Called before the item's actually used on the part/block so it can be
+     * cancelled or modified to change what the default {@link
+     * appeng.items.tools.MemoryCardItem} behavior is.
+     */
     public abstract InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context);
 
+    /**
+     * Called from the onItemUse method in the {@link FaultyMemoryCardItem}
+     *
+     * Mainly for modes to implement "submodes" that players can cycle between
+     * with right clicks
+     */
     public InteractionResultHolder<ItemStack> onItemUse(Level level, Player player, InteractionHand hand) {
         // do nothing by default, some modes won't need this at all
         return InteractionResultHolder.pass(player.getItemInHand(hand));
