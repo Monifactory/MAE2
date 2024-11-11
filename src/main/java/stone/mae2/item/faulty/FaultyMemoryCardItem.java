@@ -6,6 +6,7 @@ import appeng.core.localization.Tooltips;
 import appeng.helpers.IMouseWheelItem;
 import appeng.items.tools.MemoryCardItem;
 import appeng.util.InteractionUtil;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -61,11 +62,29 @@ public class FaultyMemoryCardItem extends MemoryCardItem implements IMouseWheelI
         lines.add(Tooltips.of(FaultyCardMode.of(stack).getName()));
         super.appendHoverText(stack, level, lines, advancedTooltips);
     }
-    public static int getTintColor(ItemStack stack, int index) {
-        if (index == 1) {
-            return FaultyCardMode.of(stack).getTintColor();
+
+    @Override
+    public int getColor(ItemStack stack) {
+        CompoundTag compoundTag = stack.getTagElement(TAG_DISPLAY);
+        if (compoundTag != null && compoundTag.contains(TAG_COLOR, 99)) {
+            return compoundTag.getInt(TAG_COLOR);
         }
-        return 0xFFFFFF;
+        return 0xFF0000;
+    }
+    
+    public static int getTintColor(ItemStack stack, int index) {
+        if (stack.getItem() instanceof FaultyMemoryCardItem card) {
+            switch (index) {
+            case 1:
+                return card.getColor(stack);
+            case 2:
+                return FaultyCardMode.of(stack).getTintColor();
+            default:
+                return 0xFFFFFF;
+            }
+        } else {
+            return 0xFFFFFF;
+        }
     }
 
     @Override
