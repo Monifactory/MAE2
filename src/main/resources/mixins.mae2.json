@@ -8,6 +8,8 @@
         "PatternProviderLogicMixin",
         "CraftingCPUClusterMixin"
     ],
-    "client": [],
+    "client": [
+        "ModelBakeryMixin"
+    ],
     "server": []
 }

@@ -7,8 +7,10 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 
 import stone.mae2.MAE2;
@@ -48,7 +50,17 @@ public class MAE2RecipeProvider extends RecipeProvider {
         // crafting recipe to Multi P2Ps, you'd need to attune a ME P2P to something
         // else before crafting the Multi P2P)
         buildMultiP2PRecipe(consumer, MAE2Items.ITEM_MULTI_P2P_TUNNEL.get(), AEParts.ME_P2P_TUNNEL, MAE2.toKey("network/parts/multi_p2p_tunnel_workaround"));
-    }
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, MAE2Items.FAULTY_MEMORY_CARD.get())
+            .pattern("lcc")
+            .pattern("grg")
+            .define('l', AEItems.LOGIC_PROCESSOR)
+            .define('c', Items.COPPER_INGOT)
+            .define('g', Items.GOLD_INGOT)
+            .define('r', Items.REDSTONE)
+            .unlockedBy("has_memory_card", has(AEItems.MEMORY_CARD))
+            .save(consumer);
+            }
 
     public static void buildAcceleratorRecipe(Consumer<FinishedRecipe> consumer, ItemLike output,
         ItemLike component, String id) {

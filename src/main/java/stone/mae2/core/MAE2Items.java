@@ -14,6 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.MAE2;
+import stone.mae2.item.faulty.FaultyMemoryCardItem;
 import stone.mae2.parts.p2p.PatternP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.FEMultiP2PPart;
 import stone.mae2.parts.p2p.multi.FluidMultiP2PPart;
@@ -38,6 +39,8 @@ public abstract class MAE2Items {
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_16x;
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_64x;
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_256x;
+
+    public static RegistryObject<FaultyMemoryCardItem> FAULTY_MEMORY_CARD;
 
     public static void init(IEventBus bus) {
         register();
@@ -65,7 +68,6 @@ public abstract class MAE2Items {
             return ITEMS.register("pattern_multi_p2p_tunnel",
                     () -> new PartItem<>(new Item.Properties(), PatternMultiP2PPart.class, PatternMultiP2PPart::new));
         });
-
         REDSTONE_MULTI_P2P_TUNNEL = Util.make(() -> {
             PartModels.registerModels(
                     PartModelsHelper.createModels(RedstoneMultiP2PPart.class));
@@ -73,7 +75,6 @@ public abstract class MAE2Items {
                     () -> new PartItem<>(new Item.Properties(),
                             RedstoneMultiP2PPart.class, RedstoneMultiP2PPart::new));
         });
-
         FE_MULTI_P2P_TUNNEL = Util.make(() -> {
             PartModels.registerModels(
                     PartModelsHelper.createModels(FEMultiP2PPart.class));
@@ -95,7 +96,8 @@ public abstract class MAE2Items {
                     () -> new PartItem<>(new Item.Properties(),
                             ItemMultiP2PPart.class, ItemMultiP2PPart::new));
         });
-
+        
+        FAULTY_MEMORY_CARD = ITEMS.register("faulty_card", FaultyMemoryCardItem::new);
     }
 
 }

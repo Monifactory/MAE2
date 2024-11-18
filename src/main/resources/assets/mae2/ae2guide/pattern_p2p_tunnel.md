@@ -1,6 +1,6 @@
 ---
 navigation:
-    parent: ae2:items-blocks-machines/items-block-machines-index.md
+    parent: ae2:items-blocks-machines/items-blocks-machines-index.md
     title: Pattern P2P Tunnels
     icon: mae2:pattern_p2p_tunnel
 categories:
