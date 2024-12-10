@@ -1,4 +1,4 @@
-package stone.mae2.core;
+package stone.mae2.bootstrap;
 
 import appeng.block.crafting.CraftingUnitBlock;
 import appeng.core.definitions.AEBlocks;

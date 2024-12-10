@@ -1,4 +1,4 @@
-package stone.mae2.core;
+package stone.mae2.bootstrap;
 
 import appeng.api.integrations.igtooltip.PartTooltips;
 import appeng.api.networking.GridServices;

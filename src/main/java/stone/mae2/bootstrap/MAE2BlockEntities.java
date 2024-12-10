@@ -1,4 +1,4 @@
-package stone.mae2.core;
+package stone.mae2.bootstrap;
 
 import appeng.blockentity.ClientTickingBlockEntity;
 import appeng.blockentity.ServerTickingBlockEntity;

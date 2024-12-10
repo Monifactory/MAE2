@@ -4,7 +4,7 @@ import appeng.api.parts.IPartItem;
 import appeng.core.definitions.AEParts;
 import appeng.parts.p2p.P2PTunnelPart;
 
-import stone.mae2.core.MAE2Items;
+import stone.mae2.bootstrap.MAE2Items;
 import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
 import java.util.HashMap;

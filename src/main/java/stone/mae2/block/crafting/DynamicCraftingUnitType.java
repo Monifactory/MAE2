@@ -3,7 +3,7 @@ package stone.mae2.block.crafting;
 import appeng.block.crafting.ICraftingUnitType;
 import net.minecraft.world.item.Item;
 
-import stone.mae2.core.MAE2Items;
+import stone.mae2.bootstrap.MAE2Items;
 
 public enum DynamicCraftingUnitType implements ICraftingUnitType {
     ACCELERATOR_4x(0, 4), ACCELERATOR_16x(0, 16), ACCELERATOR_64x(0, 64), ACCELERATOR_256x(0, 256);

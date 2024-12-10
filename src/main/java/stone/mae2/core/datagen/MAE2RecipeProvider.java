@@ -15,7 +15,7 @@ import net.minecraft.world.level.ItemLike;
 
 import stone.mae2.MAE2;
 import stone.mae2.api.features.MultiP2PTunnelAttunement;
-import stone.mae2.core.MAE2Items;
+import stone.mae2.bootstrap.MAE2Items;
 
 import java.util.function.Consumer;
 

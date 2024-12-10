@@ -1,4 +1,4 @@
-package stone.mae2.core;
+package stone.mae2.bootstrap;
 
 import appeng.api.features.P2PTunnelAttunement;
 import appeng.api.parts.PartModels;
