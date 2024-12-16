@@ -36,11 +36,8 @@ public class MAE2 {
         Path configPath = FMLPaths.CONFIGDIR.get().resolve("mae2-common.toml");
         CommentedConfig config = TomlFormat.instance().createParser()
             .parse(configPath, FileNotFoundAction.READ_NOTHING);
-        if (!config.isEmpty())
-        {
-            MAE2Config.SPEC.acceptConfig(config);
-            MAE2Config.onLoad();
-        }
+        MAE2Config.SPEC.acceptConfig(config);
+        MAE2Config.onLoad();
 
         DistExecutor.safeRunForDist(() -> Proxy.Client::new,
                                     () -> Proxy.Server::new).init(bus);
