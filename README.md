@@ -14,7 +14,7 @@ optimizations to implement
 # Discord
 Speaking of pull requests, I've taken up residence in Pansmith's Kitchen. It's a
 discord server mainly for Monifactory development, but since MAE2 is practically
-made for MAE2, I've got a channel there. Come in and talk about the mod or yell
+made for Monifactory, I've got a channel there. Come in and talk about the mod or yell
 at me to do stuff. (really do complain at me to get stuff done, I mainly work on
 what people want, so if no one says anything I'll never prioritize it). Discord
 link is here -> https://discord.gg/CEuSDXVsPc
