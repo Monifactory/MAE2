@@ -11,6 +11,14 @@ make an issue first to link with the PR and make sure its really a bug. If you
 want ideas peruse the TODO list at TODO.org, its got new feature ideas, and
 optimizations to implement
 
+# Discord
+Speaking of pull requests, I've taken up residence in Pansmith's Kitchen. It's a
+discord server mainly for Monifactory development, but since MAE2 is practically
+made for MAE2, I've got a channel there. Come in and talk about the mod or yell
+at me to do stuff. (really do complain at me to get stuff done, I mainly work on
+what people want, so if no one says anything I'll never prioritize it). Discord
+link is here -> https://discord.gg/CEuSDXVsPc
+
 Along with code additions, if some artist wants to work for free and make assets
 for MAE2, I'd welcome them. Even if you just think the colors of something is
 wrong, I'd take it. I'm terrible with graphics.
