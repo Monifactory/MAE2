@@ -82,7 +82,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                         total = Math.addExact(total, guard.get().getEnergyStored());
                     } catch (ArithmeticException e) {
                         // combined output's storing more than a long's worth of power, return 0
-                        // instead, because otherwise it'll look like it'll look full, ie storing a long
+                        // instead, because otherwise it'll look like it's full, ie storing a long
                         // of power, has a max capacity of a long -> full storage
                         return 0;
                     }
@@ -103,7 +103,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                     } catch (ArithmeticException e) {
                         // combined output's capacity is more than a long's worth of power, return max
                         // long
-                        // instead, because otherwise it'll look like it'll look full, ie storing a long
+                        // instead, because otherwise it'll look like it's full, ie storing a long
                         // of power, has a max capacity of a long -> full storage
                         return Long.MAX_VALUE;
                     }
@@ -171,7 +171,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                         total = Math.addExact(total, guard.get().getEnergyStored());
                     } catch (ArithmeticException e) {
                         // combined output's storing more than a long's worth of power, return 0
-                        // instead, because otherwise it'll look like it'll look full, ie storing a long
+                        // instead, because otherwise it'll look like it's full, ie storing a long
                         // of power, has a max capacity of a long -> full storage
                         return 0;
                     }
@@ -192,7 +192,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                     } catch (ArithmeticException e) {
                         // combined output's capacity is more than a long's worth of power, return max
                         // long
-                        // instead, because otherwise it'll look like it'll look full, ie storing a long
+                        // instead, because otherwise it'll look like it's full, ie storing a long
                         // of power, has a max capacity of a long -> full storage
                         return Long.MAX_VALUE;
                     }
