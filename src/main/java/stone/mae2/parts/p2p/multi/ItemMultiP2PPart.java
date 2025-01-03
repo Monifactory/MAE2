@@ -148,7 +148,7 @@ public class ItemMultiP2PPart extends CapabilityMultiP2PPart<ItemMultiP2PPart, I
 
         @Override
         public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            return ItemStack.EMPTY;
+            return stack;
         }
 
         @Override
@@ -171,12 +171,12 @@ public class ItemMultiP2PPart extends CapabilityMultiP2PPart<ItemMultiP2PPart, I
 
         @Override
         public int getSlotLimit(int slot) {
-            return Integer.MAX_VALUE;
+            return 0;
         }
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return true;
+            return false;
         }
     }
 
