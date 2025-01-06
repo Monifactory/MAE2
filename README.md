@@ -24,12 +24,21 @@ for MAE2, I'd welcome them. Even if you just think the colors of something is
 wrong, I'd take it. I'm terrible with graphics.
 
 # Credits
+Code are all files under `src/main/java/`. Resources are all files under
+`src/main/resources/` and `src/generated/resources/`
+## Code
+All code in this repository is licensed under the LGPL (see `LICENSE.txt`),
+unless noted otherwise. Each files licensing will be noted in the copyright header.
+
 Some code used in this repository is copied/edited from the original
-Applied Energistics 2. Should only be code in `@Overwrite` mixins or classes inside
+Applied Energistics 2. This should only be code in `@Overwrite` mixins or classes inside
 the `appeng` package.
 
-* Textures and Models Currently every texture/model in here is just a color
-shifted version of AE2's texture. Full credits to the original artists, not gonna
-take credit for hue shifting a crafting cpu
+## Resources
+Currently every texture/model in here is just a color shifted version of AE2's
+texture. Full credits to the original artists, not gonna take credit for hue
+shifting a crafting cpu
 - (c) 2020, [Ridanisaurus Rid](https://github.com/Ridanisaurus/), (c) 2013 - 2020 AlgorithmX2 et al
 - [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%203.0-yellow.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/3.0/)
+
+All other resources (including new textures/models if added) are licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/).
