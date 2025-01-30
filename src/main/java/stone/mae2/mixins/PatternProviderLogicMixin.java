@@ -335,7 +335,7 @@ public abstract class PatternProviderLogicMixin {
         return sendStacksOut(cache.find());
     }
 
-    public static List<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
+    private static List<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
         BlockEntity potentialPart = level.getBlockEntity(pos);
         if (potentialPart == null || !(potentialPart instanceof IPartHost))
         {

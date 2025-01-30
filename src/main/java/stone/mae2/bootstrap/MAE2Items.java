@@ -33,6 +33,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.MAE2;
 import stone.mae2.item.faulty.FaultyMemoryCardItem;
+import stone.mae2.parts.PatternBusPart;
 import stone.mae2.parts.p2p.PatternP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.FEMultiP2PPart;
 import stone.mae2.parts.p2p.multi.FluidMultiP2PPart;
@@ -45,6 +46,7 @@ public abstract class MAE2Items {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister
             .create(ForgeRegistries.ITEMS, MAE2.MODID);
 
+    public static RegistryObject<PartItem<PatternBusPart>> PATTERN_BUS;
     public static RegistryObject<PartItem<PatternP2PTunnelPart>> PATTERN_P2P_TUNNEL;
     
     public static RegistryObject<PartItem<PatternMultiP2PPart>> PATTERN_MULTI_P2P_TUNNEL;
@@ -65,13 +67,18 @@ public abstract class MAE2Items {
         ITEMS.register(bus);
 
         bus.addListener((FMLCommonSetupEvent event) -> {
-            P2PTunnelAttunement
+                P2PTunnelAttunement
                     .registerAttunementTag(PATTERN_P2P_TUNNEL.get());
-        });
+            });
     }
 
     @SuppressWarnings("unchecked")
     public static void register() {
+        PATTERN_BUS = Util.make(() -> {
+                PartModels.registerModels(PartModelsHelper.createModels(PatternBusPart.class));
+                return ITEMS.register("pattern_bus", () -> new PartItem<>(new Item.Properties(), PatternBusPart.class, PatternBusPart::new));
+            });
+            
         PATTERN_P2P_TUNNEL = Util.make(() -> {
             PartModels.registerModels(
                     PartModelsHelper.createModels(PatternP2PTunnelPart.class));

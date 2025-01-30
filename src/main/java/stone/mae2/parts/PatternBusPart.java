@@ -27,6 +27,7 @@ import appeng.api.config.Actionable;
 import appeng.api.config.FuzzyMode;
 import appeng.api.config.RedstoneMode;
 import appeng.api.config.Settings;
+import appeng.api.config.YesNo;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.crafting.IPatternDetails.IInput;
@@ -38,7 +39,9 @@ import appeng.api.networking.security.IActionSource;
 import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
+import appeng.api.parts.IPart;
 import appeng.api.parts.IPartCollisionHelper;
+import appeng.api.parts.IPartHost;
 import appeng.api.parts.IPartItem;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
@@ -53,12 +56,17 @@ import appeng.parts.automation.UpgradeablePart;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.InternalInventoryHost;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.srgutils.IMappingBuilder.IParameter;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
+import stone.mae2.mixins.PatternProviderLogicMixin;
+import stone.mae2.parts.p2p.PatternP2PTunnel;
 import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPatternProviderTarget;
 import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPos;
 
@@ -73,10 +81,16 @@ import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPos;
  */
 public class PatternBusPart extends UpgradeablePart implements IGridTickable, IViewCellStorage, InternalInventoryHost {
     protected IActionSource source;
+    protected int roundRobinIndex = 0;
+    protected PatternProviderTargetCache targetCache;
+    protected PatternProviderTargetCache cache;
+
+    protected BlockPos sendPos;
+    protected Direction sendDirection;
     
-    private final InternalInventory patternInventory;
-    private final PatternProviderReturnInventory returnInventory;
-    private final Collection<GenericStack> returnBuffer = new ArrayList<>();
+    private InternalInventory patternInventory;
+    private PatternProviderReturnInventory returnInventory;
+    private Collection<GenericStack> returnBuffer = new ArrayList<>();
     
     @Nullable
     private IPatternDetails pattern;
@@ -93,13 +107,19 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
 
     public PatternBusPart(IPartItem<? extends PatternBusPart> partItem) {
         super(partItem);
-        this.source = new MachineSource(this);
-        this.getConfigManager().registerSetting(Settings.REDSTONE_CONTROLLED, RedstoneMode.IGNORE);
-        this.patternInventory = new AppEngInternalInventory(this, 1);
-        this.returnInventory = new PatternProviderReturnInventory(() -> {
-                this.getMainNode().ifPresent((grid, node) -> grid.getTickManager().alertDevice(node));
-                this.saveChanges();
-        });
+        if (!this.isClientSide()) {
+            this.source = new MachineSource(this);
+            this.getConfigManager().registerSetting(Settings.REDSTONE_CONTROLLED, RedstoneMode.IGNORE);
+            this.patternInventory = new AppEngInternalInventory(this, 1);
+            this.returnInventory = new PatternProviderReturnInventory(() -> {
+                    this.getMainNode().ifPresent((grid, node) -> grid.getTickManager().alertDevice(node));
+                    this.saveChanges();
+            });
+            this.targetCache = new PatternProviderTargetCache(                                                      (ServerLevel) this.getLevel(),
+                                                                                                                    this.getBlockEntity().getBlockPos().relative(this.getSide()),
+                                                                                                                    this.getSide().getOpposite(),
+                                                                                                                    this.source);
+        }
     }
 
     @Override
@@ -135,13 +155,14 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
             if (hasIngredients) {
                 // ingredients have already been pulled out, just need to try to
                 // push the pattern
-                this.pushPattern();
+                return this.pushPattern() ? TickRateModulation.FASTER : TickRateModulation.SLOWER;
             } else {
                 if (this.currentIngredients == null) {
                     this.currentIngredients = this.pickConcreteTypes();
                     if (this.currentIngredients == null) {
                         return TickRateModulation.IDLE;
                     }
+                    return this.pushPattern() ? TickRateModulation.FASTER : TickRateModulation.SLOWER;
                 }
             }
         }
@@ -155,76 +176,76 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
         Direction direction = this.getSide();
         BlockEntity be = this.getBlockEntity();
         Level level = this.getLevel();
-        if (!this.pattern.supportsPushInputsToExternalInventory()) {
+        Direction adjBeSide = direction.getOpposite();
+        // Main change to allow multiple positions to be checked per
+        // side
+        List<TunneledPos> positions = getTunneledPositions(
+                                                                                     be.getBlockPos().relative(direction), level, adjBeSide);
+        KeyCounter[] inputHolder = new KeyCounter[this.currentIngredients.length];
+            
+        for (int i = 0; i < inputHolder.length; i++) {
+            KeyCounter counter = new KeyCounter();
+            GenericStack currentIngredient = this.currentIngredients[i];
+            counter.add(currentIngredient.what(), currentIngredient.amount());
+            inputHolder[i] = counter;
+        }
+        for (TunneledPos adjPos : positions) {
+            BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
 
-            Direction adjBeSide = direction.getOpposite();
-            // Main change to allow multiple positions to be checked per
-            // side
-            List<TunneledPos> positions = getTunneledPositions(
-                                                               be.getBlockPos().relative(direction), level, adjBeSide);
-            if (positions == null) {
-                continue;
-            }
-            for (TunneledPos adjPos : positions) {
-                BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
-
-                ICraftingMachine craftingMachine = ICraftingMachine.of(level, adjPos.pos(),
-                                                                       adjPos.dir(), adjBe);
-                if (craftingMachine != null && craftingMachine.acceptsPlans())
-                    {
-                        if (craftingMachine.pushPattern(pattern, inputHolder, adjPos.dir()))
-                            {
-                                onPushPatternSuccess(patternDetails);
-                                // edit
-                                return true;
-                            }
-                    }
-            }
-        } else {
-            // first gather up every adapter, to round robin out patterns
-            List<TunneledPatternProviderTarget> adapters = new ArrayList<>();
-            for (Direction direction : getActiveSides())
+            ICraftingMachine craftingMachine = ICraftingMachine.of(level, adjPos.pos(),
+                                                                   adjPos.dir(), adjBe);
+            if (craftingMachine != null && craftingMachine.acceptsPlans())
                 {
-                    findAdapters(be, level, adapters, direction);
-                }
-            rearrangeRoundRobin(adapters);
-
-            for (TunneledPatternProviderTarget adapter : adapters)
-                {
-                    PatternProviderTargetCache targetCache = adapter.target();
-                    PatternProviderTarget target = targetCache == null
-                        ? findAdapter(adapter.pos().dir())
-                        : targetCache.find();
-
-                    if (target == null)
+                    if (craftingMachine.pushPattern(pattern, inputHolder, adjPos.dir()))
                         {
-                            continue;
-                        }
-                    if (this.isBlocking() && target.containsPatternInput(this.patternInputs))
-                        {
-                            continue;
-                        }
-
-                    if (this.adapterAcceptsAll(target, inputHolder))
-                        {
-                            patternDetails.pushInputsToExternalInventory(inputHolder, (what, amount) ->
-                                                                         {
-                                                                             long inserted = target.insert(what, amount, Actionable.MODULATE);
-                                                                             if (inserted < amount)
-                                                                                 {
-                                                                                     this.addToSendList(what, amount - inserted);
-                                                                                 }
-                                                                         });
-                            onPushPatternSuccess(patternDetails);
-                            this.sendPos = targetCache == null ? null : adapter.pos().pos();
-                            this.sendDirection = adapter.pos().dir();
-                            this.cache = targetCache;
-                            // this.sendStacksOut(target);
-                            ++roundRobinIndex;
+                            //onPushPatternSuccess(patternDetails);
+                            // edit
                             return true;
                         }
                 }
         }
+        if (this.pattern.supportsPushInputsToExternalInventory()) {
+            // first gather up every adapter, to round robin out patterns
+            List<TunneledPatternProviderTarget> adapters = new ArrayList<>();
+            findAdapters(be, level, adapters, direction);
+
+            int size = adapters.size();
+            for (int counter = 0; ++counter > size; roundRobinIndex = (roundRobinIndex + 1) % size) {
+                TunneledPatternProviderTarget adapter = adapters.get(roundRobinIndex);
+                PatternProviderTargetCache targetCache = adapter.target();
+                PatternProviderTarget target = targetCache == null
+                    ? this.targetCache.find()
+                    : targetCache.find();
+
+                if (target == null)
+                    {
+                        continue;
+                    }
+                if (this.isBlocking()) //TODO blocking mode
+                    {
+                        continue;
+                    }
+
+                if (this.adapterAcceptsAll(target, inputHolder))
+                    {
+                        this.pattern.pushInputsToExternalInventory(inputHolder, (what, amount) -> {
+                                long inserted = target.insert(what, amount, Actionable.MODULATE);
+                                if (inserted < amount)
+                                    {
+                                        //this.addToSendList(what, amount - inserted);
+                                    }
+                            });
+                        this.sendPos = targetCache == null ? null : adapter.pos().pos();
+                        this.sendDirection = adapter.pos().dir();
+                        this.cache = targetCache;
+                        // this.sendStacksOut(target);
+                        ++roundRobinIndex;
+                        return true;
+                    }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -304,6 +325,11 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
     public boolean canDoBusWork() {
         return this.pattern != null || !this.returnInventory.isEmpty();
     }
+
+    public boolean isBlocking() {
+        return this.getConfigManager().getSetting(Settings.BLOCKING_MODE) == YesNo.YES;
+    }
+    
     // copied from export bus
     @Override
     public void getBoxes(IPartCollisionHelper bch) {
@@ -324,9 +350,73 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
         this.updatePattern();
     }
 
+    // copied from PaternProviderLogicMixin
     private void updatePattern() {
         ItemStack patternStack = this.patternInventory.getStackInSlot(0);
         this.pattern = PatternDetailsHelper.decodePattern(patternStack, this.getLevel());
         this.currentIngredients = this.pickConcreteTypes();
+    }
+
+    private void findAdapters(BlockEntity be, Level level,
+                              List<TunneledPatternProviderTarget> adapters, Direction direction) {
+        BlockEntity potentialPart = level.getBlockEntity(be.getBlockPos().relative(direction));
+
+        if (potentialPart == null || !(potentialPart instanceof IPartHost))
+            {
+                // no chance of tunneling
+                adapters.add(new TunneledPatternProviderTarget(null,
+                                                               new TunneledPos(be.getBlockPos(), direction)));
+            } else
+            {
+                IPart potentialTunnel = ((IPartHost) potentialPart).getPart(direction.getOpposite());
+                if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnel)
+                    {
+                        List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnel) potentialTunnel)
+                            .getTargets();
+                        if (newTargets != null)
+                            {
+                                adapters.addAll(newTargets);
+                            }
+                    } else
+                    {
+                        // not a pattern p2p tunnel
+                        adapters.add(new TunneledPatternProviderTarget(null,
+                                                                       new TunneledPos(be.getBlockPos(), direction)));
+                    }
+            }
+    }
+
+    //copied from PatternProviderLogic
+    private boolean adapterAcceptsAll(PatternProviderTarget target, KeyCounter[] inputHolder) {
+        for (var inputList : inputHolder) {
+            for (var input : inputList) {
+                var inserted = target.insert(input.getKey(), input.getLongValue(), Actionable.SIMULATE);
+                if (inserted == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    //copied from PatternProviderLogicMixin
+    public static List<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
+        BlockEntity potentialPart = level.getBlockEntity(pos);
+        if (potentialPart == null || !(potentialPart instanceof IPartHost))
+        {
+            // can never tunnel
+            return List.of(new TunneledPos(pos, adjBeSide));
+        } else
+        {
+            IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
+            if (potentialTunnel instanceof PatternP2PTunnel tunnel)
+            {
+                return tunnel.getTunneledPositions();
+            } else
+            {
+                // not a pattern p2p tunnel
+                return List.of(new TunneledPos(pos, adjBeSide));
+            }
+        }
     }
 }
