@@ -43,6 +43,7 @@ import appeng.api.parts.IPart;
 import appeng.api.parts.IPartCollisionHelper;
 import appeng.api.parts.IPartHost;
 import appeng.api.parts.IPartItem;
+import appeng.api.parts.IPartModel;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
@@ -51,19 +52,23 @@ import appeng.api.storage.StorageHelper;
 import appeng.crafting.execution.InputTemplate;
 import appeng.helpers.patternprovider.PatternProviderReturnInventory;
 import appeng.helpers.patternprovider.PatternProviderTarget;
+import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
+import appeng.parts.PartModel;
 import appeng.parts.automation.UpgradeablePart;
 import appeng.util.inv.AppEngInternalInventory;
 import appeng.util.inv.InternalInventoryHost;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.srgutils.IMappingBuilder.IParameter;
+import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.mixins.PatternProviderLogicMixin;
 import stone.mae2.parts.p2p.PatternP2PTunnel;
@@ -80,6 +85,15 @@ import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPos;
  * selecting the same thing.
  */
 public class PatternBusPart extends UpgradeablePart implements IGridTickable, IViewCellStorage, InternalInventoryHost {
+    public static final ResourceLocation MODEL_BASE = MAE2.toKey("part/pattern_bus_base");
+    @PartModels
+    public static final IPartModel MODELS_OFF = new PartModel(MODEL_BASE, MAE2.toKey("part/pattern_bus_off"));
+    @PartModels
+    public static final IPartModel MODELS_ON = new PartModel(MODEL_BASE, MAE2.toKey("part/pattern_bus_on"));
+    @PartModels
+    public static final IPartModel MODELS_HAS_CHANNEL = new PartModel(MODEL_BASE, MAE2.toKey("part/pattern_bus_has_channel"));
+    
+    
     protected IActionSource source;
     protected int roundRobinIndex = 0;
     protected PatternProviderTargetCache targetCache;
@@ -348,6 +362,17 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
     public void onChangeInventory(InternalInventory inv, int slot) {
         this.saveChanges();
         this.updatePattern();
+    }
+    
+    @Override
+    public IPartModel getStaticModels() {
+        if (this.isActive() && this.isPowered()) {
+            return MODELS_HAS_CHANNEL;
+        } else if (this.isPowered()) {
+            return MODELS_ON;
+        } else {
+            return MODELS_OFF;
+        }
     }
 
     // copied from PaternProviderLogicMixin
