@@ -54,6 +54,8 @@ import appeng.helpers.patternprovider.PatternProviderReturnInventory;
 import appeng.helpers.patternprovider.PatternProviderTarget;
 import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
+import appeng.menu.MenuOpener;
+import appeng.menu.locator.MenuLocators;
 import appeng.parts.PartModel;
 import appeng.parts.automation.UpgradeablePart;
 import appeng.util.inv.AppEngInternalInventory;
@@ -63,10 +65,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.srgutils.IMappingBuilder.IParameter;
 import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
@@ -146,6 +151,7 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
     public TickingRequest getTickingRequest(IGridNode node) {
         return new TickingRequest(5, 40, isSleeping(), true);
     }
+    
     @Override
     public TickRateModulation tickingRequest(IGridNode node, int ticksSinceLastCall) {
         if (isSleeping()) {
@@ -330,6 +336,14 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
         }
         return currentIngredients;
     }
+
+    @Override
+    public final boolean onPartActivate(Player player, InteractionHand hand, Vec3 pos) {
+        if (!isClientSide()) {
+            MenuOpener.open(PatternBusMenu.TYPE, player, MenuLocators.forPart(this));
+        }
+        return true;
+    }    
     
     @Override
     public RedstoneMode getRSMode() {
