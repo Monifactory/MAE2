@@ -135,93 +135,89 @@ public abstract class PatternProviderLogicMixin {
     public boolean pushPattern(IPatternDetails patternDetails, KeyCounter[] inputHolder) {
         if (!sendList.isEmpty() || !this.mainNode.isActive()
             || !this.patterns.contains(patternDetails))
-        {
-            return false;
-        }
+            {
+                return false;
+            }
 
         var be = host.getBlockEntity();
         var level = be.getLevel();
 
         if (getCraftingLockedReason() != LockCraftingMode.NONE)
-        {
-            return false;
-        }
-
-        if (!patternDetails.supportsPushInputsToExternalInventory())
-        {
-            for (Direction direction : getActiveSides())
+            {
+                return false;
+            }
+        for (Direction direction : getActiveSides())
             {
 
                 Direction adjBeSide = direction.getOpposite();
                 // Main change to allow multiple positions to be checked per
                 // side
                 List<TunneledPos> positions = getTunneledPositions(
-                    be.getBlockPos().relative(direction), level, adjBeSide);
+                                                                   be.getBlockPos().relative(direction), level, adjBeSide);
                 if (positions == null) {
                     continue;
                 }
                 for (TunneledPos adjPos : positions)
-                {
-                    BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
-
-                    ICraftingMachine craftingMachine = ICraftingMachine.of(level, adjPos.pos(),
-                        adjPos.dir(), adjBe);
-                    if (craftingMachine != null && craftingMachine.acceptsPlans())
                     {
-                        if (craftingMachine.pushPattern(patternDetails, inputHolder, adjPos.dir()))
-                        {
-                            onPushPatternSuccess(patternDetails);
-                            // edit
-                            return true;
-                        }
+                        BlockEntity adjBe = level.getBlockEntity(adjPos.pos());
+
+                        ICraftingMachine craftingMachine = ICraftingMachine.of(level, adjPos.pos(),
+                                                                               adjPos.dir(), adjBe);
+                        if (craftingMachine != null && craftingMachine.acceptsPlans())
+                            {
+                                if (craftingMachine.pushPattern(patternDetails, inputHolder, adjPos.dir()))
+                                    {
+                                        onPushPatternSuccess(patternDetails);
+                                        // edit
+                                        return true;
+                                    }
+                            }
                     }
-                }
             }
-        } else
-        {
+        if (patternDetails.supportsPushInputsToExternalInventory()) {
             // first gather up every adapter, to round robin out patterns
             List<TunneledPatternProviderTarget> adapters = new ArrayList<>();
             for (Direction direction : getActiveSides())
-            {
-                findAdapters(be, level, adapters, direction);
-            }
+                {
+                    findAdapters(be, level, adapters, direction);
+                }
             rearrangeRoundRobin(adapters);
 
             for (TunneledPatternProviderTarget adapter : adapters)
-            {
-                PatternProviderTargetCache targetCache = adapter.target();
-                PatternProviderTarget target = targetCache == null
-                    ? findAdapter(adapter.pos().dir())
-                    : targetCache.find();
+                {
+                    PatternProviderTargetCache targetCache = adapter.target();
+                    PatternProviderTarget target = targetCache == null
+                        ? findAdapter(adapter.pos().dir())
+                        : targetCache.find();
 
-                if (target == null)
-                {
-                    continue;
-                }
-                if (this.isBlocking() && target.containsPatternInput(this.patternInputs))
-                {
-                    continue;
-                }
-
-                if (this.adapterAcceptsAll(target, inputHolder))
-                {
-                    patternDetails.pushInputsToExternalInventory(inputHolder, (what, amount) ->
-                    {
-                        long inserted = target.insert(what, amount, Actionable.MODULATE);
-                        if (inserted < amount)
+                    if (target == null)
                         {
-                            this.addToSendList(what, amount - inserted);
+                            continue;
                         }
-                    });
-                    onPushPatternSuccess(patternDetails);
-                    this.sendPos = targetCache == null ? null : adapter.pos().pos();
-                    this.sendDirection = adapter.pos().dir();
-                    this.cache = targetCache;
-                    // this.sendStacksOut(target);
-                    ++roundRobinIndex;
-                    return true;
+                    if (this.isBlocking() && target.containsPatternInput(this.patternInputs))
+                        {
+                            continue;
+                        }
+
+                    if (this.adapterAcceptsAll(target, inputHolder))
+                        {
+                            patternDetails.pushInputsToExternalInventory(inputHolder, (what, amount) ->
+                                                                         {
+                                                                             long inserted = target.insert(what, amount, Actionable.MODULATE);
+                                                                             if (inserted < amount)
+                                                                                 {
+                                                                                     this.addToSendList(what, amount - inserted);
+                                                                                 }
+                                                                         });
+                            onPushPatternSuccess(patternDetails);
+                            this.sendPos = targetCache == null ? null : adapter.pos().pos();
+                            this.sendDirection = adapter.pos().dir();
+                            this.cache = targetCache;
+                            // this.sendStacksOut(target);
+                            ++roundRobinIndex;
+                            return true;
+                        }
                 }
-            }
         }
 
         // return didSomething;
@@ -230,32 +226,32 @@ public abstract class PatternProviderLogicMixin {
     }
 
     private void findAdapters(BlockEntity be, Level level,
-        List<TunneledPatternProviderTarget> adapters, Direction direction) {
+                              List<TunneledPatternProviderTarget> adapters, Direction direction) {
         BlockEntity potentialPart = level.getBlockEntity(be.getBlockPos().relative(direction));
 
         if (potentialPart == null || !(potentialPart instanceof IPartHost))
-        {
-            // no chance of tunneling
-            adapters.add(new TunneledPatternProviderTarget(null,
-                new TunneledPos(be.getBlockPos(), direction)));
-        } else
-        {
-            IPart potentialTunnel = ((IPartHost) potentialPart).getPart(direction.getOpposite());
-            if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnel)
             {
-                List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnel) potentialTunnel)
-                    .getTargets();
-                if (newTargets != null)
-                {
-                    adapters.addAll(newTargets);
-                }
+                // no chance of tunneling
+                adapters.add(new TunneledPatternProviderTarget(null,
+                                                               new TunneledPos(be.getBlockPos(), direction)));
             } else
             {
-                // not a pattern p2p tunnel
-                adapters.add(new TunneledPatternProviderTarget(null,
-                    new TunneledPos(be.getBlockPos(), direction)));
+                IPart potentialTunnel = ((IPartHost) potentialPart).getPart(direction.getOpposite());
+                if (potentialTunnel != null && potentialTunnel instanceof PatternP2PTunnel)
+                    {
+                        List<TunneledPatternProviderTarget> newTargets = ((PatternP2PTunnel) potentialTunnel)
+                            .getTargets();
+                        if (newTargets != null)
+                            {
+                                adapters.addAll(newTargets);
+                            }
+                    } else
+                    {
+                        // not a pattern p2p tunnel
+                        adapters.add(new TunneledPatternProviderTarget(null,
+                                                                       new TunneledPos(be.getBlockPos(), direction)));
+                    }
             }
-        }
     }
 
     /**
@@ -268,32 +264,32 @@ public abstract class PatternProviderLogicMixin {
      */
     private boolean sendStacksOut(PatternProviderTarget adapter) {
         if (adapter == null)
-        {
-            return false;
-        }
+            {
+                return false;
+            }
 
         for (var it = sendList.listIterator(); it.hasNext();)
-        {
-            var stack = it.next();
-            var what = stack.what();
-            long amount = stack.amount();
+            {
+                var stack = it.next();
+                var what = stack.what();
+                long amount = stack.amount();
 
-            long inserted = adapter.insert(what, amount, Actionable.MODULATE);
-            if (inserted >= amount)
-            {
-                it.remove();
-                return true;
-            } else if (inserted > 0)
-            {
-                it.set(new GenericStack(what, amount - inserted));
-                return true;
+                long inserted = adapter.insert(what, amount, Actionable.MODULATE);
+                if (inserted >= amount)
+                    {
+                        it.remove();
+                        return true;
+                    } else if (inserted > 0)
+                    {
+                        it.set(new GenericStack(what, amount - inserted));
+                        return true;
+                    }
             }
-        }
 
         if (sendList.isEmpty())
-        {
-            sendPos = null;
-        }
+            {
+                sendPos = null;
+            }
 
         return false;
     }
@@ -312,54 +308,54 @@ public abstract class PatternProviderLogicMixin {
     @Overwrite
     private boolean sendStacksOut() {
         if (sendDirection == null)
-        {
-            if (!sendList.isEmpty())
             {
-                throw new IllegalStateException("Invalid pattern provider state, this is a bug.");
+                if (!sendList.isEmpty())
+                    {
+                        throw new IllegalStateException("Invalid pattern provider state, this is a bug.");
+                    }
+                return false;
             }
-            return false;
-        }
 
         if (cache == null)
-        {
-            if (this.sendPos == null)
             {
-                return sendStacksOut(findAdapter(this.sendDirection));
-            } else
-            {
-                // when crafts are saved through a load, the cache won't exist but the send pos
-                // will
-                this.cache = findCache(sendPos, sendDirection);
+                if (this.sendPos == null)
+                    {
+                        return sendStacksOut(findAdapter(this.sendDirection));
+                    } else
+                    {
+                        // when crafts are saved through a load, the cache won't exist but the send pos
+                        // will
+                        this.cache = findCache(sendPos, sendDirection);
+                    }
             }
-        }
         return sendStacksOut(cache.find());
     }
 
     private List<TunneledPos> getTunneledPositions(BlockPos pos, Level level, Direction adjBeSide) {
         BlockEntity potentialPart = level.getBlockEntity(pos);
         if (potentialPart == null || !(potentialPart instanceof IPartHost))
-        {
-            // can never tunnel
-            return List.of(new TunneledPos(pos, adjBeSide));
-        } else
-        {
-            IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
-            if (potentialTunnel instanceof PatternP2PTunnel tunnel)
             {
-                return tunnel.getTunneledPositions();
+                // can never tunnel
+                return List.of(new TunneledPos(pos, adjBeSide));
             } else
             {
-                // not a pattern p2p tunnel
-                return List.of(new TunneledPos(pos, adjBeSide));
+                IPart potentialTunnel = ((IPartHost) potentialPart).getPart(adjBeSide);
+                if (potentialTunnel instanceof PatternP2PTunnel tunnel)
+                    {
+                        return tunnel.getTunneledPositions();
+                    } else
+                    {
+                        // not a pattern p2p tunnel
+                        return List.of(new TunneledPos(pos, adjBeSide));
+                    }
             }
-        }
     }
 
     @Nullable
     private PatternProviderTargetCache findCache(BlockPos pos, Direction dir) {
         var thisBe = host.getBlockEntity();
         return new PatternProviderTargetCache((ServerLevel) thisBe.getLevel(), pos, dir,
-            actionSource);
+                                              actionSource);
     }
 
     @Shadow
@@ -386,9 +382,9 @@ public abstract class PatternProviderLogicMixin {
     @Inject(method = "writeToNBT", at = @At("TAIL"))
     private void onWriteToNBT(CompoundTag tag, CallbackInfo ci) {
         if (sendPos != null)
-        {
-            tag.putLong(SEND_POS_TAG, sendPos.asLong());
-        }
+            {
+                tag.putLong(SEND_POS_TAG, sendPos.asLong());
+            }
     }
 
     /**
@@ -404,18 +400,18 @@ public abstract class PatternProviderLogicMixin {
     @Inject(method = "readFromNBT", at = @At("TAIL"))
     private void onReadFromNBT(CompoundTag tag, CallbackInfo ci) {
         if (tag.contains(SEND_POS_TAG))
-        // send pos only exists if MAE2 existed before
-        {
-            Tag sendPosTag = tag.get(SEND_POS_TAG);
-            if (sendPosTag instanceof NumericTag numericTag) {
-                sendPos = BlockPos.of(numericTag.getAsLong());
-            } else if (sendPosTag instanceof CompoundTag compoundTag) {
-                MAE2.LOGGER.debug("Migrated Pattern Provider from MAE2 1.2.0!");
-                TunneledPos tunnelPos = TunneledPos.readFromNBT(compoundTag);
-                this.sendPos = tunnelPos.pos();
-                this.sendDirection = tunnelPos.dir();
+            // send pos only exists if MAE2 existed before
+            {
+                Tag sendPosTag = tag.get(SEND_POS_TAG);
+                if (sendPosTag instanceof NumericTag numericTag) {
+                    sendPos = BlockPos.of(numericTag.getAsLong());
+                } else if (sendPosTag instanceof CompoundTag compoundTag) {
+                    MAE2.LOGGER.debug("Migrated Pattern Provider from MAE2 1.2.0!");
+                    TunneledPos tunnelPos = TunneledPos.readFromNBT(compoundTag);
+                    this.sendPos = tunnelPos.pos();
+                    this.sendDirection = tunnelPos.dir();
+                }
             }
-        }
     }
 
     @Shadow
