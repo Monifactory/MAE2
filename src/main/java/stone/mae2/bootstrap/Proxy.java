@@ -21,6 +21,7 @@ package stone.mae2.bootstrap;
 import appeng.api.integrations.igtooltip.PartTooltips;
 import appeng.api.networking.GridServices;
 import appeng.client.render.crafting.CraftingCubeModel;
+import appeng.init.client.InitScreens;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
@@ -30,6 +31,7 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -37,6 +39,7 @@ import net.minecraftforge.registries.RegistryObject;
 import stone.mae2.MAE2;
 import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.block.crafting.DynamicCraftingUnitType;
+import stone.mae2.client.gui.PatternBusScreen;
 import stone.mae2.client.render.crafting.DynamicCraftingCubeModelProvider;
 import stone.mae2.client.render.model.FaultyCardModel;
 import stone.mae2.core.datagen.MAE2RecipeProvider;
@@ -45,6 +48,7 @@ import stone.mae2.integration.GregTechIntegration;
 import stone.mae2.integration.MultiP2PStateDataProvider;
 import stone.mae2.item.faulty.FaultyMemoryCardItem;
 import stone.mae2.me.service.MultiP2PService;
+import stone.mae2.menu.PatternBusMenu;
 import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
 public interface Proxy {
@@ -121,6 +125,10 @@ public interface Proxy {
 
             bus.addListener((RegisterColorHandlersEvent.Item event) -> {
                     event.register(FaultyMemoryCardItem::getTintColor, MAE2Items.FAULTY_MEMORY_CARD.get());
+                });
+
+            bus.addListener((FMLClientSetupEvent event) -> {
+                    InitScreens.register(PatternBusMenu.TYPE, PatternBusScreen::new, "/screens/pattern_bus.json");
                 });
         }
     }

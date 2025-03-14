@@ -75,13 +75,15 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.srgutils.IMappingBuilder.IParameter;
 import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
+import stone.mae2.menu.PatternBusMenu;
 import stone.mae2.mixins.PatternProviderLogicMixin;
 import stone.mae2.parts.p2p.PatternP2PTunnel;
 import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPatternProviderTarget;
 import stone.mae2.parts.p2p.PatternP2PTunnel.TunneledPos;
 
 /*
- * A Pattern Bus is a part that can export an entire pattern atomicly following pattern p2ps and such.
+ * A Pattern Bus is a part that can export an entire pattern atomicly, following
+ * pattern p2ps and such.
  *
  * It works by extracting ingredients from the system and temporarily storing
  * them until there's space to export them. Additonally there's a system that
@@ -372,6 +374,9 @@ public class PatternBusPart extends UpgradeablePart implements IGridTickable, IV
         this.getHost().markForSave();
     }
 
+    public InternalInventory getPatternInventory() {
+        return this.patternInventory;
+    }
     @Override
     public void onChangeInventory(InternalInventory inv, int slot) {
         this.saveChanges();
