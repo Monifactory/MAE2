@@ -58,7 +58,7 @@ public class EUP2PTunnelPart extends CapabilityP2PTunnelPart<EUP2PTunnelPart, IE
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
             long toSend = amperage;
-            int total = 0;
+            long total = 0;
             for (EUP2PTunnelPart target : EUP2PTunnelPart.this.getOutputs()) {
                 try (CapabilityGuard guard = target.getAdjacentCapability()) {
                     final long received = guard.get().acceptEnergyFromNetwork(target.getSide().getOpposite(), voltage,

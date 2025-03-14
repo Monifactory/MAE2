@@ -57,7 +57,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
             long toSend = amperage;
-            int total = 0;
+            long total = 0;
             for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs()) {
                 try (CapabilityGuard capabilityGuard = target.getAdjacentCapability()) {
                     final IEnergyContainer output = capabilityGuard.get();
