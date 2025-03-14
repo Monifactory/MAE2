@@ -26,6 +26,11 @@ import appeng.api.networking.IGridService;
 import appeng.api.networking.IGridServiceProvider;
 import appeng.api.networking.events.GridBootingStatusChange;
 import appeng.api.networking.events.GridPowerStatusChange;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
+import it.unimi.dsi.fastutil.shorts.Short2ReferenceMap;
+
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.nbt.CompoundTag;
@@ -35,12 +40,14 @@ import org.jetbrains.annotations.Nullable;
 
 import stone.mae2.MAE2;
 import stone.mae2.parts.p2p.multi.CapabilityMultiP2PPart;
+import stone.mae2.parts.p2p.multi.MultiP2PTunnel;
 import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 /**
@@ -65,8 +72,12 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     }
 
     private final IGrid myGrid;
-    private final Multimap<Short, MultiP2PTunnelPart<?>> inputs = LinkedHashMultimap.create();
-    private final Multimap<Short, MultiP2PTunnelPart<?>> outputs = LinkedHashMultimap.create();
+    // terrible nested maps, but performance or something
+    // 0 initial size is to save on a few bytes of memory per subnet
+    /**
+     * This a map with keys of tunnel classes (ie {@link EUMultiP2PTunnel}) mapping to maps with keys of shorts mapping to actual {@link MultiP2PTunnel} objects.
+     */
+    private final Reference2ReferenceMap<MultiP2PTunnel<?>, Short2ReferenceMap<MultiP2PTunnel<?>>> attunement2frequency2tunnelMap = new Reference2ReferenceOpenHashMap<>(0);
     private final Random frequencyGenerator;
 
     public MultiP2PService(IGrid g) {
@@ -90,21 +101,7 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     public void removeNode(IGridNode node) {
         if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
         {
-            /*
-            if (tunnel instanceof MEMultiP2PTunnelPart && !node.hasFlag(GridFlags.REQUIRE_CHANNEL))
-            {
-                return;
-            }
-            */
-
-            if (tunnel.isOutput())
-            {
-                this.outputs.remove(tunnel.getFrequency(), tunnel);
-            } else
-            {
-                this.inputs.remove(tunnel.getFrequency(), tunnel);
-            }
-
+            this.
             this.updateTunnel(tunnel.getFrequency(), !tunnel.isOutput(), false);
         }
     }
@@ -113,13 +110,6 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     public void addNode(IGridNode node, @Nullable CompoundTag savedData) {
         if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
         {
-            //if (tunnel instanceof MEMultiP2PTunnelPart && !node.hasFlag(GridFlags.REQUIRE_CHANNEL))
-            //{
-            //    return;
-            //}
-
-            // AELog.info( "add-" + (t.output ? "output: " : "input: ") + t.freq );
-
             if (tunnel.isOutput())
             {
                 this.outputs.put(tunnel.getFrequency(), tunnel);
@@ -215,5 +205,9 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
 
     public <T extends MultiP2PTunnelPart<T>> Stream<T> getInputs(short freq, Class<T> c) {
         return this.inputs.get(freq).stream().filter(c::isInstance).map(c::cast);
+    }
+
+    public static void register() {
+        
     }
 }
