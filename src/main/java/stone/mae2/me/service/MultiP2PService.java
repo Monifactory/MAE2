@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 AE2 Enthusiast
+ * Copyright (C) 2024-2025 AE2 Enthusiast
  *
  * This file is part of MAE2.
  *
@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ReferenceMap;
+import it.unimi.dsi.fastutil.shorts.Short2ReferenceOpenHashMap;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -54,6 +55,9 @@ import java.util.stream.Stream;
  * 
  */
 public class MultiP2PService implements IGridService, IGridServiceProvider {
+    // atomic because mods load asynchronously/do whatever they want
+    // These ids *have* to be unique per tunnel type.
+    private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
     static
     {
         GridHelper.addGridServiceEventHandler(GridBootingStatusChange.class, MultiP2PService.class,
@@ -75,9 +79,9 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     // terrible nested maps, but performance or something
     // 0 initial size is to save on a few bytes of memory per subnet
     /**
-     * This a map with keys of tunnel classes (ie {@link EUMultiP2PTunnel}) mapping to maps with keys of shorts mapping to actual {@link MultiP2PTunnel} objects.
+     * This a map with keys of attunement ids (given out by this class) mapping to maps with keys of shorts mapping to actual {@link MultiP2PTunnel} objects.
      */
-    private final Reference2ReferenceMap<MultiP2PTunnel<?>, Short2ReferenceMap<MultiP2PTunnel<?>>> attunement2frequency2tunnelMap = new Reference2ReferenceOpenHashMap<>(0);
+    private final Short2ReferenceMap<Short2ReferenceMap<MultiP2PTunnel<?>>> attunement2frequency2tunnelMap = new Short2ReferenceOpenHashMap<>(0);
     private final Random frequencyGenerator;
 
     public MultiP2PService(IGrid g) {
@@ -88,20 +92,13 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
 
     public void wakeInputTunnels() {
         var tm = this.myGrid.getTickManager();
-        for (var tunnel : this.inputs.values())
-        {
-            //if (tunnel instanceof MEMultiP2PTunnelPart)
-            //{
-            //    tm.wakeDevice(tunnel.getGridNode());
-            //}
-        }
     }
 
     @Override
     public void removeNode(IGridNode node) {
         if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
         {
-            this.
+            this.attunement2frequency2tunnelMap.computeIfAbsent(tunnel
             this.updateTunnel(tunnel.getFrequency(), !tunnel.isOutput(), false);
         }
     }
@@ -207,7 +204,14 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
         return this.inputs.get(freq).stream().filter(c::isInstance).map(c::cast);
     }
 
-    public static void register() {
-        
+    /**
+     * Registers your {@link MultiP2PTunnel} to the registry
+     *
+     * Currently does nothing but return the tunnel id, you **need** to save this id and return it in {@link MultiP2PTunnel}
+     *
+     * @return the tunnel's id
+     */
+    public static short register() {
+        return (short) ID_COUNTER.getAndIncrement();
     }
 }

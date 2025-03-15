@@ -332,6 +332,9 @@ public abstract class MultiP2PTunnelPart<T extends MultiP2PTunnelPart<T>> extend
         this.getHost().markForSave();
     }
 
+    abstract public MultiP2PTunnel<T> createTunnel();
+    abstract public short getTunnelID();
+
     @Override
     public ModelData getModelData() {
         long ret = Short.toUnsignedLong(this.getFrequency());

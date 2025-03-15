@@ -34,8 +34,4 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnelPart<T>> {
             return inputs.remove(tunnel);
         }
     }
-
-    public static void register() {
-        MultiP2PService.register();
-    }
 }
