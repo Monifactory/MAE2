@@ -76,6 +76,13 @@ list is in no particular order
    - Need to be careful these pastes don't fuck up mainnet easily
      - Undo? idk how possible that is
 
+** TODO Some sort of generic systems
+ - Kinda like Factorio's generic interupts that are if contains [item] goto
+   station named '[item] dropoff'
+ - Like some sort of export colored concrete powder when correspondingly colored
+   concrete is low
+ - Mainly just to simplify working with identical, colored variants and such
+
 ** TODO Guide Book Entries [25%]
  - [X] Pattern P2P Tunnel
  - [X] Multi P2P Tunnels
