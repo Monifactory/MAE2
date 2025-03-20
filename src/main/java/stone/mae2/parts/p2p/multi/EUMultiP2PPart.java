@@ -29,8 +29,12 @@ import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 
 import stone.mae2.MAE2;
+import stone.mae2.me.service.MultiP2PService;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEnergyContainer> {
     private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/multi_p2p_tunnel_eu"));
@@ -53,12 +57,24 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
         return MODELS.getModel(this.isPowered(), this.isActive());
     }
 
+    public Set<EUMultiP2PPart> getTickOutputs() {
+        if (this.getMainNode().isOnline()) {
+            var grid = getMainNode().getGrid();
+            if (grid != null) {
+                return grid.getService(MultiP2PService.class).getTickOutputs(this.getFrequency(), EUMultiP2PPart.class);
+            }
+        }
+        return Collections.emptySet();
+    }
+
     public class InputHandler implements IEnergyContainer {
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
             long toSend = amperage;
             long total = 0;
-            for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs()) {
+            Iterator<EUMultiP2PPart> it = EUMultiP2PPart.this.getTickOutputs().iterator();
+            while (it.hasNext()) {
+                EUMultiP2PPart target = it.next();
                 try (CapabilityGuard capabilityGuard = target.getAdjacentCapability()) {
                     final IEnergyContainer output = capabilityGuard.get();
                     final long received = output.acceptEnergyFromNetwork(target.getSide().getOpposite(), voltage,
@@ -70,6 +86,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                         break;
                     }
                 }
+                it.remove();
             }
 
             if (total > 0) {

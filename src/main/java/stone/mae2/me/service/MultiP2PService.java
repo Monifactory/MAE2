@@ -26,6 +26,7 @@ import appeng.api.networking.IGridService;
 import appeng.api.networking.IGridServiceProvider;
 import appeng.api.networking.events.GridBootingStatusChange;
 import appeng.api.networking.events.GridPowerStatusChange;
+import appeng.hooks.ticking.TickHandler;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.nbt.CompoundTag;
@@ -39,9 +40,13 @@ import stone.mae2.parts.p2p.multi.MultiP2PTunnelPart;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
+
 
 /**
  * 
@@ -67,6 +72,8 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     private final IGrid myGrid;
     private final Multimap<Short, MultiP2PTunnelPart<?>> inputs = LinkedHashMultimap.create();
     private final Multimap<Short, MultiP2PTunnelPart<?>> outputs = LinkedHashMultimap.create();
+    private final Map<Short, Map<Class<?>,Set<MultiP2PTunnelPart<?>>>> tickOutputs = new HashMap();
+    private long tickOutputTick = 0;
     private final Random frequencyGenerator;
 
     public MultiP2PService(IGrid g) {
@@ -216,4 +223,19 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     public <T extends MultiP2PTunnelPart<T>> Stream<T> getInputs(short freq, Class<T> c) {
         return this.inputs.get(freq).stream().filter(c::isInstance).map(c::cast);
     }
+
+    public <T extends MultiP2PTunnelPart<T>> Set<T> getTickOutputs(short freq, Class<T> c) {
+        long thisTick = TickHandler.instance().getCurrentTick();
+        if (tickOutputTick != thisTick) {
+            tickOutputs.clear();
+            tickOutputTick = thisTick;
+        }
+
+        Map<Class<?>,Set<MultiP2PTunnelPart<?>>> classMap = tickOutputs.computeIfAbsent(freq, (f) -> new HashMap());
+        Set<MultiP2PTunnelPart<?>> ret = classMap.computeIfAbsent(c, (_c) -> this.outputs.get(freq).stream().filter(c::isInstance).collect(Collectors.toCollection(HashSet::new)));
+
+
+        return (Set<T>)classMap.get(c);
+    }
+
 }
