@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -61,18 +62,18 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     static
     {
         GridHelper.addGridServiceEventHandler(GridBootingStatusChange.class, MultiP2PService.class,
-            (service, evt) ->
-            {
-                if (!evt.isBooting())
-                {
-                    service.wakeInputTunnels();
-                }
-            });
+                                              (service, evt) ->
+                                              {
+                                                  if (!evt.isBooting())
+                                                      {
+                                                          service.wakeInputTunnels();
+                                                      }
+                                              });
         GridHelper.addGridServiceEventHandler(GridPowerStatusChange.class, MultiP2PService.class,
-            (service, evt) ->
-            {
-                service.wakeInputTunnels();
-            });
+                                              (service, evt) ->
+                                              {
+                                                  service.wakeInputTunnels();
+                                              });
     }
 
     private final IGrid myGrid;
@@ -94,84 +95,91 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
         var tm = this.myGrid.getTickManager();
     }
 
+    public MultiP2PTunnel<?> getTunnel(short tunnelID, short freq, final Supplier<MultiP2PTunnel<?>> tunnelSupplier) {
+        Short2ReferenceMap<MultiP2PTunnel<?>> freq2tunnelMap = this.attunement2frequency2tunnelMap.computeIfAbsent(tunnelID, ($) -> new Short2ReferenceOpenHashMap<>());
+        MultiP2PTunnel<?> tunnel = freq2tunnelMap.computeIfAbsent(freq, ($) -> tunnelSupplier.get());
+        return tunnel;
+    }
+
+    public MultiP2PTunnel<?> getTunnel(MultiP2PTunnelPart<?> part) {
+        return getTunnel(part.getTunnelID(), part.getFrequency(), part::createTunnel);
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public void removeNode(IGridNode node) {
-        if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
-        {
-            this.attunement2frequency2tunnelMap.computeIfAbsent(tunnel
+        // needs a raw reference because I can't figure out how else to get the generics to work
+        // okay here because the part should always reference the right type of tunnel
+        if (node.getOwner() instanceof MultiP2PTunnelPart part) {
+            // this will leave an empty MultiTunnel in memory, but the player might make parts with the freq again, otherwise it'll get wiped on world restart or something
+            getTunnel(part).removeTunnel(part);
             this.updateTunnel(tunnel.getFrequency(), !tunnel.isOutput(), false);
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void addNode(IGridNode node, @Nullable CompoundTag savedData) {
-        if (node.getOwner() instanceof MultiP2PTunnelPart<?> tunnel)
-        {
-            if (tunnel.isOutput())
-            {
-                this.outputs.put(tunnel.getFrequency(), tunnel);
-            } else
-            {
-                this.inputs.put(tunnel.getFrequency(), tunnel);
-            }
-
+        // raw for same reasons in removeNode
+        if (node.getOwner() instanceof MultiP2PTunnelPart part) {
+            getTunnel(part).removeTunnel(part);
             this.updateTunnel(tunnel.getFrequency(), !tunnel.isOutput(), false);
         }
     }
 
     private void updateTunnel(short freq, boolean updateOutputs, boolean configChange) {
         if (updateOutputs)
-        {
-            for (MultiP2PTunnelPart<?> p : this.outputs.get(freq))
             {
-                if (configChange)
-                {
-                    p.onTunnelConfigChange();
-                }
-                p.onTunnelNetworkChange();
+                for (MultiP2PTunnelPart<?> p : this.outputs.get(freq))
+                    {
+                        if (configChange)
+                            {
+                                p.onTunnelConfigChange();
+                            }
+                        p.onTunnelNetworkChange();
+                    }
             }
-        }
         if (!updateOutputs)
-        {
-            final Collection<MultiP2PTunnelPart<?>> in = this.inputs.get(freq);
-            if (in != null)
             {
-                if (configChange)
-                {
-                    in.forEach(part -> part.onTunnelConfigChange());
-                }
-                in.forEach(part -> part.onTunnelNetworkChange());
+                final Collection<MultiP2PTunnelPart<?>> in = this.inputs.get(freq);
+                if (in != null)
+                    {
+                        if (configChange)
+                            {
+                                in.forEach(part -> part.onTunnelConfigChange());
+                            }
+                        in.forEach(part -> part.onTunnelNetworkChange());
+                    }
             }
-        }
     }
 
     public void updateFreq(MultiP2PTunnelPart<?> t, short newFrequency) {
         if (this.outputs.containsValue(t))
-        {
-            this.outputs.remove(t.getFrequency(), t);
-        }
+            {
+                this.outputs.remove(t.getFrequency(), t);
+            }
 
         if (this.inputs.containsValue(t))
-        {
-            this.inputs.remove(t.getFrequency(), t);
-        }
+            {
+                this.inputs.remove(t.getFrequency(), t);
+            }
 
         var oldFrequency = t.getFrequency();
         t.setFrequency(newFrequency);
 
         if (t.isOutput())
-        {
-            this.outputs.put(t.getFrequency(), t);
-        } else
-        {
-            this.inputs.put(t.getFrequency(), t);
-        }
+            {
+                this.outputs.put(t.getFrequency(), t);
+            } else
+            {
+                this.inputs.put(t.getFrequency(), t);
+            }
 
         if (oldFrequency != newFrequency)
-        {
-            this.updateTunnel(oldFrequency, true, true);
-            this.updateTunnel(oldFrequency, false, true);
-        }
+            {
+                this.updateTunnel(oldFrequency, true, true);
+                this.updateTunnel(oldFrequency, false, true);
+            }
         this.updateTunnel(newFrequency, true, true);
         this.updateTunnel(newFrequency, false, true);
     }
@@ -181,17 +189,17 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
         int cycles = 0;
 
         do
-        {
-            newFrequency = (short) this.frequencyGenerator.nextInt(1 << 16);
-            cycles++;
-        } while (newFrequency == 0 || this.inputs.containsKey(newFrequency));
+            {
+                newFrequency = (short) this.frequencyGenerator.nextInt(1 << 16);
+                cycles++;
+            } while (newFrequency == 0 || this.inputs.containsKey(newFrequency));
 
         if (cycles > 25)
-        {
-            MAE2.LOGGER.debug("Generating a new MultiP2P frequency '%1$d' took %2$d cycles",
-                newFrequency,
-                cycles);
-        }
+            {
+                MAE2.LOGGER.debug("Generating a new MultiP2P frequency '%1$d' took %2$d cycles",
+                                  newFrequency,
+                                  cycles);
+            }
 
         return newFrequency;
     }
