@@ -29,6 +29,7 @@ import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 
 import stone.mae2.MAE2;
+import stone.mae2.integration.GregTechIntegration;
 
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
     public class InputHandler implements IEnergyContainer {
         @Override
         public long acceptEnergyFromNetwork(Direction side, long voltage, long amperage) {
+            GregTechIntegration.inEUP2P = true;
             long toSend = amperage;
             long total = 0;
             for (EUMultiP2PPart target : EUMultiP2PPart.this.getOutputs()) {
@@ -71,6 +73,7 @@ public class EUMultiP2PPart extends CapabilityMultiP2PPart<EUMultiP2PPart, IEner
                     }
                 }
             }
+            GregTechIntegration.inEUP2P = false;
 
             if (total > 0) {
                 EUMultiP2PPart.this

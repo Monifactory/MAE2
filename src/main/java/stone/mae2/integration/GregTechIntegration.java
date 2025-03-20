@@ -36,6 +36,8 @@ import stone.mae2.parts.p2p.EUP2PTunnelPart;
 import stone.mae2.parts.p2p.multi.EUMultiP2PPart;
 
 public abstract class GregTechIntegration {
+    public static boolean inEUP2P = false;
+    
     public static RegistryObject<PartItem<EUP2PTunnelPart>> EU_P2P_TUNNEL;
 	
     public static RegistryObject<PartItem<EUMultiP2PPart>> EU_MULTI_P2P_TUNNEL;
