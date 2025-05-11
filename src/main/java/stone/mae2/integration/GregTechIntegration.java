@@ -58,12 +58,9 @@ public abstract class GregTechIntegration {
                 });
 		
             bus.addListener((FMLCommonSetupEvent event) -> {
-		    P2PTunnelAttunement.registerAttunementTag(EU_P2P_TUNNEL.get());
-                    P2PTunnelAttunement
-                        .registerAttunementApi(EU_P2P_TUNNEL.get(), GTCapability.CAPABILITY_ELECTRIC_ITEM,
-                                               Component.literal("Item with EU storage"));
+                    P2PTunnelAttunement.registerAttunementTag(EU_P2P_TUNNEL.get());
                     MultiP2PTunnelAttunement.registerAttunementItem(EU_P2P_TUNNEL.get(), EU_MULTI_P2P_TUNNEL.get());
-		});
+                });
         }
     }
 }
