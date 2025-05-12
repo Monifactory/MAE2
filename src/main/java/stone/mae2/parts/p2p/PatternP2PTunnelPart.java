@@ -18,8 +18,11 @@
  */
 package stone.mae2.parts.p2p;
 
+import appeng.api.parts.IPart;
+import appeng.api.parts.IPartHost;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
+import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
 import appeng.parts.p2p.P2PModels;
@@ -121,30 +124,30 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart> im
             return null;
         Direction inputSide = input.getSide();
         return new TunneledPos(
-            input.getBlockEntity().getBlockPos().relative(inputSide),
-            inputSide.getOpposite());
+                               input.getBlockEntity().getBlockPos().relative(inputSide),
+                               inputSide.getOpposite());
     }
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability) {
-        if (this.isOutput())
-        {
+        if (this.isOutput()) {
             TunneledPos provider = this.getInputPos();
             if (provider == null)
                 return LazyOptional.empty();
-            BlockEntity providerEntity = this.getLevel()
+            BlockEntity maybeEntity = this.getLevel()
                 .getBlockEntity(provider.pos());
-            if (providerEntity != null)
-            {
-                return providerEntity.getCapability(capability, provider.dir());
-            } else
-            {
-                return LazyOptional.empty();
+            if (maybeEntity != null) {
+                if (maybeEntity instanceof PatternProviderLogicHost) {
+                    return maybeEntity.getCapability(capability, provider.dir());
+                } else if (maybeEntity instanceof IPartHost host) {
+                    IPart maybePart = host.getPart(provider.dir().getOpposite());
+                    if (maybePart != null && maybePart instanceof PatternProviderLogicHost) {
+                        maybePart.getCapability(capability);
+                    }
+                }
             }
-        } else
-        {
-            return LazyOptional.empty();
         }
+        return LazyOptional.empty();
     }
 
 }
