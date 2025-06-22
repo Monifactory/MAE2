@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mae2:block/cloud_chamber"
+    }
+  }
+}

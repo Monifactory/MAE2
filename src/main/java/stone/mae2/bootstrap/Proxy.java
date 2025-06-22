@@ -21,6 +21,9 @@ package stone.mae2.bootstrap;
 import appeng.api.integrations.igtooltip.PartTooltips;
 import appeng.api.networking.GridServices;
 import appeng.client.render.crafting.CraftingCubeModel;
+import appeng.client.render.model.GlassModel;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.network.chat.Component;
@@ -30,6 +33,7 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
@@ -52,6 +56,7 @@ public interface Proxy {
         public void init(IEventBus bus) {
             MAE2Blocks.init(bus);
             MAE2Items.init(bus);
+            MAE2Tags.init(bus);
 
             if (ModList.get().isLoaded("gtceu")) {
                 GregTechIntegration.init(bus);
@@ -115,13 +120,22 @@ public interface Proxy {
                                     new DynamicCraftingCubeModelProvider(
                                             DynamicCraftingUnitType.ACCELERATOR_256x)));
 
-            BuiltInModelHooks.addBuiltInModel(MAE2.toKey("item/faulty_card"), new FaultyCardModel() );
+            BuiltInModelHooks
+                .addBuiltInModel(MAE2.toKey("item/faulty_card"), new FaultyCardModel());
+            BuiltInModelHooks.addBuiltInModel(MAE2.toKey("block/cloud_chamber"), new GlassModel());
+            
 
             PartTooltips.addBody(MultiP2PTunnelPart.class, new MultiP2PStateDataProvider());
 
             bus.addListener((RegisterColorHandlersEvent.Item event) -> {
                     event.register(FaultyMemoryCardItem::getTintColor, MAE2Items.FAULTY_MEMORY_CARD.get());
                 });
+            bus.addListener((FMLClientSetupEvent event) -> {
+                event.enqueueWork(() -> {
+                    ItemBlockRenderTypes
+                    .setRenderLayer(MAE2Blocks.CLOUD_CHAMBER.get(), RenderType.cutout());
+                });
+            });
         }
     }
 

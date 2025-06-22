@@ -21,6 +21,7 @@ package stone.mae2.bootstrap;
 import appeng.block.crafting.CraftingUnitBlock;
 import appeng.core.definitions.AEBlocks;
 import appeng.core.definitions.AEItems;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -30,6 +31,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import stone.mae2.MAE2;
+import stone.mae2.block.CloudChamberBlock;
+import stone.mae2.block.TrailSourceBlock;
 import stone.mae2.block.crafting.DynamicCraftingBlockItem;
 import stone.mae2.block.crafting.DynamicCraftingUnitType;
 
@@ -43,6 +46,9 @@ public abstract class MAE2Blocks {
     public static RegistryObject<CraftingUnitBlock> ACCELERATOR_16x;
     public static RegistryObject<CraftingUnitBlock> ACCELERATOR_64x;
     public static RegistryObject<CraftingUnitBlock> ACCELERATOR_256x;
+
+    public static RegistryObject<CloudChamberBlock> CLOUD_CHAMBER;
+    public static RegistryObject<TrailSourceBlock> TRAIL_SOURCE;
 
     public static void init(IEventBus bus) {
         BLOCKS.register(bus);
@@ -84,5 +90,15 @@ public abstract class MAE2Blocks {
             () -> new DynamicCraftingBlockItem(ACCELERATOR_256x.get(), new Item.Properties(),
                 () -> AEBlocks.CRAFTING_ACCELERATOR.asItem(),
                 () -> AEItems.CELL_COMPONENT_256K.asItem()));
+
+        CLOUD_CHAMBER = BLOCKS.register("cloud_chamber", CloudChamberBlock::new);
+        MAE2Items.CLOUD_CHAMBER = MAE2Items.ITEMS
+            .register("cloud_chamber",
+                () -> new BlockItem(CLOUD_CHAMBER.get(), new Item.Properties()));
+
+        TRAIL_SOURCE = BLOCKS.register("trail_source", TrailSourceBlock::new);
+        MAE2Items.TRAIL_SOURCE = MAE2Items.ITEMS
+            .register("trail_source",
+                () -> new BlockItem(TRAIL_SOURCE.get(), new Item.Properties()));
     }
 }
