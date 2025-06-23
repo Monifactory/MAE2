@@ -7,24 +7,24 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import stone.mae2.api.block.TrailForming.TrailType;
+import stone.mae2.api.client.CloudChamberUtil;
+
 public class TrailSourceBlock extends Block {
-    public TrailSourceBlock(Properties properties) { super(properties); }
+  public TrailSourceBlock(Properties properties) { super(properties); }
 
-    public TrailSourceBlock() { this(Properties.of()); }
+  public TrailSourceBlock() { this(Properties.of()); }
 
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        // if (random.nextFloat() < 1f)
-        for (int i = 0; i < Math.abs(random.nextGaussian() * 4); i++)
-        {
-            Vec3 offset = new Vec3(pos.getX(), pos.getY(), pos.getZ());
-            double polar = random.nextDouble() * 2 * Math.PI;
-            double azimuthal = random.nextDouble() * 2 * Math.PI;
-            Vec3 normal = new Vec3(Math.sin(polar) * Math.cos(azimuthal), Math.cos(polar),
-                Math.sin(polar) * Math.sin(azimuthal));
-            CloudChamberBlock
-                .drawTrail(level, offset.offsetRandom(random, .5f).add(.5, .5, .5),
-                normal.scale(CloudChamberBlock.AREA).add(offset).offsetRandom(random, CloudChamberBlock.AREA));
-        }
+  @Override
+  public void animateTick(BlockState state, Level level, BlockPos pos,
+    RandomSource random) {
+    // if (random.nextFloat() < 1f)
+    for (int i = 0; i < Math.abs(random.nextGaussian() * 4); i++) {
+      Vec3 offset = new Vec3(pos.getX(), pos.getY(), pos.getZ());
+      Vec3 end = CloudChamberUtil.randomPoint(random, TrailType.HEAVY);
+      CloudChamberUtil
+        .drawTrail(level, offset.offsetRandom(random, .5f).add(.5, .5, .5),
+          end.add(offset), TrailType.HEAVY);
     }
+  }
 }
