@@ -7,8 +7,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import stone.mae2.api.block.TrailForming.TrailType;
-import stone.mae2.api.client.CloudChamberUtil;
+import stone.mae2.api.client.trails.CloudChamberUtil;
 
 public class TrailSourceBlock extends Block {
   public TrailSourceBlock(Properties properties) { super(properties); }
@@ -21,10 +20,10 @@ public class TrailSourceBlock extends Block {
     // if (random.nextFloat() < 1f)
     for (int i = 0; i < Math.abs(random.nextGaussian() * 4); i++) {
       Vec3 offset = new Vec3(pos.getX(), pos.getY(), pos.getZ());
-      Vec3 end = CloudChamberUtil.randomPoint(random, TrailType.HEAVY);
+      Vec3 end = CloudChamberUtil.randomPoint(random, CloudChamberUtil.ALPHA);
       CloudChamberUtil
         .drawTrail(level, offset.offsetRandom(random, .5f).add(.5, .5, .5),
-          end.add(offset), TrailType.HEAVY);
+          end.add(offset), CloudChamberUtil.ALPHA);
     }
   }
 }
