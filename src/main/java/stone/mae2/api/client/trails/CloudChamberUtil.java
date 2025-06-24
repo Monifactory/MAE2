@@ -1,5 +1,6 @@
 package stone.mae2.api.client.trails;
 
+import appeng.core.AppEngClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -74,21 +75,23 @@ public final class CloudChamberUtil {
    */
   public static void tryBackgroundRadiation(Level level, RandomSource random) {
     long currentTick = level.getGameTime();
-    if (currentTick > lastTick) {
-      lastTick = currentTick;
-      for (BackgroundTrail trail : backgroundTrails) {
-        double chance = trail.getMeanChance()
-          + random.nextGaussian() * trail.getStddevChance();
-        for (int i = 0; i < (int) chance
-          + (random.nextFloat() < chance - (int) chance ? 1 : 0); i++) {
-          Vec3 surface = randomPoint(random, trail);
-          @SuppressWarnings("resource")
-          Vec3 playerPos = Minecraft.getInstance().player.position();
-          Vec3 offset = playerPos.offsetRandom(random, AREA);
-          CloudChamberUtil
-            .drawTrail(level, surface.add(offset),
-              surface.scale(-1).add(offset), trail);
-        }
+    if (currentTick == lastTick)
+      return;
+    lastTick = currentTick;
+    for (BackgroundTrail trail : backgroundTrails) {
+      double chance = trail.getMeanChance()
+        + random.nextGaussian() * trail.getStddevChance();
+      for (int i = 0; i < (int) chance
+        + (random.nextFloat() < chance - (int) chance ? 1 : 0); i++) {
+        if (!AppEngClient.instance().shouldAddParticles(random))
+          continue;
+        Vec3 surface = randomPoint(random, trail);
+        @SuppressWarnings("resource")
+        Vec3 playerPos = Minecraft.getInstance().player.position();
+        Vec3 offset = playerPos.offsetRandom(random, AREA);
+        CloudChamberUtil
+          .drawTrail(level, surface.add(offset), surface.scale(-1).add(offset),
+            random, trail);
       }
     }
   }
@@ -134,7 +137,7 @@ public final class CloudChamberUtil {
    * @param particle particle to draw
    */
   public static void drawTrail(Level level, Vec3 start, Vec3 end,
-    ParticleOptions particle) {
+    RandomSource random, ParticleOptions particle) {
     double step = (1d / (PARTICLES_PER_BLOCK * start.distanceTo(end)));
     Vec3i lastBlock = new Vec3i((int) Math.floor(start.x),
       (int) Math.floor(start.y), (int) Math.floor(start.z));
@@ -157,8 +160,8 @@ public final class CloudChamberUtil {
       }
       if (inChamber) {
         level
-          .addAlwaysVisibleParticle(particle, lerped.x(), lerped.y(),
-            lerped.z(), 0d, 0d, 0d);
+          .addParticle(particle, lerped.x(), lerped.y(), lerped.z(), 0d, 0d,
+            0d);
       } else {
         i += step;
       }
@@ -177,7 +180,8 @@ public final class CloudChamberUtil {
    * @param end   ending point
    * @param trail trail type to draw
    */
-  public static void drawTrail(Level level, Vec3 start, Vec3 end, Trail trail) {
+  public static void drawTrail(Level level, Vec3 start, Vec3 end,
+    RandomSource random, Trail trail) {
     double step = (1d / (PARTICLES_PER_BLOCK * start.distanceTo(end)));
     Vec3i lastBlock = new Vec3i((int) Math.floor(start.x),
       (int) Math.floor(start.y), (int) Math.floor(start.z));
