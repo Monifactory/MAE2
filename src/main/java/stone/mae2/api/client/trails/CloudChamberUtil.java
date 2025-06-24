@@ -66,6 +66,8 @@ public final class CloudChamberUtil {
    * </b> Simple method is via calling inside
    * {@link Block#animateTick(net.minecraft.world.level.block.state.BlockState, Level, BlockPos, RandomSource)}
    * 
+   * Can be called multiple times per tick fine
+   * 
    * @param level
    * @param random
    * @param currentTick
@@ -126,10 +128,10 @@ public final class CloudChamberUtil {
    * See {@link CloudChamberUtil#drawTrail(Level, Vec3, Vec3, TrailType)} for a
    * variant that respects cloud chamber particle types
    * 
-   * @param level
-   * @param start
-   * @param end
-   * @param particle
+   * @param level    level to draw the trail in
+   * @param start    starting point
+   * @param end      ending point
+   * @param particle particle to draw
    */
   public static void drawTrail(Level level, Vec3 start, Vec3 end,
     ParticleOptions particle) {
@@ -154,8 +156,6 @@ public final class CloudChamberUtil {
           (int) Math.floor(lerped.y), (int) Math.floor(lerped.z));
       }
       if (inChamber) {
-        // level
-        // .addParticle(particle, lerped.x(), lerped.y(), lerped.z(), 0, 0, 0);
         level
           .addAlwaysVisibleParticle(particle, lerped.x(), lerped.y(),
             lerped.z(), 0d, 0d, 0d);
@@ -172,10 +172,10 @@ public final class CloudChamberUtil {
    * See {@link CloudChamberUtil#drawTrail(Level, Vec3, Vec3, ParticleOptions)}
    * for a variant that doesn't respect cloud chamber particle types
    * 
-   * @param level
-   * @param start
-   * @param end
-   * @param trail
+   * @param level level to draw the trail in
+   * @param start starting point
+   * @param end   ending point
+   * @param trail trail type to draw
    */
   public static void drawTrail(Level level, Vec3 start, Vec3 end, Trail trail) {
     double step = (1d / (PARTICLES_PER_BLOCK * start.distanceTo(end)));
