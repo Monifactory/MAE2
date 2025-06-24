@@ -24,6 +24,7 @@ import appeng.block.crafting.CraftingBlockItem;
 import appeng.items.parts.PartItem;
 import appeng.items.parts.PartModelsHelper;
 import net.minecraft.Util;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -59,6 +60,9 @@ public abstract class MAE2Items {
     public static RegistryObject<CraftingBlockItem> ACCELERATOR_256x;
 
     public static RegistryObject<FaultyMemoryCardItem> FAULTY_MEMORY_CARD;
+
+    public static RegistryObject<BlockItem> CLOUD_CHAMBER;
+    public static RegistryObject<BlockItem> TRAIL_SOURCE;
 
     public static void init(IEventBus bus) {
         register();
