@@ -18,12 +18,6 @@
  */
 package stone.mae2.parts.p2p.multi;
 
-import java.util.List;
-
-import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
-import com.gregtechceu.gtceu.api.capability.compat.FeCompat;
-import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
-
 import appeng.api.config.PowerUnits;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.ticking.TickRateModulation;
@@ -32,14 +26,22 @@ import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.P2PModels;
+import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
+import com.gregtechceu.gtceu.api.capability.compat.FeCompat;
+import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.capabilities.Capability;
+
 import stone.mae2.MAE2;
 import stone.mae2.api.Tickable;
 
-public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel, EUMultiP2PTunnel.Logic, EUMultiP2PTunnel.Part, IEnergyContainer> implements Tickable {
+import java.util.List;
+
+public class EUMultiP2PTunnel extends
+  CapabilityMultiP2PTunnel<EUMultiP2PTunnel, EUMultiP2PTunnel.Logic, EUMultiP2PTunnel.Part, IEnergyContainer>
+  implements Tickable {
   private static final IEnergyContainer NULL_ENERGY_STORAGE = new NullHandler();
 
   /**
@@ -94,18 +96,15 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
     return addTunnel(part);
   }
 
-  public static class Part extends CapabilityMultiP2PTunnel.Part<EUMultiP2PTunnel, Logic, Part, IEnergyContainer> {
+  public static class Part extends
+    CapabilityMultiP2PTunnel.Part<EUMultiP2PTunnel, Logic, Part, IEnergyContainer> {
     private static final P2PModels MODELS = new P2PModels(
       MAE2.toKey("part/p2p/multi_p2p_tunnel_eu"));
 
-    public Part(IPartItem<?> partItem) {
-      super(partItem);
-    }
+    public Part(IPartItem<?> partItem) { super(partItem); }
 
     @PartModels
-    public static List<IPartModel> getModels() {
-      return MODELS.getModels();
-    }
+    public static List<IPartModel> getModels() { return MODELS.getModels(); }
 
     @Override
     public IPartModel getStaticModels() {
@@ -123,10 +122,9 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
     }
   }
 
-  public class Logic extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel, Logic, Part, IEnergyContainer>.Logic {
-    public Logic(Part part) {
-      super(part);
-    }
+  public class Logic extends
+    CapabilityMultiP2PTunnel<EUMultiP2PTunnel, Logic, Part, IEnergyContainer>.Logic {
+    public Logic(Part part) { super(part); }
   }
 
   private class InputHandler implements IEnergyContainer {
@@ -145,34 +143,22 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
     }
 
     @Override
-    public boolean inputsEnergy(Direction side) {
-      return true;
-    }
+    public boolean inputsEnergy(Direction side) { return true; }
 
     @Override
-    public long changeEnergy(long differenceAmount) {
-      return 0;
-    }
+    public long changeEnergy(long differenceAmount) { return 0; }
 
     @Override
-    public long getEnergyStored() {
-      return 0;
-    }
+    public long getEnergyStored() { return 0; }
 
     @Override
-    public long getEnergyCapacity() {
-      return Long.MAX_VALUE;
-    }
+    public long getEnergyCapacity() { return Long.MAX_VALUE; }
 
     @Override
-    public long getInputAmperage() {
-      return Long.MAX_VALUE;
-    }
+    public long getInputAmperage() { return Long.MAX_VALUE; }
 
     @Override
-    public long getInputVoltage() {
-      return Long.MAX_VALUE;
-    }
+    public long getInputVoltage() { return Long.MAX_VALUE; }
   }
 
   private class OutputHandler implements IEnergyContainer {
@@ -183,34 +169,22 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
     }
 
     @Override
-    public boolean inputsEnergy(Direction side) {
-      return false;
-    }
+    public boolean inputsEnergy(Direction side) { return false; }
 
     @Override
-    public long changeEnergy(long differenceAmount) {
-      return 0;
-    }
+    public long changeEnergy(long differenceAmount) { return 0; }
 
     @Override
-    public long getEnergyStored() {
-      return buffer;
-    }
+    public long getEnergyStored() { return buffer; }
 
     @Override
-    public long getEnergyCapacity() {
-      return Long.MAX_VALUE;
-    }
+    public long getEnergyCapacity() { return Long.MAX_VALUE; }
 
     @Override
-    public long getInputAmperage() {
-      return 0;
-    }
+    public long getInputAmperage() { return 0; }
 
     @Override
-    public long getInputVoltage() {
-      return 0;
-    }
+    public long getInputVoltage() { return 0; }
   }
 
   private static class NullHandler implements IEnergyContainer {
@@ -221,34 +195,22 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
     }
 
     @Override
-    public boolean inputsEnergy(Direction side) {
-      return false;
-    }
+    public boolean inputsEnergy(Direction side) { return false; }
 
     @Override
-    public long changeEnergy(long differenceAmount) {
-      return 0;
-    }
+    public long changeEnergy(long differenceAmount) { return 0; }
 
     @Override
-    public long getEnergyStored() {
-      return 0;
-    }
+    public long getEnergyStored() { return 0; }
 
     @Override
-    public long getEnergyCapacity() {
-      return 0;
-    }
+    public long getEnergyCapacity() { return 0; }
 
     @Override
-    public long getInputAmperage() {
-      return 0;
-    }
+    public long getInputAmperage() { return 0; }
 
     @Override
-    public long getInputVoltage() {
-      return 0;
-    }
+    public long getInputVoltage() { return 0; }
   }
 
   @Override
@@ -257,14 +219,13 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
   }
 
   @Override
-  public Logic createLogic(Part part) {
-    return part.setLogic(new Logic(part));
-  }
+  public Logic createLogic(Part part) { return part.setLogic(new Logic(part)); }
 
   @Override
   public TickingRequest getTickingRequest() {
-    return Tickable.toTickingRequest(MAE2.CONFIG.rates().EUMultiP2PTunnel(),
-      false, false);
+    return Tickable
+      .toTickingRequest(MAE2.CONFIG.parts().rates().EUMultiP2PTunnel(), false,
+        false);
   }
 
   @Override
@@ -273,8 +234,10 @@ public class EUMultiP2PTunnel extends CapabilityMultiP2PTunnel<EUMultiP2PTunnel,
     long distributed = 0;
     for (var output : this.outputs) {
       try (var guard = output.getAdjacentCapability()) {
-        long inserted = guard.get().acceptEnergyFromNetwork(
-          output.part.getSide().getOpposite(), maxVoltage, buffer / maxVoltage);
+        long inserted = guard
+          .get()
+          .acceptEnergyFromNetwork(output.part.getSide().getOpposite(),
+            maxVoltage, buffer / maxVoltage);
         didWork |= inserted > 0;
         distributed += inserted * maxVoltage;
         this.buffer -= inserted * maxVoltage;
