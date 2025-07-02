@@ -36,7 +36,7 @@ public class PatternP2PPartLogic implements IGridTickable {
 
   @Override
   public TickingRequest getTickingRequest(IGridNode node) {
-    TickRate rate = MAE2.CONFIG.rates().PatternP2PTunnel();
+    TickRate rate = MAE2.CONFIG.parts().rates().PatternP2PTunnel();
     return new TickingRequest(rate.minRate(), rate.maxRate(),
       this.sendList.isEmpty(), true);
   }

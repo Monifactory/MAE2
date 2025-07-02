@@ -29,9 +29,12 @@ import stone.mae2.bootstrap.MAE2Config.TickRates.TickRate;
 import stone.mae2.util.TransHelper;
 
 @EventBusSubscriber(modid = MAE2.MODID, bus = EventBusSubscriber.Bus.MOD)
-public record MAE2Config(Parts parts, TickRates rates) {
+public record MAE2Config(Parts parts) {
+
   @SubscribeEvent
-  static void onReload(final ModConfigEvent.Reloading event) { onReload(); }
+  static void onReload(final ModConfigEvent.Reloading event) {
+    onReload();
+  }
 
   // load in things that don't require a restart here (ie client only things or
   // behavioral things)
@@ -39,63 +42,96 @@ public record MAE2Config(Parts parts, TickRates rates) {
     // this record thing sounded neat but idk now
     // just make the entire config anew here, this a once in a while thing
     // really
-    MAE2.CONFIG = new MAE2Config(new Parts(EU_P2P.get()),
+    MAE2.CONFIG = new MAE2Config(new Parts(EU_P2P.get(), EU_P2P_NERF.get(),
       new TickRates(new TickRate(FE_MIN_RATE.get(), FE_MAX_RATE.get()),
         new TickRate(EU_MIN_RATE.get(), EU_MAX_RATE.get()),
-        new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get())));
+        new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get()))));
   }
 
   // load in things that require a restart here (ie item registation or p2p
   // attunements)
-  public static void onLoad() { onReload(); }
+  public static void onLoad() {
+    onReload();
+  }
 
   @SubscribeEvent
-  static void onload(final ModConfigEvent.Loading event) { onLoad(); }
+  static void onload(final ModConfigEvent.Loading event) {
+    onLoad();
+  }
 
-  public record Parts(boolean isEUP2PEnabled) {}
+  public record Parts(boolean isEUP2PEnabled, boolean isEUP2PNerfed,
+    TickRates rates) {}
 
   public record TickRates(TickRate FEMultiP2PTunnel, TickRate EUMultiP2PTunnel,
     TickRate PatternP2PTunnel) {
     public record TickRate(int minRate, int maxRate) {}
   }
 
-  private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-
   // parts
-  private static final ForgeConfigSpec.BooleanValue EU_P2P = BUILDER
-    .push("Parts")
-    .comment("Whether the EU P2P is enabled, !!Requires Game Restart!!")
-    .worldRestart()
-    .translation(TransHelper.CONFIG.toKey("euP2P"))
-    .define("euP2P", true);
+  private static final ForgeConfigSpec.BooleanValue EU_P2P;
 
   // tick rates
-  private static final ForgeConfigSpec.IntValue FE_MIN_RATE = BUILDER
-    .comment("Minimum tick rate for FE Multi P2P Tunnels")
-    .translation(TransHelper.CONFIG.toKey("feMinRate"))
-    .defineInRange("feMinRate", 1, 1, Integer.MAX_VALUE);
-  private static final ForgeConfigSpec.IntValue FE_MAX_RATE = BUILDER
-    .comment("Max tick rate for FE Multi P2P Tunnels")
-    .translation(TransHelper.CONFIG.toKey("feMaxRate"))
-    .defineInRange("feMaxRate", 1, 1, Integer.MAX_VALUE);
+  private static final ForgeConfigSpec.IntValue FE_MIN_RATE;
+  private static final ForgeConfigSpec.IntValue FE_MAX_RATE;
 
-  private static final ForgeConfigSpec.IntValue EU_MIN_RATE = BUILDER
-    .comment("Minimum tick rate for EU Multi P2P Tunnels")
-    .translation(TransHelper.CONFIG.toKey("euMinRate"))
-    .defineInRange("euMinRate", 1, 1, Integer.MAX_VALUE);
-  private static final ForgeConfigSpec.IntValue EU_MAX_RATE = BUILDER
-    .comment("Max tick rate for EU Multi P2P Tunnels")
-    .translation(TransHelper.CONFIG.toKey("euMaxRate"))
-    .defineInRange("euMaxRate", 1, 1, Integer.MAX_VALUE);
+  private static final ForgeConfigSpec.IntValue EU_MIN_RATE;
+  private static final ForgeConfigSpec.IntValue EU_MAX_RATE;
 
-  private static final ForgeConfigSpec.IntValue PATTERN_MIN_RATE = BUILDER
-    .comment("Minimum tick rate for Pattern (Multi) P2P Tunnels")
-    .translation(TransHelper.CONFIG.toKey("patternMinRate"))
-    .defineInRange("patternMinRate", 5, 1, Integer.MAX_VALUE);
-  private static final ForgeConfigSpec.IntValue PATTERN_MAX_RATE = BUILDER
-    .comment("Max tick rate for Pattern (Multi) P2P Tunnels")
-    .translation(TransHelper.CONFIG.toKey("patternMaxRate"))
-    .defineInRange("patternMaxRate", 120, 1, Integer.MAX_VALUE);
+  private static final ForgeConfigSpec.IntValue PATTERN_MIN_RATE;
+  private static final ForgeConfigSpec.IntValue PATTERN_MAX_RATE;
 
-  public static final IConfigSpec<?> SPEC = BUILDER.build();
+  private static final ForgeConfigSpec.BooleanValue EU_P2P_NERF;
+
+  public static final IConfigSpec<?> SPEC;
+
+  static {
+    ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+
+    // parts
+    builder.push("Parts");
+    EU_P2P = builder
+      .comment("Whether the EU P2P is enabled, !!Requires Game Restart!!")
+      .worldRestart()
+      .translation(TransHelper.CONFIG.toKey("euP2P"))
+      .define("euP2P", true);
+
+    EU_P2P_NERF = builder
+      .comment(
+        "Enable/Disable nerf to EU p2p. Nerf works by penalizing multiple inputs/outputs on the same ME network, multiple inputs/outputs on the same frequency, and higher voltages/amperages by taxing at higher rates.")
+      .translation(TransHelper.CONFIG.toKey("euP2PNerf"))
+      .define("euP2PNerf", false);
+
+    // tick rates
+    builder.push("Tick Rates");
+    FE_MIN_RATE = builder
+      .comment("Min tick rate for FE Multi P2P Tunnels")
+      .translation(TransHelper.CONFIG.toKey("feMinRate"))
+      .defineInRange("feMinRate", 1, 1, Integer.MAX_VALUE);
+    FE_MAX_RATE = builder
+      .comment("Max tick rate for FE Multi P2P Tunnels")
+      .translation(TransHelper.CONFIG.toKey("feMaxRate"))
+      .defineInRange("feMaxRate", 1, 1, Integer.MAX_VALUE);
+
+    EU_MIN_RATE = builder
+      .comment("Min tick rate for EU Multi P2P Tunnels")
+      .translation(TransHelper.CONFIG.toKey("euMinRate"))
+      .defineInRange("euMinRate", 1, 1, Integer.MAX_VALUE);
+    EU_MAX_RATE = builder
+      .comment("Max tick rate for EU Multi P2P Tunnels")
+      .translation(TransHelper.CONFIG.toKey("euMaxRate"))
+      .defineInRange("euMaxRate", 1, 1, Integer.MAX_VALUE);
+
+    PATTERN_MIN_RATE = builder
+      .comment("Minimum tick rate for Pattern (Multi) P2P Tunnels")
+      .translation(TransHelper.CONFIG.toKey("patternMinRate"))
+      .defineInRange("patternMinRate", 5, 1, Integer.MAX_VALUE);
+    PATTERN_MAX_RATE = builder
+      .comment("Max tick rate for Pattern (Multi) P2P Tunnels")
+      .translation(TransHelper.CONFIG.toKey("patternMaxRate"))
+      .defineInRange("patternMaxRate", 120, 1, Integer.MAX_VALUE);
+    builder.pop();
+    builder.pop();
+
+    SPEC = builder.build();
+  }
 }

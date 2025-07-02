@@ -46,6 +46,13 @@ public class EUP2PTunnelPart
     this.emptyHandler = EMPTY_HANDLER;
   }
 
+  public static double getNerfTax(long voltage, long amperage, int inputs,
+    int outputs) {
+    double tier = Math.log1p(voltage / 8) / Math.log(4);
+    return (Math.exp(tier / 14) * Math.exp(outputs / 4d)) / 2 + inputs / 16d
+      + amperage / 64d;
+  }
+
   @PartModels
   public static List<IPartModel> getModels() { return MODELS.getModels(); }
 
@@ -59,9 +66,11 @@ public class EUP2PTunnelPart
     public long acceptEnergyFromNetwork(Direction side, long voltage,
       long amperage) {
       long toSend = amperage;
-      long total = 0;
+      int total = 0;
+      int outputs = 0;
       for (EUP2PTunnelPart target : EUP2PTunnelPart.this.getOutputs()) {
         try (CapabilityGuard guard = target.getAdjacentCapability()) {
+          outputs++;
           final long received = guard
             .get()
             .acceptEnergyFromNetwork(target.getSide().getOpposite(), voltage,
@@ -75,9 +84,11 @@ public class EUP2PTunnelPart
         }
       }
       if (total > 0) {
+        double ratio = FeCompat.ratio(false);
+        if (MAE2.CONFIG.parts().isEUP2PNerfed())
+          ratio *= getNerfTax(voltage, total / voltage, 1, outputs);
         EUP2PTunnelPart.this
-          .deductEnergyCost((double) total * voltage * FeCompat.ratio(false),
-            PowerUnits.FE);
+          .queueTunnelDrain(PowerUnits.FE, (double) total * voltage * ratio);
       }
       return total;
     }

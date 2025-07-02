@@ -103,7 +103,9 @@ public class FEMultiP2PTunnel extends
     private static final P2PModels MODELS = new P2PModels(
       MAE2.toKey("part/p2p/multi_p2p_tunnel_fe"));
 
-    public Part(IPartItem<?> partItem) { super(partItem); }
+    public Part(IPartItem<?> partItem) {
+      super(partItem);
+    }
 
     @PartModels
     public static List<IPartModel> getModels() { return MODELS.getModels(); }
@@ -127,7 +129,9 @@ public class FEMultiP2PTunnel extends
   public class Logic extends
     CapabilityMultiP2PTunnel<FEMultiP2PTunnel, Logic, Part, IEnergyStorage>.Logic {
 
-    public Logic(Part part) { super(part); }
+    public Logic(Part part) {
+      super(part);
+    }
   }
 
   private class InputHandler implements IEnergyStorage {
@@ -144,7 +148,9 @@ public class FEMultiP2PTunnel extends
     }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) { return 0; }
+    public int extractEnergy(int maxExtract, boolean simulate) {
+      return 0;
+    }
 
     // since this can store past max int, it's nonsensical to translate back to
     // FE's API. Instead just look like it's empty and let others push as much
@@ -156,15 +162,21 @@ public class FEMultiP2PTunnel extends
     public int getMaxEnergyStored() { return Integer.MAX_VALUE; }
 
     @Override
-    public boolean canExtract() { return false; }
+    public boolean canExtract() {
+      return false;
+    }
 
     @Override
-    public boolean canReceive() { return true; }
+    public boolean canReceive() {
+      return true;
+    }
   }
 
   private class OutputHandler implements IEnergyStorage {
     @Override
-    public int receiveEnergy(int maxReceive, boolean simulate) { return 0; }
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+      return 0;
+    }
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
@@ -191,18 +203,26 @@ public class FEMultiP2PTunnel extends
     public int getMaxEnergyStored() { return Integer.MAX_VALUE; }
 
     @Override
-    public boolean canExtract() { return true; }
+    public boolean canExtract() {
+      return true;
+    }
 
     @Override
-    public boolean canReceive() { return false; }
+    public boolean canReceive() {
+      return false;
+    }
   }
 
   private static class NullHandler implements IEnergyStorage {
     @Override
-    public int receiveEnergy(int maxReceive, boolean simulate) { return 0; }
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+      return 0;
+    }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) { return 0; }
+    public int extractEnergy(int maxExtract, boolean simulate) {
+      return 0;
+    }
 
     @Override
     public int getEnergyStored() { return 0; }
@@ -211,10 +231,14 @@ public class FEMultiP2PTunnel extends
     public int getMaxEnergyStored() { return 0; }
 
     @Override
-    public boolean canExtract() { return false; }
+    public boolean canExtract() {
+      return false;
+    }
 
     @Override
-    public boolean canReceive() { return false; }
+    public boolean canReceive() {
+      return false;
+    }
   }
 
   @Override
@@ -223,12 +247,15 @@ public class FEMultiP2PTunnel extends
   }
 
   @Override
-  public Logic createLogic(Part part) { return part.setLogic(new Logic(part)); }
+  public Logic createLogic(Part part) {
+    return part.setLogic(new Logic(part));
+  }
 
   @Override
   public TickingRequest getTickingRequest() {
     return Tickable
-      .toTickingRequest(MAE2.CONFIG.rates().FEMultiP2PTunnel(), false, false);
+      .toTickingRequest(MAE2.CONFIG.parts().rates().FEMultiP2PTunnel(), false,
+        false);
   }
 
   @Override

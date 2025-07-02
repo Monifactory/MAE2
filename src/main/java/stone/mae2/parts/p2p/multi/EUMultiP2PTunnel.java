@@ -240,7 +240,8 @@ public class EUMultiP2PTunnel extends
   @Override
   public TickingRequest getTickingRequest() {
     return Tickable
-      .toTickingRequest(MAE2.CONFIG.rates().EUMultiP2PTunnel(), false, false);
+      .toTickingRequest(MAE2.CONFIG.parts().rates().EUMultiP2PTunnel(), false,
+        false);
   }
 
   @Override
