@@ -87,8 +87,7 @@ public class EUP2PTunnelPart
         double ratio = FeCompat.ratio(false);
         if (MAE2.CONFIG.parts().isEUP2PNerfed())
           ratio *= getNerfTax(voltage, total / voltage, 1, outputs);
-        EUP2PTunnelPart.this
-          .queueTunnelDrain(PowerUnits.FE, (double) total * voltage * ratio);
+        EUP2PTunnelPart.this.deductEnergyCost(total * ratio, PowerUnits.FE);
       }
       return total;
     }

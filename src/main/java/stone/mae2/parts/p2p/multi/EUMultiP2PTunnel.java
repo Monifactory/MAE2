@@ -36,6 +36,7 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import stone.mae2.MAE2;
 import stone.mae2.api.Tickable;
+import stone.mae2.parts.p2p.EUP2PTunnelPart;
 
 import java.util.List;
 
@@ -259,12 +260,17 @@ public class EUMultiP2PTunnel extends
         this.buffer -= inserted * maxVoltage;
       }
     }
-    // either stop at double what's being transferred, and one amp (enough to
+    // stop at double what's being transferred or one amp (whichever is higher)
+    // (enough to
     // bootstrap the unsatisfaction)
     this.isSatisfied = this.buffer > distributed * 2
-      && this.buffer >= 2 * maxVoltage;
-    this.isSatisfied = false;
-    this.deductEnergyCost(distributed * FeCompat.ratio(false), PowerUnits.FE);
+      && this.buffer >= maxVoltage;
+    double ratio = FeCompat.ratio(false);
+    if (MAE2.CONFIG.parts().isEUP2PNerfed())
+      ratio *= EUP2PTunnelPart
+        .getNerfTax(maxVoltage, distributed / maxVoltage, inputs.size(),
+          outputs.size());
+    this.deductEnergyCost(distributed * ratio, PowerUnits.FE);
     return didWork ? TickRateModulation.FASTER : TickRateModulation.SLOWER;
   }
 }
