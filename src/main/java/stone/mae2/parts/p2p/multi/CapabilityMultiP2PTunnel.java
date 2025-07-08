@@ -203,7 +203,7 @@ public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunne
       return 2.0f;
     }
 
-    public final <A> LazyOptional<A> getCapability(
+    public final <A> LazyOptional<A> getTargetCapability(
       Capability<A> capabilityClass) {
       if (this.logic != null) {
         return this.logic.getCapability(capabilityClass);
