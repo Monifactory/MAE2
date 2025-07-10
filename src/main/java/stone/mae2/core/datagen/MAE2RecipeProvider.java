@@ -82,7 +82,7 @@ public class MAE2RecipeProvider extends RecipeProvider {
       .save(consumer);
 
     ShapedRecipeBuilder
-      .shaped(RecipeCategory.MISC, MAE2Items.CLOUD_CHAMBER.get())
+      .shaped(RecipeCategory.MISC, MAE2Items.CLOUD_CHAMBER.get(), 8)
       .pattern("ggg")
       .pattern("gag")
       .pattern("ggg")
