@@ -28,6 +28,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+
 import stone.mae2.parts.p2p.multi.MultiP2PTunnel;
 import stone.mae2.util.TransHelper;
 
@@ -35,7 +36,8 @@ import stone.mae2.util.TransHelper;
  * Provides information about a P2P tunnel to WAILA.
  */
 @SuppressWarnings("rawtypes")
-public final class MultiP2PStateDataProvider implements BodyProvider<MultiP2PTunnel.Part>, ServerDataProvider<MultiP2PTunnel.Part> {
+public final class MultiP2PStateDataProvider implements
+  BodyProvider<MultiP2PTunnel.Part>, ServerDataProvider<MultiP2PTunnel.Part> {
   private static final byte STATE_UNLINKED = 0;
   private static final byte STATE_OUTPUT = 1;
   private static final byte STATE_INPUT = 2;
@@ -78,9 +80,7 @@ public final class MultiP2PStateDataProvider implements BodyProvider<MultiP2PTun
   @Override
   public void provideServerData(Player player, MultiP2PTunnel.Part part,
     CompoundTag serverData) {
-    if (!part.isPowered()) {
-      return;
-    }
+    if (!part.isPowered()) { return; }
 
     // Frequency
     serverData.putShort(TAG_P2P_FREQUENCY, part.getFrequency());
@@ -104,6 +104,11 @@ public final class MultiP2PStateDataProvider implements BodyProvider<MultiP2PTun
           // TODO naming frequencies?? maybe as part of a better memory card
         }
       }
+      if (tunnel.getCustomName() != null) {
+        serverData
+          .putString(TAG_P2P_FREQUENCY_NAME,
+            tunnel.getCustomName().getString());
+      }
     }
 
     serverData.putByte(TAG_P2P_STATE, state);
@@ -119,9 +124,10 @@ public final class MultiP2PStateDataProvider implements BodyProvider<MultiP2PTun
       if (links > 1)
         // Why is i18n so difficult? I hate this, but I don't know how to get it
         // to work off a lang file
-        return Component.translatableWithFallback(
-          TransHelper.WAILA.toKey("P2POutputManyInputs"),
-          "Linked (Output Side) - %s Inputs", links);
+        return Component
+          .translatableWithFallback(
+            TransHelper.WAILA.toKey("P2POutputManyInputs"),
+            "Linked (Output Side) - %s Inputs", links);
       else
         return InGameTooltip.P2POutput.text();
 

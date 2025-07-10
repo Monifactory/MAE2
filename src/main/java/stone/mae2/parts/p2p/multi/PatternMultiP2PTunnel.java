@@ -1,5 +1,6 @@
 package stone.mae2.parts.p2p.multi;
 
+import appeng.api.implementations.blockentities.PatternContainerGroup;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.security.IActionSource;
@@ -23,6 +24,7 @@ import stone.mae2.MAE2;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic.PatternP2PTunnel;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic.Target;
+import stone.mae2.util.TransHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +67,19 @@ public class PatternMultiP2PTunnel extends
       this.logic.refreshInputs();
     }
     return super.removeTunnel(part);
+  }
+
+  @Override
+  public PatternContainerGroup getGroup() {
+    PatternContainerGroup group = PatternP2PTunnel.super.getGroup();
+    if (this.hasCustomName())
+      return new PatternContainerGroup(group.icon(),
+        TransHelper.GUI
+          .translatable("patternP2P.aggregate", this.getCustomName(),
+            this.getOutputs().size()),
+        group.tooltip());
+    else
+      return group;
   }
 
   @Override
@@ -139,7 +154,7 @@ public class PatternMultiP2PTunnel extends
           .getTunnel()
           .getPatternTunnelInputs();
         if (inputList.isEmpty())
-          return null;
+          return LazyOptional.empty();
         Target provider = inputList.get(0);
         if (provider == null)
           return LazyOptional.empty();

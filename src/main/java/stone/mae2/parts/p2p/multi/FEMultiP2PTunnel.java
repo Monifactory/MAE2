@@ -18,8 +18,6 @@
  */
 package stone.mae2.parts.p2p.multi;
 
-import java.util.List;
-
 import appeng.api.config.PowerUnits;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.ticking.TickRateModulation;
@@ -28,15 +26,20 @@ import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.P2PModels;
-import net.minecraft.nbt.LongTag;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
+
 import stone.mae2.MAE2;
 import stone.mae2.api.Tickable;
 
-public class FEMultiP2PTunnel extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel, FEMultiP2PTunnel.Logic, FEMultiP2PTunnel.Part, IEnergyStorage> implements Tickable {
+import java.util.List;
+
+public class FEMultiP2PTunnel extends
+  CapabilityMultiP2PTunnel<FEMultiP2PTunnel, FEMultiP2PTunnel.Logic, FEMultiP2PTunnel.Part, IEnergyStorage>
+  implements Tickable {
   private static final IEnergyStorage NULL_ENERGY_STORAGE = new NullHandler();
 
   /**
@@ -74,33 +77,36 @@ public class FEMultiP2PTunnel extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel,
     this.emptyHandler = NULL_ENERGY_STORAGE;
   }
 
+  public static final String ENERGY_TAG = "energy";
+
   @Override
-  public Tag saveNodeData(Part part) {
+  public CompoundTag saveNodeData(Part part) {
+    CompoundTag data = super.saveNodeData(part);
+    if (data == null)
+      data = new CompoundTag();
     // grid seems to remove part before calling this, hence +1
     long split = this.buffer / (this.inputs.size() + 1);
     this.buffer -= split;
-    return LongTag.valueOf(split);
+    data.putLong(ENERGY_TAG, split);
+    return data;
   }
 
   @Override
-  public Logic addTunnel(Part part, Tag savedData) {
-    if (savedData instanceof LongTag split)
-      this.buffer += split.getAsLong();
+  public Logic addTunnel(Part part, Tag tag) {
+    if (tag instanceof CompoundTag data)
+      this.buffer += data.getLong(ENERGY_TAG);
     return addTunnel(part);
   }
 
-  public static class Part extends CapabilityMultiP2PTunnel.Part<FEMultiP2PTunnel, Logic, Part, IEnergyStorage> {
+  public static class Part extends
+    CapabilityMultiP2PTunnel.Part<FEMultiP2PTunnel, Logic, Part, IEnergyStorage> {
     private static final P2PModels MODELS = new P2PModels(
       MAE2.toKey("part/p2p/multi_p2p_tunnel_fe"));
 
-    public Part(IPartItem<?> partItem) {
-      super(partItem);
-    }
+    public Part(IPartItem<?> partItem) { super(partItem); }
 
     @PartModels
-    public static List<IPartModel> getModels() {
-      return MODELS.getModels();
-    }
+    public static List<IPartModel> getModels() { return MODELS.getModels(); }
 
     @Override
     public IPartModel getStaticModels() {
@@ -118,11 +124,10 @@ public class FEMultiP2PTunnel extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel,
     }
   }
 
-  public class Logic extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel, Logic, Part, IEnergyStorage>.Logic {
+  public class Logic extends
+    CapabilityMultiP2PTunnel<FEMultiP2PTunnel, Logic, Part, IEnergyStorage>.Logic {
 
-    public Logic(Part part) {
-      super(part);
-    }
+    public Logic(Part part) { super(part); }
   }
 
   private class InputHandler implements IEnergyStorage {
@@ -139,39 +144,27 @@ public class FEMultiP2PTunnel extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel,
     }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) {
-      return 0;
-    }
+    public int extractEnergy(int maxExtract, boolean simulate) { return 0; }
 
     // since this can store past max int, it's nonsensical to translate back to
     // FE's API. Instead just look like it's empty and let others push as much
     // as they want in. Worst case it'll get capped via the satisfaction flag
     @Override
-    public int getEnergyStored() {
-      return 0;
-    }
+    public int getEnergyStored() { return 0; }
 
     @Override
-    public int getMaxEnergyStored() {
-      return Integer.MAX_VALUE;
-    }
+    public int getMaxEnergyStored() { return Integer.MAX_VALUE; }
 
     @Override
-    public boolean canExtract() {
-      return false;
-    }
+    public boolean canExtract() { return false; }
 
     @Override
-    public boolean canReceive() {
-      return true;
-    }
+    public boolean canReceive() { return true; }
   }
 
   private class OutputHandler implements IEnergyStorage {
     @Override
-    public int receiveEnergy(int maxReceive, boolean simulate) {
-      return 0;
-    }
+    public int receiveEnergy(int maxReceive, boolean simulate) { return 0; }
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
@@ -195,51 +188,33 @@ public class FEMultiP2PTunnel extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel,
     }
 
     @Override
-    public int getMaxEnergyStored() {
-      return Integer.MAX_VALUE;
-    }
+    public int getMaxEnergyStored() { return Integer.MAX_VALUE; }
 
     @Override
-    public boolean canExtract() {
-      return true;
-    }
+    public boolean canExtract() { return true; }
 
     @Override
-    public boolean canReceive() {
-      return false;
-    }
+    public boolean canReceive() { return false; }
   }
 
   private static class NullHandler implements IEnergyStorage {
     @Override
-    public int receiveEnergy(int maxReceive, boolean simulate) {
-      return 0;
-    }
+    public int receiveEnergy(int maxReceive, boolean simulate) { return 0; }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) {
-      return 0;
-    }
+    public int extractEnergy(int maxExtract, boolean simulate) { return 0; }
 
     @Override
-    public int getEnergyStored() {
-      return 0;
-    }
+    public int getEnergyStored() { return 0; }
 
     @Override
-    public int getMaxEnergyStored() {
-      return 0;
-    }
+    public int getMaxEnergyStored() { return 0; }
 
     @Override
-    public boolean canExtract() {
-      return false;
-    }
+    public boolean canExtract() { return false; }
 
     @Override
-    public boolean canReceive() {
-      return false;
-    }
+    public boolean canReceive() { return false; }
   }
 
   @Override
@@ -248,14 +223,12 @@ public class FEMultiP2PTunnel extends CapabilityMultiP2PTunnel<FEMultiP2PTunnel,
   }
 
   @Override
-  public Logic createLogic(Part part) {
-    return part.setLogic(new Logic(part));
-  }
+  public Logic createLogic(Part part) { return part.setLogic(new Logic(part)); }
 
   @Override
   public TickingRequest getTickingRequest() {
-    return Tickable.toTickingRequest(MAE2.CONFIG.rates().FEMultiP2PTunnel(),
-      false, false);
+    return Tickable
+      .toTickingRequest(MAE2.CONFIG.rates().FEMultiP2PTunnel(), false, false);
   }
 
   @Override

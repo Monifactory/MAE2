@@ -9,7 +9,6 @@ import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
-import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
@@ -17,9 +16,7 @@ import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTarget;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -29,7 +26,6 @@ import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.util.TransHelper;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +36,8 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   protected PatternProviderTargetCache caches[];
   protected Set<AEKey> patternInputs;
   private int lastOutputIndex = 0;
+
+  public static boolean isBlocking;
 
   public PatternP2PTunnelLogic(PatternP2PTunnel tunnel) {
     this.tunnel = tunnel;
@@ -64,6 +62,8 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
     try {
       isRecursive = true;
       List<? extends Target> outputs = tunnel.getPatternTunnelOutputs();
+      if (outputs.size() <= 0)
+        return false;
       boolean isExternal = pattern.supportsPushInputsToExternalInventory();
       int i = (lastOutputIndex + 1) % outputs.size();
       do {
@@ -83,8 +83,9 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
 
         if (isExternal) {
           final PatternProviderTarget target = caches[i].find();
-          if (!target.containsPatternInput(patternInputs)
-            && targetAcceptsAll(target, ingredients)) {
+          if (isBlocking && !target.containsPatternInput(patternInputs))
+            continue;
+          if (targetAcceptsAll(target, ingredients)) {
             pattern
               .pushInputsToExternalInventory(ingredients, (what, amount) -> {
                 var inserted = target.insert(what, amount, Actionable.MODULATE);
@@ -150,9 +151,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   }
 
   @Override
-  public boolean acceptsPlans() { // TODO Auto-generated method stub
-    return true;
-  }
+  public boolean acceptsPlans() { return true; }
 
   /**
    * @param level the level this target is in
@@ -219,6 +218,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
       List<? extends Target> outputs = getPatternTunnelOutputs();
       PatternContainerGroup firstGroup = null;
       int count = 0;
+      boolean isMixed = false;
       for (Target output : outputs) {
         PatternContainerGroup newGroup = PatternContainerGroup
           .fromMachine(output.level(), output.pos(), output.side());
@@ -227,16 +227,17 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
         if (firstGroup == null)
           firstGroup = newGroup;
         if (!firstGroup.equals(newGroup))
-          return new PatternContainerGroup(AEItemKey.of(Items.AIR),
-            TransHelper.GUI.translatable("mixedPatternP2P"), List.of());
-        else
-          count++;
+          isMixed = true;
+        count++;
       }
-
-      List<Component> tooltip = new ArrayList<>(firstGroup.tooltip());
-      tooltip.add(TransHelper.GUI.translatable("patternP2PAggregate", count));
-      return new PatternContainerGroup(firstGroup.icon(), firstGroup.name(),
-        tooltip);
+      if (isMixed)
+        return new PatternContainerGroup(PatternContainerGroup.nothing().icon(),
+          TransHelper.GUI.translatable("patternP2P.mixed", count), List.of());
+      else
+        return new PatternContainerGroup(firstGroup.icon(),
+          TransHelper.GUI
+            .translatable("patternP2P.aggregate", firstGroup.name(), count),
+          firstGroup.tooltip());
     }
   }
 }

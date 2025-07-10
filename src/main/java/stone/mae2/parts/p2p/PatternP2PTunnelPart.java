@@ -1,6 +1,7 @@
 package stone.mae2.parts.p2p;
 
 import appeng.api.implementations.blockentities.ICraftingMachine;
+import appeng.api.implementations.blockentities.PatternContainerGroup;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.parts.IPart;
@@ -24,6 +25,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import stone.mae2.MAE2;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic.PatternP2PTunnel;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic.Target;
+import stone.mae2.util.TransHelper;
 
 import java.util.List;
 
@@ -42,6 +44,20 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
       this.logic = null;
     else
       this.logic = LazyOptional.of(() -> new PatternP2PTunnelLogic(this));
+  }
+
+  @Override
+  public PatternContainerGroup getGroup() {
+    PatternContainerGroup group = PatternP2PTunnel.super.getGroup();
+    // always called on the input part anyways, no need to get it
+    if (this.hasCustomName())
+      return new PatternContainerGroup(group.icon(),
+        TransHelper.GUI
+          .translatable("patternP2P.aggregate", this.getCustomName(),
+            this.getOutputs().size()),
+        group.tooltip());
+    else
+      return group;
   }
 
   @PartModels
