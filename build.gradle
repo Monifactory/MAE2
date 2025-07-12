@@ -115,6 +115,7 @@ dependencies {
         it.officialMojangMappings { nameSyntheticMembers = false }
     }
     modImplementation("appeng:appliedenergistics2-forge:$project.ae2_version")
+    modImplementation("org.appliedenergistics:guideme:20.1.7")
 
     modRuntimeOnly("com.jozufozu.flywheel:flywheel-forge-$project.minecraft_version:0.6.9-5")
 
