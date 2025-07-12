@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 AE2 Enthusiast
+ * Copyright (C) 2024-2025 AE2 Enthusiast
  *
  * This file is part of MAE2.
  *
@@ -23,6 +23,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.IConfigSpec;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+
 import stone.mae2.MAE2;
 import stone.mae2.bootstrap.MAE2Config.TickRates.TickRate;
 import stone.mae2.util.TransHelper;
@@ -30,9 +31,7 @@ import stone.mae2.util.TransHelper;
 @EventBusSubscriber(modid = MAE2.MODID, bus = EventBusSubscriber.Bus.MOD)
 public record MAE2Config(Parts parts, TickRates rates) {
   @SubscribeEvent
-  static void onReload(final ModConfigEvent.Reloading event) {
-    onReload();
-  }
+  static void onReload(final ModConfigEvent.Reloading event) { onReload(); }
 
   // load in things that don't require a restart here (ie client only things or
   // behavioral things)
@@ -42,24 +41,21 @@ public record MAE2Config(Parts parts, TickRates rates) {
     // really
     MAE2.CONFIG = new MAE2Config(new Parts(EU_P2P.get()),
       new TickRates(new TickRate(FE_MIN_RATE.get(), FE_MAX_RATE.get()),
-        new TickRate(EU_MIN_RATE.get(), EU_MAX_RATE.get())));
+        new TickRate(EU_MIN_RATE.get(), EU_MAX_RATE.get()),
+        new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get())));
   }
 
   // load in things that require a restart here (ie item registation or p2p
   // attunements)
-  public static void onLoad() {
-    onReload();
-  }
+  public static void onLoad() { onReload(); }
 
   @SubscribeEvent
-  static void onload(final ModConfigEvent.Loading event) {
-    onLoad();
-  }
+  static void onload(final ModConfigEvent.Loading event) { onLoad(); }
 
   public record Parts(boolean isEUP2PEnabled) {}
 
-  public record TickRates(TickRate FEMultiP2PTunnel,
-    TickRate EUMultiP2PTunnel) {
+  public record TickRates(TickRate FEMultiP2PTunnel, TickRate EUMultiP2PTunnel,
+    TickRate PatternP2PTunnel) {
     public record TickRate(int minRate, int maxRate) {}
   }
 
@@ -69,12 +65,13 @@ public record MAE2Config(Parts parts, TickRates rates) {
   private static final ForgeConfigSpec.BooleanValue EU_P2P = BUILDER
     .push("Parts")
     .comment("Whether the EU P2P is enabled, !!Requires Game Restart!!")
-    .worldRestart().translation(TransHelper.CONFIG.toKey("euP2P"))
+    .worldRestart()
+    .translation(TransHelper.CONFIG.toKey("euP2P"))
     .define("euP2P", true);
 
   // tick rates
   private static final ForgeConfigSpec.IntValue FE_MIN_RATE = BUILDER
-    .comment("Min tick rate for FE Multi P2P Tunnels")
+    .comment("Minimum tick rate for FE Multi P2P Tunnels")
     .translation(TransHelper.CONFIG.toKey("feMinRate"))
     .defineInRange("feMinRate", 1, 1, Integer.MAX_VALUE);
   private static final ForgeConfigSpec.IntValue FE_MAX_RATE = BUILDER
@@ -83,13 +80,22 @@ public record MAE2Config(Parts parts, TickRates rates) {
     .defineInRange("feMaxRate", 1, 1, Integer.MAX_VALUE);
 
   private static final ForgeConfigSpec.IntValue EU_MIN_RATE = BUILDER
-    .comment("Min tick rate for EU Multi P2P Tunnels")
+    .comment("Minimum tick rate for EU Multi P2P Tunnels")
     .translation(TransHelper.CONFIG.toKey("euMinRate"))
     .defineInRange("euMinRate", 1, 1, Integer.MAX_VALUE);
   private static final ForgeConfigSpec.IntValue EU_MAX_RATE = BUILDER
     .comment("Max tick rate for EU Multi P2P Tunnels")
     .translation(TransHelper.CONFIG.toKey("euMaxRate"))
     .defineInRange("euMaxRate", 1, 1, Integer.MAX_VALUE);
+
+  private static final ForgeConfigSpec.IntValue PATTERN_MIN_RATE = BUILDER
+    .comment("Minimum tick rate for Pattern (Multi) P2P Tunnels")
+    .translation(TransHelper.CONFIG.toKey("patternMinRate"))
+    .defineInRange("patternMinRate", 5, 1, Integer.MAX_VALUE);
+  private static final ForgeConfigSpec.IntValue PATTERN_MAX_RATE = BUILDER
+    .comment("Max tick rate for Pattern (Multi) P2P Tunnels")
+    .translation(TransHelper.CONFIG.toKey("patternMaxRate"))
+    .defineInRange("patternMaxRate", 120, 1, Integer.MAX_VALUE);
 
   public static final IConfigSpec<?> SPEC = BUILDER.build();
 }

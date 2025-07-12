@@ -89,14 +89,18 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
     if (part.isOutput()) {
       outputs.add(logic);
     } else {
-      if (part.hasCustomName()) { this.customName = part.getCustomName(); }
+      if (part.hasCustomName()) {
+        this.customName = part.getCustomName();
+      }
       inputs.add(this.createLogic(part));
     }
     this.updateTunnels(part.isOutput(), false);
     return logic;
   }
 
-  public L addTunnel(P part, Tag savedData) { return addTunnel(part); }
+  public L addTunnel(P part, Tag savedData) {
+    return addTunnel(part);
+  }
 
   /**
    * Removes a {@link MultiP2PTunnelPart} from this {@link MultiP2PTunnel},
@@ -107,30 +111,41 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
   public boolean removeTunnel(P part) {
     if (part.isOutput()) {
       this.updateTunnels(true, false);
-      return outputs.remove(part.getLogic());
+      boolean wasIn = outputs.remove(part.getLogic());
+      part.logic = null;
+      return wasIn;
     } else {
       this.updateTunnels(false, false);
-      return inputs.remove(part.getLogic());
+      boolean wasIn = inputs.remove(part.getLogic());
+      part.logic = null;
+      return wasIn;
     }
+
   }
 
   public Set<L> getInputs() { return this.inputs; }
 
   public Set<L> getOutputs() { return this.outputs; }
 
-  public boolean hasCustomName() { return this.customName != null; }
+  public boolean hasCustomName() {
+    return this.customName != null;
+  }
 
   public Component getCustomName() { return this.customName; }
 
   protected void updateTunnels(boolean updateOutputs, boolean configChange) {
     if (updateOutputs) {
       for (L logic : this.outputs) {
-        if (configChange) { logic.onTunnelConfigChange(); }
+        if (configChange) {
+          logic.onTunnelConfigChange();
+        }
         logic.onTunnelNetworkChange();
       }
     } else {
       for (L logic : this.inputs) {
-        if (configChange) { logic.onTunnelConfigChange(); }
+        if (configChange) {
+          logic.onTunnelConfigChange();
+        }
         logic.onTunnelNetworkChange();
       }
     }
@@ -154,7 +169,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
   protected void deductEnergyCost(double energyTransported,
     PowerUnits typeTransported) {
     var costFactor = AEConfig.instance().getP2PTunnelEnergyTax();
-    if (costFactor <= 0) { return; }
+    if (costFactor <= 0) {
+      return;
+    }
 
     var tax = typeTransported
       .convertTo(PowerUnits.AE, energyTransported * costFactor);
@@ -166,7 +183,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
   protected void deductTransportCost(long amountTransported,
     AEKeyType typeTransported) {
     var costFactor = AEConfig.instance().getP2PTunnelTransportTax();
-    if (costFactor <= 0) { return; }
+    if (costFactor <= 0) {
+      return;
+    }
 
     double operations = amountTransported
       / (double) typeTransported.getAmountPerOperation();
@@ -179,7 +198,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
   public abstract class Logic {
     protected final P part;
 
-    public Logic(P part) { this.part = part; }
+    public Logic(P part) {
+      this.part = part;
+    }
 
     protected void onTunnelConfigChange() {}
 
@@ -207,7 +228,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     public L getLogic() { return this.logic; }
 
-    protected final L setLogic(L logic) { return this.logic = logic; }
+    protected final L setLogic(L logic) {
+      return this.logic = logic;
+    }
 
     protected float getPowerDrainPerTick() { return 1.0f; }
 
@@ -262,17 +285,25 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
     }
 
     @Override
-    public float getCableConnectionLength(AECableType cable) { return 1; }
+    public float getCableConnectionLength(AECableType cable) {
+      return 1;
+    }
 
     @Override
-    public boolean useStandardMemoryCard() { return false; }
+    public boolean useStandardMemoryCard() {
+      return false;
+    }
 
     @Override
     public boolean onPartActivate(Player player, InteractionHand hand,
       Vec3 pos) {
-      if (isClientSide()) { return true; }
+      if (isClientSide()) {
+        return true;
+      }
 
-      if (hand == InteractionHand.OFF_HAND) { return false; }
+      if (hand == InteractionHand.OFF_HAND) {
+        return false;
+      }
 
       ItemStack is;
       boolean settingOutput;
@@ -347,7 +378,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
       Vec3 pos) {
       final ItemStack is = player.getInventory().getSelected();
       if (!is.isEmpty() && is.getItem() instanceof IMemoryCard mc) {
-        if (isClientSide()) { return true; }
+        if (isClientSide()) {
+          return true;
+        }
 
         final CompoundTag data = mc.getData(is);
         final short storedFrequency = data.getShort("freq");
@@ -462,7 +495,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
     public ModelData getModelData() {
       long ret = Short.toUnsignedLong(this.getFrequency());
 
-      if (this.isActive() && this.isPowered()) { ret |= 0x10000L; }
+      if (this.isActive() && this.isPowered()) {
+        ret |= 0x10000L;
+      }
 
       return ModelData
         .builder()

@@ -18,24 +18,22 @@
  */
 package stone.mae2.mixins;
 
-import appeng.api.networking.IManagedGridNode;
 import appeng.helpers.patternprovider.PatternProviderLogic;
-import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic;
 
 @Mixin(value = PatternProviderLogic.class, remap = false)
-public abstract class PatternProviderLogicMixin extends PatternProviderLogic {
-  public PatternProviderLogicMixin(IManagedGridNode mainNode,
-    PatternProviderLogicHost host) {
-    super(mainNode, host);
-  }
+public abstract class PatternProviderLogicMixin {
+  @Shadow
+  abstract boolean isBlocking();
 
-  @Inject(method = "pushPattern", at = @At("rearrangeRoundRobin"))
-  public void onPushProcessing() {
+  @Inject(method = "pushPattern(LIPatternDetails;[LKeyCounter;)Z", at = @At("HEAD"))
+  public void onPush(CallbackInfoReturnable<Boolean> ci) {
     PatternP2PTunnelLogic.isBlocking = this.isBlocking();
   }
 }

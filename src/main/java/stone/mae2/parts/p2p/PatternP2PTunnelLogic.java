@@ -9,6 +9,7 @@ import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
@@ -22,8 +23,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.checkerframework.checker.units.qual.C;
 
-import stone.mae2.MAE2;
 import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
+import stone.mae2.bootstrap.MAE2Items;
 import stone.mae2.util.TransHelper;
 
 import java.util.HashSet;
@@ -56,7 +57,6 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   @Override
   public boolean pushPattern(IPatternDetails pattern, KeyCounter[] ingredients,
     Direction ejectionDirection) {
-    MAE2.LOGGER.info("tunneling pattern!");
     if (isRecursive)
       return false;
     try {
@@ -65,9 +65,12 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
       if (outputs.size() <= 0)
         return false;
       boolean isExternal = pattern.supportsPushInputsToExternalInventory();
-      int i = (lastOutputIndex + 1) % outputs.size();
+      int i = lastOutputIndex;
       do {
+        i = (i + 1) % outputs.size();
         Target output = outputs.get(i);
+        if (!output.isValid())
+          continue;
         ICraftingMachine craftingMachine = ICraftingMachine
           .of(output.level(), output.pos(), output.side(),
             output.level().getBlockEntity(output.pos()));
@@ -83,21 +86,20 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
 
         if (isExternal) {
           final PatternProviderTarget target = caches[i].find();
-          if (isBlocking && !target.containsPatternInput(patternInputs))
+          if (isBlocking && target.containsPatternInput(patternInputs))
             continue;
           if (targetAcceptsAll(target, ingredients)) {
             pattern
               .pushInputsToExternalInventory(ingredients, (what, amount) -> {
                 var inserted = target.insert(what, amount, Actionable.MODULATE);
                 if (inserted < amount) {
-                  // this.addToSendList(what, amount - inserted);
+                  output.addToSendList(what, amount - inserted);
                 }
               });
             lastOutputIndex = i;
             return true;
           }
         }
-        i = (i + 1) % outputs.size();
       } while (i != lastOutputIndex);
     } finally {
       isRecursive = false;
@@ -114,8 +116,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
     this.caches = new PatternProviderTargetCache[outputs.size()];
     for (int i = 0; i < this.caches.length; i++) {
       Target output = outputs.get(i);
-      this.caches[i] = new PatternProviderTargetCache(output.level(),
-        output.pos(), output.side(), output.source());
+      this.caches[i] = output.getCache();
     }
     this.lastOutputIndex = this.lastOutputIndex % outputs.size();
   }
@@ -144,14 +145,18 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
       for (var input : inputList) {
         var inserted = target
           .insert(input.getKey(), input.getLongValue(), Actionable.SIMULATE);
-        if (inserted == 0) { return false; }
+        if (inserted == 0) {
+          return false;
+        }
       }
     }
     return true;
   }
 
   @Override
-  public boolean acceptsPlans() { return true; }
+  public boolean acceptsPlans() {
+    return true;
+  }
 
   /**
    * @param level the level this target is in
@@ -161,6 +166,15 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
    */
   public static interface Target {
     ServerLevel level();
+
+    default PatternProviderTargetCache getCache() {
+      return new PatternProviderTargetCache(this.level(), this.pos(),
+        this.side(), this.source());
+    }
+
+    boolean isValid();
+
+    void addToSendList(AEKey what, long l);
 
     BlockPos pos();
 
@@ -217,21 +231,30 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
     default PatternContainerGroup getGroup() {
       List<? extends Target> outputs = getPatternTunnelOutputs();
       PatternContainerGroup firstGroup = null;
+      int emptyCount = 0;
       int count = 0;
       boolean isMixed = false;
       for (Target output : outputs) {
         PatternContainerGroup newGroup = PatternContainerGroup
           .fromMachine(output.level(), output.pos(), output.side());
-        if (newGroup == null)
+        if (newGroup == null) {
+          emptyCount++;
           continue;
+        }
         if (firstGroup == null)
           firstGroup = newGroup;
         if (!firstGroup.equals(newGroup))
           isMixed = true;
         count++;
       }
+      if (firstGroup == null)
+        return new PatternContainerGroup(
+          AEItemKey.of(MAE2Items.PATTERN_P2P_TUNNEL.get()),
+          TransHelper.GUI.translatable("patternP2P.nothing", emptyCount),
+          List.of());
       if (isMixed)
-        return new PatternContainerGroup(PatternContainerGroup.nothing().icon(),
+        return new PatternContainerGroup(
+          AEItemKey.of(MAE2Items.PATTERN_P2P_TUNNEL.get()),
           TransHelper.GUI.translatable("patternP2P.mixed", count), List.of());
       else
         return new PatternContainerGroup(firstGroup.icon(),
