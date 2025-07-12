@@ -144,4 +144,6 @@ public interface Proxy {
       });
     }
   }
+
+  public void init(IEventBus bus);
 }
