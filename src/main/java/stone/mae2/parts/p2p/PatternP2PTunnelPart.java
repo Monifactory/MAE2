@@ -8,6 +8,7 @@ import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.capabilities.Capabilities;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
@@ -21,6 +22,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -86,18 +88,29 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   @Override
   public PatternProviderTargetCache getCache() { return this.targetCache; }
 
+  private boolean isRecursive = false;
+
   @Override
   public PatternContainerGroup getGroup() {
-    PatternContainerGroup group = PatternP2PTunnel.super.getGroup();
-    // always called on the input part anyways, no need to get it
-    if (this.hasCustomName())
-      return new PatternContainerGroup(group.icon(),
-        TransHelper.GUI
-          .translatable("patternP2P.aggregate", this.getCustomName(),
-            this.getOutputs().size()),
-        group.tooltip());
-    else
-      return group;
+    if (isRecursive) {
+      return new PatternContainerGroup(AEItemKey.of(Items.BARRIER),
+        TransHelper.GUI.translatable("patternP2P.recursive"), List.of());
+    }
+    try {
+      isRecursive = true;
+      PatternContainerGroup group = PatternP2PTunnel.super.getGroup();
+      // always called on the input part anyways, no need to get it
+      if (this.hasCustomName())
+        return new PatternContainerGroup(group.icon(),
+          TransHelper.GUI
+            .translatable("patternP2P.aggregate", this.getCustomName(),
+              this.getOutputs().size()),
+          group.tooltip());
+      else
+        return group;
+    } finally {
+      isRecursive = false;
+    }
   }
 
   @PartModels

@@ -18,22 +18,57 @@
  */
 package stone.mae2.mixins;
 
+import appeng.api.implementations.blockentities.ICraftingMachine;
 import appeng.helpers.patternprovider.PatternProviderLogic;
+import appeng.helpers.patternprovider.PatternProviderLogicHost;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic;
 
+import java.util.Set;
+
 @Mixin(value = PatternProviderLogic.class, remap = false)
 public abstract class PatternProviderLogicMixin {
-  @Shadow
-  abstract boolean isBlocking();
 
   @Inject(method = "pushPattern(LIPatternDetails;[LKeyCounter;)Z", at = @At("HEAD"))
-  public void onPush(CallbackInfoReturnable<Boolean> ci) {
+  public void onPush(CallbackInfoReturnable<Boolean> cir) {
     PatternP2PTunnelLogic.isBlocking = this.isBlocking();
   }
+
+  @Inject(method = "updatePatterns", at = @At("TAIL"))
+  public void onPatternUpdate(CallbackInfo ci) {
+    BlockEntity be = host.getBlockEntity();
+    Level level = be.getLevel();
+
+    for (Direction direction : this.getActiveSides()) {
+      var adjPos = be.getBlockPos().relative(direction);
+      var adjBe = level.getBlockEntity(adjPos);
+      var adjBeSide = direction.getOpposite();
+
+      var craftingMachine = ICraftingMachine
+        .of(level, adjPos, adjBeSide, adjBe);
+      if (craftingMachine instanceof PatternP2PTunnelLogic p2pLogic) {
+        p2pLogic.refreshInputs();
+      }
+    }
+  }
+
+  @Shadow
+  @Final
+  private PatternProviderLogicHost host;
+
+  @Shadow
+  public abstract boolean isBlocking();
+
+  @Shadow
+  private Set<Direction> getActiveSides() { return null; }
 }

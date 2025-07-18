@@ -86,7 +86,8 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
 
         if (isExternal) {
           final PatternProviderTarget target = caches[i].find();
-          if (isBlocking && target.containsPatternInput(patternInputs))
+          if (target == null
+            || (isBlocking && target.containsPatternInput(patternInputs)))
             continue;
           if (targetAcceptsAll(target, ingredients)) {
             pattern
@@ -214,6 +215,8 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   }
 
   public static interface PatternP2PTunnel {
+    boolean isRecursive = false;
+
     // Lists are needed so the tunnel can start from the part it left off at,
     // for a bit more tps
     List<? extends Target> getPatternTunnelInputs();
