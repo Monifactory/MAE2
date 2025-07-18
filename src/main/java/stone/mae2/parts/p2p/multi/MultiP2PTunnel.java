@@ -16,6 +16,7 @@ import appeng.api.util.AECableType;
 import appeng.client.render.cablebus.P2PTunnelFrequencyModelData;
 import appeng.core.AEConfig;
 import appeng.parts.AEBasePart;
+import appeng.util.CustomNameUtil;
 import appeng.util.Platform;
 import appeng.util.SettingsFrom;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -245,10 +246,6 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
       return null;
     }
 
-    public void setCustomName(Component name) {
-
-    }
-
     @Override
     public void getBoxes(IPartCollisionHelper bch) {
       bch.addBox(5, 5, 12, 11, 11, 13);
@@ -420,6 +417,9 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     public void importSettings(SettingsFrom mode, CompoundTag input,
       @Nullable Player player, boolean settingOutput) {
+      // lets you name a part and add it to the tunnel to set the name
+      if (this.hasCustomName())
+        CustomNameUtil.setCustomName(input, this.getCustomName());
       super.importSettings(mode, input, player);
 
       if (input.contains(CONFIG_NBT_FREQ, Tag.TAG_SHORT)) {
