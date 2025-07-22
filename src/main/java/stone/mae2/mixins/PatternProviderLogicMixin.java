@@ -39,7 +39,7 @@ import java.util.Set;
 @Mixin(value = PatternProviderLogic.class, remap = false)
 public abstract class PatternProviderLogicMixin {
 
-  @Inject(method = "pushPattern(LIPatternDetails;[LKeyCounter;)Z", at = @At("HEAD"))
+  @Inject(method = "pushPattern", at = @At("HEAD"))
   public void onPush(CallbackInfoReturnable<Boolean> cir) {
     PatternP2PTunnelLogic.isBlocking = this.isBlocking();
   }
