@@ -30,7 +30,8 @@ import net.minecraftforge.common.util.LazyOptional;
  * Base class for simple capability-based p2p tunnels. Don't forget to set the 3
  * handlers in the constructor of the child class!
  */
-public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunnel<T, L, P, C>, L extends CapabilityMultiP2PTunnel<T, L, P, C>.Logic, P extends CapabilityMultiP2PTunnel.Part<T, L, P, C>, C> extends MultiP2PTunnel<T, L, P> {
+public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunnel<T, L, P, C>, L extends CapabilityMultiP2PTunnel<T, L, P, C>.Logic, P extends CapabilityMultiP2PTunnel.Part<T, L, P, C>, C>
+  extends MultiP2PTunnel<T, L, P> {
   protected abstract Capability<C> getCapability();
 
   protected C inputHandler;
@@ -119,7 +120,10 @@ public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunne
      * The position right in front of this P2P tunnel.
      */
     private BlockPos getFacingPos() {
-      return this.part.getHost().getLocation().getPos()
+      return this.part
+        .getHost()
+        .getLocation()
+        .getPos()
         .relative(this.part.getSide());
     }
 
@@ -193,17 +197,17 @@ public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunne
     }
   }
 
-  public abstract static class Part<T extends CapabilityMultiP2PTunnel<T, L, P, C>, L extends CapabilityMultiP2PTunnel<T, L, P, C>.Logic, P extends Part<T, L, P, C>, C> extends MultiP2PTunnel.Part<T, L, P> {
+  public abstract static class Part<T extends CapabilityMultiP2PTunnel<T, L, P, C>, L extends CapabilityMultiP2PTunnel<T, L, P, C>.Logic, P extends Part<T, L, P, C>, C>
+    extends MultiP2PTunnel.Part<T, L, P> {
     public Part(IPartItem<?> partItem) {
       super(partItem);
     }
 
     @Override
-    protected float getPowerDrainPerTick() {
-      return 2.0f;
-    }
+    protected float getPowerDrainPerTick() { return 2.0f; }
 
-    public final <A> LazyOptional<A> getTargetCapability(
+    @Override
+    public final <A> LazyOptional<A> getCapability(
       Capability<A> capabilityClass) {
       if (this.logic != null) {
         return this.logic.getCapability(capabilityClass);

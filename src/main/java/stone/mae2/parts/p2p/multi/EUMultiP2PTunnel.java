@@ -55,14 +55,6 @@ public class EUMultiP2PTunnel extends
   // Persisted
   private long buffer;
 
-  /**
-   * How much EU has been extracted in between distributions
-   * 
-   * This is needed because it's possible to extract energy from the buffer via
-   * the outputs of the tunnel. This'd bypass the normal distribution logic, and
-   * thus needs to be accounted for.
-   */
-  private long extracted;
   // prevents divide by zero errors
   private long maxVoltage = 1;
 
@@ -72,7 +64,7 @@ public class EUMultiP2PTunnel extends
    * Set every distribution if there's more left in buffer then was distributed.
    * P2P input's won't accept EU while this is set.
    */
-  private boolean isSatisfied;
+  private boolean isSatisfied = false;
 
   public EUMultiP2PTunnel(short freq, IGrid grid) {
     super(freq, grid);
@@ -84,7 +76,9 @@ public class EUMultiP2PTunnel extends
   @Override
   public CompoundTag saveNodeData(Part part) {
     CompoundTag data = super.saveNodeData(part);
-    if (data == null) { data = new CompoundTag(); }
+    if (data == null) {
+      data = new CompoundTag();
+    }
     // grid seems to remove part before calling this, hence +1
     long split = this.buffer / (this.inputs.size() + 1);
     this.buffer -= split;
@@ -104,7 +98,9 @@ public class EUMultiP2PTunnel extends
     private static final P2PModels MODELS = new P2PModels(
       MAE2.toKey("part/p2p/multi_p2p_tunnel_eu"));
 
-    public Part(IPartItem<?> partItem) { super(partItem); }
+    public Part(IPartItem<?> partItem) {
+      super(partItem);
+    }
 
     @PartModels
     public static List<IPartModel> getModels() { return MODELS.getModels(); }
@@ -127,18 +123,22 @@ public class EUMultiP2PTunnel extends
 
   public class Logic extends
     CapabilityMultiP2PTunnel<EUMultiP2PTunnel, Logic, Part, IEnergyContainer>.Logic {
-    public Logic(Part part) { super(part); }
+    public Logic(Part part) {
+      super(part);
+    }
   }
 
   private class InputHandler implements IEnergyContainer {
     @Override
     public long acceptEnergyFromNetwork(Direction side, long voltage,
       long amperage) {
+      maxVoltage = Math.max(maxVoltage, voltage);
+      MAE2.LOGGER.info("inputting {} EU", voltage * amperage);
       // breaks when voltage and amperage are significant fractions of max int,
       // too bad!
       if (!isSatisfied) {
         buffer += voltage * amperage;
-        maxVoltage = Math.max(maxVoltage, voltage);
+
         return amperage;
       } else {
         return 0;
@@ -146,10 +146,14 @@ public class EUMultiP2PTunnel extends
     }
 
     @Override
-    public boolean inputsEnergy(Direction side) { return true; }
+    public boolean inputsEnergy(Direction side) {
+      return true;
+    }
 
     @Override
-    public long changeEnergy(long differenceAmount) { return 0; }
+    public long changeEnergy(long differenceAmount) {
+      return 0;
+    }
 
     @Override
     public long getEnergyStored() { return 0; }
@@ -172,10 +176,14 @@ public class EUMultiP2PTunnel extends
     }
 
     @Override
-    public boolean inputsEnergy(Direction side) { return false; }
+    public boolean inputsEnergy(Direction side) {
+      return false;
+    }
 
     @Override
-    public long changeEnergy(long differenceAmount) { return 0; }
+    public long changeEnergy(long differenceAmount) {
+      return 0;
+    }
 
     @Override
     public long getEnergyStored() { return buffer; }
@@ -198,10 +206,14 @@ public class EUMultiP2PTunnel extends
     }
 
     @Override
-    public boolean inputsEnergy(Direction side) { return false; }
+    public boolean inputsEnergy(Direction side) {
+      return false;
+    }
 
     @Override
-    public long changeEnergy(long differenceAmount) { return 0; }
+    public long changeEnergy(long differenceAmount) {
+      return 0;
+    }
 
     @Override
     public long getEnergyStored() { return 0; }
@@ -222,7 +234,9 @@ public class EUMultiP2PTunnel extends
   }
 
   @Override
-  public Logic createLogic(Part part) { return part.setLogic(new Logic(part)); }
+  public Logic createLogic(Part part) {
+    return part.setLogic(new Logic(part));
+  }
 
   @Override
   public TickingRequest getTickingRequest() {
@@ -248,7 +262,8 @@ public class EUMultiP2PTunnel extends
     // either stop at double what's being transferred, and one amp (enough to
     // bootstrap the unsatisfaction)
     this.isSatisfied = this.buffer > distributed * 2
-      && this.buffer >= maxVoltage;
+      && this.buffer >= 2 * maxVoltage;
+    this.isSatisfied = false;
     this.deductEnergyCost(distributed * FeCompat.ratio(false), PowerUnits.FE);
     return didWork ? TickRateModulation.FASTER : TickRateModulation.SLOWER;
   }
