@@ -2,6 +2,7 @@ package stone.mae2.api;
 
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
+
 import stone.mae2.bootstrap.MAE2Config.TickRates.TickRate;
 
 // TODO: find a better package for this
@@ -10,8 +11,8 @@ public interface Tickable {
 
   TickRateModulation tick();
 
-  static TickingRequest toTickingRequest(TickRate rate, boolean isSleeping,
-    boolean canBeAlerted) {
+  public static TickingRequest toTickingRequest(TickRate rate,
+    boolean isSleeping, boolean canBeAlerted) {
     return new TickingRequest(rate.minRate(), rate.maxRate(), isSleeping,
       canBeAlerted);
   }
@@ -64,12 +65,8 @@ public interface Tickable {
       this.nextTick += this.updateRate;
     }
 
-    public long getNextTick() {
-      return this.nextTick;
-    }
+    public long getNextTick() { return this.nextTick; }
 
-    public Tickable getTickable() {
-      return this.tickable;
-    }
+    public Tickable getTickable() { return this.tickable; }
   }
 }

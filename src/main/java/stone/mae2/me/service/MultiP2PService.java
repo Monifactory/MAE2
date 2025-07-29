@@ -129,13 +129,20 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
       var tunnel = part.createTunnel(freq);
       if (tunnel instanceof Tickable tickable) {
         // MAE2.LOGGER.info("Creating new tickable tunnel {}", tickable);
-        this.tickable = true;
-        this.tickingQueue
-          .add(new TickingEntry(tickable.getTickingRequest(), tickable,
-            this.currentTick));
+        addTickable(tickable);
       }
       return tunnel;
     });
+  }
+
+  public void addTickable(TickingEntry entry) {
+    this.tickable = true;
+    this.tickingQueue.add(entry);
+  }
+
+  public void addTickable(Tickable tickable) {
+    addTickable(new TickingEntry(tickable.getTickingRequest(), tickable,
+      this.currentTick));
   }
 
   @Override

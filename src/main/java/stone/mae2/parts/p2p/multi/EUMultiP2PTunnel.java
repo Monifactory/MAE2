@@ -133,7 +133,6 @@ public class EUMultiP2PTunnel extends
     public long acceptEnergyFromNetwork(Direction side, long voltage,
       long amperage) {
       maxVoltage = Math.max(maxVoltage, voltage);
-      MAE2.LOGGER.info("inputting {} EU", voltage * amperage);
       // breaks when voltage and amperage are significant fractions of max int,
       // too bad!
       if (!isSatisfied) {
