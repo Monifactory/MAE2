@@ -21,7 +21,6 @@ package stone.mae2.parts.p2p.multi;
 import appeng.api.config.PowerUnits;
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGrid;
-import appeng.api.networking.IGridNodeListener.State;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.parts.IPartItem;
@@ -108,13 +107,6 @@ public class EUMultiP2PTunnel extends
         this
           .getMainNode()
           .setFlags(GridFlags.REQUIRE_CHANNEL, GridFlags.COMPRESSED_CHANNEL);
-    }
-
-    @Override
-    protected void onMainNodeStateChanged(State reason) {
-      if (reason == State.GRID_BOOT) {
-        this.getGridNode().getGrid().getService(MultiP2PService.class);
-      }
     }
 
     @PartModels

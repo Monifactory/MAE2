@@ -106,20 +106,25 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
 
   @Override
   public void onServerEndTick() {
+
     // short circuit since most networks won't have ticking tunnels
     if (this.tickable) {
-      for (int i = 0; i < transferredAmps.length; i++) {
-        int amps = transferredAmps[i];
-        if (amps > 0) {
-          var tax = PowerUnits.FE
-            .convertTo(PowerUnits.AE, amps * GTValues.V[i] * getNerfTax(i, amps)
-              * FeCompat.ratio(false));
-          this.myGrid
-            .getEnergyService()
-            .extractAEPower(tax, Actionable.MODULATE, PowerMultiplier.CONFIG);
-          transferredAmps[i] = 0;
+      if (transferredAmps != null) {
+        for (int i = 0; i < transferredAmps.length; i++) {
+          int amps = transferredAmps[i];
+          if (amps > 0) {
+            var tax = PowerUnits.FE
+              .convertTo(PowerUnits.AE, amps * GTValues.V[i]
+                * getNerfTax(i, amps) * FeCompat.ratio(false));
+            this.myGrid
+              .getEnergyService()
+              .extractAEPower(tax, Actionable.MODULATE, PowerMultiplier.CONFIG);
+            transferredAmps[i] = 0;
+          }
         }
       }
+      if (this.tickingQueue.isEmpty())
+        return;
       while (this.tickingQueue.peek().getNextTick() <= this.currentTick) {
         TickingEntry entry = this.tickingQueue.poll();
         // MAE2.LOGGER.info("Ticking tunnel {} on tick {}", entry,
@@ -137,12 +142,12 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
   }
 
   public static double getNerfTax(long voltageTier, long amperage) {
-    final double costFactor;
-    costFactor = MAE2.CONFIG.parts().EUP2PNerfFactor();
+    double costFactor = MAE2.CONFIG.parts().EUP2PNerfFactor();
+    double logAmps = Math.log1p(amperage) / Math.log(2);
     if (costFactor <= 0) {
       return 0;
     }
-    return (voltageTier + 2) * Math.log1p(amperage) * costFactor;
+    return (voltageTier + 2) * logAmps * costFactor;
   }
 
   public void setTickable() {

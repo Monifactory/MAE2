@@ -20,6 +20,7 @@ package stone.mae2.parts.p2p;
 
 import appeng.api.config.PowerUnits;
 import appeng.api.networking.GridFlags;
+import appeng.api.networking.IGridNodeListener.State;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
@@ -47,15 +48,22 @@ public class EUP2PTunnelPart
       this
         .getMainNode()
         .setFlags(GridFlags.REQUIRE_CHANNEL, GridFlags.COMPRESSED_CHANNEL);
-      this
-        .getGridNode()
-        .getGrid()
-        .getService(MultiP2PService.class)
-        .setTickable();
     }
     this.inputHandler = new InputHandler();
     this.outputHandler = new OutputHandler();
     this.emptyHandler = EMPTY_HANDLER;
+  }
+
+  @Override
+  protected void onMainNodeStateChanged(State reason) {
+    if (reason == State.GRID_BOOT) {
+      if (this.getMainNode().isActive())
+        this
+          .getMainNode()
+          .getGrid()
+          .getService(MultiP2PService.class)
+          .setTickable();
+    }
   }
 
   @PartModels
