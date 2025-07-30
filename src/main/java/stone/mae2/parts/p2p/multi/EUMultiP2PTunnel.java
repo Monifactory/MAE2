@@ -19,13 +19,16 @@
 package stone.mae2.parts.p2p.multi;
 
 import appeng.api.config.PowerUnits;
+import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNodeListener.State;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
 import appeng.parts.p2p.P2PModels;
+import com.gregtechceu.gtceu.api.GTValues;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.compat.FeCompat;
 import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
@@ -36,7 +39,7 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import stone.mae2.MAE2;
 import stone.mae2.api.Tickable;
-import stone.mae2.parts.p2p.EUP2PTunnelPart;
+import stone.mae2.me.service.MultiP2PService;
 
 import java.util.List;
 
@@ -101,6 +104,17 @@ public class EUMultiP2PTunnel extends
 
     public Part(IPartItem<?> partItem) {
       super(partItem);
+      if (MAE2.CONFIG.parts().isEUP2PNerfed())
+        this
+          .getMainNode()
+          .setFlags(GridFlags.REQUIRE_CHANNEL, GridFlags.COMPRESSED_CHANNEL);
+    }
+
+    @Override
+    protected void onMainNodeStateChanged(State reason) {
+      if (reason == State.GRID_BOOT) {
+        this.getGridNode().getGrid().getService(MultiP2PService.class);
+      }
     }
 
     @PartModels
@@ -256,7 +270,7 @@ public class EUMultiP2PTunnel extends
           .acceptEnergyFromNetwork(output.part.getSide().getOpposite(),
             maxVoltage, buffer / maxVoltage);
         didWork |= inserted > 0;
-        distributed += inserted * maxVoltage;
+        distributed += inserted;
         this.buffer -= inserted * maxVoltage;
       }
     }
@@ -265,12 +279,20 @@ public class EUMultiP2PTunnel extends
     // bootstrap the unsatisfaction)
     this.isSatisfied = this.buffer > distributed * 2
       && this.buffer >= maxVoltage;
-    double ratio = FeCompat.ratio(false);
-    if (MAE2.CONFIG.parts().isEUP2PNerfed())
-      ratio *= EUP2PTunnelPart
-        .getNerfTax(maxVoltage, distributed / maxVoltage, inputs.size(),
-          outputs.size());
-    this.deductEnergyCost(distributed * ratio, PowerUnits.FE);
+    if (distributed > 0) {
+      if (MAE2.CONFIG.parts().isEUP2PNerfed()) {
+        int tier = (int) Math
+          .min(GTValues.TIER_COUNT,
+            Math.round(Math.log1p(maxVoltage / 8) / Math.log(4)));
+        this.grid
+          .getService(
+            MultiP2PService.class).transferredAmps[tier] += distributed;
+      } else
+        this
+          .deductEnergyCost(distributed * maxVoltage * FeCompat.ratio(false),
+            PowerUnits.FE);
+      this.maxVoltage = 1;
+    }
     return didWork ? TickRateModulation.FASTER : TickRateModulation.SLOWER;
   }
 }

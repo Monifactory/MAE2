@@ -68,7 +68,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
   protected final ReferenceSet<L> outputs = new ReferenceOpenHashSet<>();
 
   private final short freq;
-  private final IGrid grid;
+  protected final IGrid grid;
 
   private Component customName;
 

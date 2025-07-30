@@ -19,6 +19,7 @@
 package stone.mae2.parts.p2p;
 
 import appeng.api.config.PowerUnits;
+import appeng.api.networking.GridFlags;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
 import appeng.items.parts.PartModels;
@@ -30,6 +31,7 @@ import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 
 import stone.mae2.MAE2;
+import stone.mae2.me.service.MultiP2PService;
 
 import java.util.List;
 
@@ -41,16 +43,19 @@ public class EUP2PTunnelPart
 
   public EUP2PTunnelPart(IPartItem<?> partItem) {
     super(partItem, GTCapability.CAPABILITY_ENERGY_CONTAINER);
+    if (MAE2.CONFIG.parts().isEUP2PNerfed()) {
+      this
+        .getMainNode()
+        .setFlags(GridFlags.REQUIRE_CHANNEL, GridFlags.COMPRESSED_CHANNEL);
+      this
+        .getGridNode()
+        .getGrid()
+        .getService(MultiP2PService.class)
+        .setTickable();
+    }
     this.inputHandler = new InputHandler();
     this.outputHandler = new OutputHandler();
     this.emptyHandler = EMPTY_HANDLER;
-  }
-
-  public static double getNerfTax(long voltage, long amperage, int inputs,
-    int outputs) {
-    double tier = Math.log1p(voltage / 8) / Math.log(4);
-    return (Math.exp(tier / 14) * Math.exp(outputs / 4d)) / 2 + inputs / 16d
-      + amperage / 64d;
   }
 
   @PartModels
@@ -84,10 +89,15 @@ public class EUP2PTunnelPart
         }
       }
       if (total > 0) {
-        double ratio = FeCompat.ratio(false);
-        if (MAE2.CONFIG.parts().isEUP2PNerfed())
-          ratio *= getNerfTax(voltage, total / voltage, 1, outputs);
-        EUP2PTunnelPart.this.deductEnergyCost(total * ratio, PowerUnits.FE);
+        if (MAE2.CONFIG.parts().isEUP2PNerfed()) {
+          int tier = (int) Math.round(Math.log1p(voltage / 8) / Math.log(4));
+          EUP2PTunnelPart.this
+            .getGridNode()
+            .getGrid()
+            .getService(MultiP2PService.class).transferredAmps[tier] += total;
+        } else
+          EUP2PTunnelPart.this
+            .deductEnergyCost(total * FeCompat.ratio(false), PowerUnits.FE);
       }
       return total;
     }
