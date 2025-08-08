@@ -88,7 +88,8 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
   private boolean tickable = false;
   private long currentTick = 0;
 
-  public int[] transferredAmps;
+  public double[] transferredAmps;
+  public boolean taxSatisfied = true;
 
   public MultiP2PService(IGrid g) {
     this.myGrid = g;
@@ -96,35 +97,39 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     // frequencies
     this.frequencyGenerator = new Random(g.hashCode() + 1);
     if (MAE2.CONFIG.parts().isEUP2PNerfed())
-      transferredAmps = new int[GTValues.TIER_COUNT];
-  }
-
-  @Override
-  public void onServerStartTick() {
-    this.currentTick++;
+      transferredAmps = new double[GTValues.TIER_COUNT];
   }
 
   @Override
   public void onServerEndTick() {
-
     // short circuit since most networks won't have ticking tunnels
     if (this.tickable) {
       if (transferredAmps != null) {
+        this.taxSatisfied = true;
         for (int i = 0; i < transferredAmps.length; i++) {
-          int amps = transferredAmps[i];
+          double amps = transferredAmps[i];
           if (amps > 0) {
-            var tax = PowerUnits.FE
-              .convertTo(PowerUnits.AE, amps * GTValues.V[i]
-                * getNerfTax(i, amps) * FeCompat.ratio(false));
-            this.myGrid
+            // taxRate in AE/amp
+            double taxRate = PowerUnits.FE
+              .convertTo(PowerUnits.AE,
+                GTValues.V[i] * getNerfTax(i, amps) * FeCompat.ratio(false));
+            double tax = amps * taxRate;
+            double extracted = this.myGrid
               .getEnergyService()
               .extractAEPower(tax, Actionable.MODULATE, PowerMultiplier.CONFIG);
-            transferredAmps[i] = 0;
+            if (extracted < tax) {
+              this.taxSatisfied = false;
+              this.transferredAmps[i] -= Math.min(extracted / tax, amps);
+              break;
+            } else {
+              this.transferredAmps[i] = 0;
+            }
           }
         }
       }
       if (this.tickingQueue.isEmpty())
         return;
+      this.currentTick++;
       while (this.tickingQueue.peek().getNextTick() <= this.currentTick) {
         TickingEntry entry = this.tickingQueue.poll();
         // MAE2.LOGGER.info("Ticking tunnel {} on tick {}", entry,
@@ -141,7 +146,7 @@ public class MultiP2PService implements IGridService, IGridServiceProvider {
     }
   }
 
-  public static double getNerfTax(long voltageTier, long amperage) {
+  public static double getNerfTax(int voltageTier, double amperage) {
     double costFactor = MAE2.CONFIG.parts().EUP2PNerfFactor();
     double logAmps = Math.log1p(amperage) / Math.log(2);
     if (costFactor <= 0) {

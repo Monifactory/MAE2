@@ -253,6 +253,11 @@ public class EUMultiP2PTunnel extends
 
   @Override
   public TickRateModulation tick() {
+    MultiP2PService service = this.grid.getService(MultiP2PService.class);
+    if (!service.taxSatisfied) {
+      this.isSatisfied = true;
+      return TickRateModulation.IDLE;
+    }
     boolean didWork = false;
     long distributed = 0;
     for (var output : this.outputs) {
@@ -276,9 +281,7 @@ public class EUMultiP2PTunnel extends
         int tier = (int) Math
           .min(GTValues.TIER_COUNT,
             Math.round(Math.log1p(maxVoltage / 8) / Math.log(4)));
-        this.grid
-          .getService(
-            MultiP2PService.class).transferredAmps[tier] += distributed;
+        service.transferredAmps[tier] += distributed;
       } else
         this
           .deductEnergyCost(distributed * maxVoltage * FeCompat.ratio(false),

@@ -78,6 +78,12 @@ public class EUP2PTunnelPart
     @Override
     public long acceptEnergyFromNetwork(Direction side, long voltage,
       long amperage) {
+      MultiP2PService service = EUP2PTunnelPart.this
+        .getGridNode()
+        .getGrid()
+        .getService(MultiP2PService.class);
+      if (!service.taxSatisfied)
+        return 0;
       long toSend = amperage;
       int total = 0;
       int outputs = 0;
@@ -99,10 +105,7 @@ public class EUP2PTunnelPart
       if (total > 0) {
         if (MAE2.CONFIG.parts().isEUP2PNerfed()) {
           int tier = (int) Math.round(Math.log1p(voltage / 8) / Math.log(4));
-          EUP2PTunnelPart.this
-            .getGridNode()
-            .getGrid()
-            .getService(MultiP2PService.class).transferredAmps[tier] += total;
+          service.transferredAmps[tier] += total;
         } else
           EUP2PTunnelPart.this
             .deductEnergyCost(total * FeCompat.ratio(false), PowerUnits.FE);
