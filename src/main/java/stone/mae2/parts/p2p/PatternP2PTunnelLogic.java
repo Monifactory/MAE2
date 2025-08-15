@@ -77,7 +77,6 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
         if (craftingMachine != null && craftingMachine.acceptsPlans()) {
           if (craftingMachine
             .pushPattern(pattern, ingredients, output.side())) {
-            // onPushPatternSuccess(patternDetails);
             lastOutputIndex = i;
             return true;
           }
@@ -87,7 +86,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
         if (isExternal) {
           final PatternProviderTarget target = caches[i].find();
           if (target == null
-            || (isBlocking && target.containsPatternInput(patternInputs)))
+            || shouldBlock(isBlocking, target, this.patternInputs))
             continue;
           if (targetAcceptsAll(target, ingredients)) {
             pattern
@@ -108,6 +107,19 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
     return false;
   }
 
+  /**
+   * Checks if the target should block more patterns being input or not
+   * 
+   * @param isBlocking whether or not the pushing provider was set to blocking
+   * @param target     the target being input into
+   * @param inputs     the pattern inputs that could be input into this target
+   * @return whether or not further inputs should be blocked
+   */
+  public static boolean shouldBlock(boolean isBlocking,
+    PatternProviderTarget target, Set<AEKey> inputs) {
+    return isBlocking && target.containsPatternInput(inputs);
+  }
+
   // TODO make this more incremental instead of resetting everything on any
   // change
   public void refreshOutputs() {
@@ -125,18 +137,47 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   // TODO make this more incremental instead of resetting everything on any
   // change
   public void refreshInputs() {
-    this.patternInputs = new HashSet<>();
-    for (Target input : tunnel.getPatternTunnelInputs()) {
-      ICraftingProvider provider = input.getTargetCraftingProvider();
-      if (provider == null)
-        continue;
-      for (IPatternDetails pattern : provider.getAvailablePatterns()) {
-        for (IInput ingredient : pattern.getInputs()) {
-          for (GenericStack ingredientStack : ingredient.getPossibleInputs()) {
-            this.patternInputs.add(ingredientStack.what().dropSecondary());
+    if (this.isRecursive)
+      return;
+    try {
+      this.isRecursive = true;
+      this.patternInputs = new HashSet<>();
+      for (Target input : tunnel.getPatternTunnelInputs()) {
+        ICraftingProvider provider = input.getTargetCraftingProvider();
+        if (provider == null) {
+          ICraftingMachine maybeMachine = ICraftingMachine
+            .of(input.getTargetBlockEntity(), input.side());
+          if (maybeMachine != null
+            && maybeMachine instanceof PatternP2PTunnelLogic inputLogic) {
+            // technically a tunnel could connect to itself which will waste
+            // some
+            // time adding known duplicates, but it won't break anything and
+            // there
+            // shouldn't be a reason for players to do that in the first place
+            this.patternInputs.addAll(inputLogic.patternInputs);
+          }
+          continue;
+        }
+        for (IPatternDetails pattern : provider.getAvailablePatterns()) {
+          for (IInput ingredient : pattern.getInputs()) {
+            for (GenericStack ingredientStack : ingredient
+              .getPossibleInputs()) {
+              this.patternInputs.add(ingredientStack.what().dropSecondary());
+            }
           }
         }
       }
+
+      for (Target output : tunnel.getPatternTunnelOutputs()) {
+        ICraftingMachine maybeMachine = ICraftingMachine
+          .of(output.getTargetBlockEntity(), output.side());
+        if (maybeMachine != null
+          && maybeMachine instanceof PatternP2PTunnelLogic outputLogic) {
+          outputLogic.refreshInputs();
+        }
+      }
+    } finally {
+      this.isRecursive = false;
     }
   }
 
@@ -161,11 +202,14 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
 
   /**
    * @param level the level this target is in
-   * @param pos   the block pos this target is targetting
+   * @param pos   the block pos this target is targeting
    * @param side  the side this target is *coming* from (not the side of the
    *              part)
    */
   public static interface Target {
+    /**
+     * the level this target is in
+     */
     ServerLevel level();
 
     default PatternProviderTargetCache getCache() {
@@ -177,8 +221,14 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
 
     void addToSendList(AEKey what, long l);
 
+    /**
+     * the block pos this target is targeting
+     */
     BlockPos pos();
 
+    /**
+     * the side this target is *coming* from (opposite the side of the part)
+     */
     Direction side();
 
     IActionSource source();
