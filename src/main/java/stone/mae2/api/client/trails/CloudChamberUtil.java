@@ -48,14 +48,14 @@ public final class CloudChamberUtil {
    * 
    * @param trail
    */
-  public static BackgroundTrail registerBackgroundTrail(
+  public static synchronized BackgroundTrail registerBackgroundTrail(
     ResourceLocation location, BackgroundTrail trail) {
     backgroundTrails.add(trail);
     registerTrail(location, trail);
     return trail;
   }
 
-  public static Trail registerTrail(ResourceLocation location, Trail trail) {
+  public static synchronized Trail registerTrail(ResourceLocation location, Trail trail) {
     REGISTRY.put(location, trail);
     return trail;
   }
