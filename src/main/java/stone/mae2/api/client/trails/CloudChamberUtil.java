@@ -78,9 +78,11 @@ public final class CloudChamberUtil {
     if (currentTick == lastTick)
       return;
     lastTick = currentTick;
+    final double configFactor = MAE2.CONFIG.client().cloudChamberFactor();
     for (BackgroundTrail trail : backgroundTrails) {
       double chance = trail.getMeanChance()
         + random.nextGaussian() * trail.getStddevChance();
+      chance *= configFactor;
       for (int i = 0; i < (int) chance
         + (random.nextFloat() < chance - (int) chance ? 1 : 0); i++) {
         if (!AppEngClient.instance().shouldAddParticles(random))

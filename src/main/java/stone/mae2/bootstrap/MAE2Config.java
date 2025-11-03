@@ -29,7 +29,7 @@ import stone.mae2.bootstrap.MAE2Config.TickRates.TickRate;
 import stone.mae2.util.TransHelper;
 
 @EventBusSubscriber(modid = MAE2.MODID, bus = EventBusSubscriber.Bus.MOD)
-public record MAE2Config(Parts parts) {
+public record MAE2Config(Client client, Parts parts) {
 
   @SubscribeEvent
   static void onReload(final ModConfigEvent.Reloading event) {
@@ -42,31 +42,43 @@ public record MAE2Config(Parts parts) {
     // this record thing sounded neat but idk now
     // just make the entire config anew here, this a once in a while thing
     // really
-    MAE2.CONFIG = new MAE2Config(
-      new Parts(EU_P2P.get(), EU_P2P_NERF.get(), EU_P2P_NERF_FACTOR.get(),
-        new TickRates(new TickRate(FE_MIN_RATE.get(), FE_MAX_RATE.get()),
-          new TickRate(EU_MIN_RATE.get(), EU_MAX_RATE.get()),
-          new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get()))));
+    MAE2.CONFIG =
+      new MAE2Config
+      (new Client
+       (CLOUD_CHAMBER_FACTOR.get()),
+       new Parts
+       (EU_P2P.get(),
+        EU_P2P_NERF.get(),
+        EU_P2P_NERF_FACTOR.get(),
+        new TickRates
+        (new TickRate(FE_MIN_RATE.get(), FE_MAX_RATE.get()),
+         new TickRate(EU_MIN_RATE.get(), EU_MAX_RATE.get()),
+         new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get()))));
   }
 
   // load in things that require a restart here (ie item registation or p2p
   // attunements)
   public static void onLoad() {
-    onReload();
+      onReload();
   }
 
   @SubscribeEvent
-  static void onload(final ModConfigEvent.Loading event) {
-    onLoad();
+      static void onload(final ModConfigEvent.Loading event) {
+      onLoad();
   }
+
+  public record Client(double cloudChamberFactor) {}
 
   public record Parts(boolean isEUP2PEnabled, boolean isEUP2PNerfed,
-    double EUP2PNerfFactor, TickRates rates) {}
+                      double EUP2PNerfFactor, TickRates rates) {}
 
   public record TickRates(TickRate FEMultiP2PTunnel, TickRate EUMultiP2PTunnel,
-    TickRate PatternP2PTunnel) {
-    public record TickRate(int minRate, int maxRate) {}
+                          TickRate PatternP2PTunnel) {
+      public record TickRate(int minRate, int maxRate) {}
   }
+
+  // client
+  private static final ForgeConfigSpec.DoubleValue CLOUD_CHAMBER_FACTOR;
 
   // parts
   private static final ForgeConfigSpec.BooleanValue EU_P2P;
@@ -88,6 +100,12 @@ public record MAE2Config(Parts parts) {
   static {
     ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
+    builder.push("client");
+    CLOUD_CHAMBER_FACTOR = builder
+      .comment("Global modifier to amount of particles spawned in cloud chambers (Semi-Vibrant Glass)")
+      .translation(TransHelper.CONFIG.toKey("cloudChamberFactor"))
+      .defineInRange("cloudChamberFactor", 1, 0, Double.MAX_VALUE);
+    
     // parts
     builder.push("Parts");
     EU_P2P = builder
