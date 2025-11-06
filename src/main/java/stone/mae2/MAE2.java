@@ -32,8 +32,11 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
+import stone.mae2.bootstrap.ClientProxy;
 import stone.mae2.bootstrap.MAE2Config;
 import stone.mae2.bootstrap.Proxy;
+import stone.mae2.bootstrap.ServerProxy;
+
 import java.nio.file.Path;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -57,8 +60,8 @@ public class MAE2 {
         MAE2Config.SPEC.acceptConfig(config);
         MAE2Config.onLoad();
 
-        DistExecutor.safeRunForDist(() -> Proxy.Client::new,
-                                    () -> Proxy.Server::new).init(bus);
+        DistExecutor.safeRunForDist(() -> Proxy::client,
+                                    () -> Proxy::server).init(bus);
     }
 
     public static ResourceLocation toKey(String path) {
