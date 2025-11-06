@@ -138,10 +138,10 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
             || maybeEntity instanceof PatternProviderLogicHost) {
             return maybeEntity.getCapability(capabilityClass, provider.side());
           } else if (maybeEntity instanceof IPartHost host) {
-            IPart maybePart = host.getPart(provider.getSide());
+            IPart maybePart = host.getPart(provider.side());
             if (maybePart != null && (maybePart instanceof ICraftingProvider
               || maybePart instanceof PatternProviderLogicHost)) {
-              maybePart.getCapability(capabilityClass);
+              return maybePart.getCapability(capabilityClass);
             }
           }
         }
