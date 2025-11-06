@@ -95,69 +95,80 @@ public record MAE2Config(Client client, Parts parts) {
   private static final ForgeConfigSpec.IntValue PATTERN_MIN_RATE;
   private static final ForgeConfigSpec.IntValue PATTERN_MAX_RATE;
 
-  public static final IConfigSpec<?> SPEC;
+  public static final IConfigSpec<?> CLIENT;
+  public static final IConfigSpec<?> COMMON;
 
   static {
-    ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+    ForgeConfigSpec.Builder client = new ForgeConfigSpec.Builder();
+    ForgeConfigSpec.Builder common = new ForgeConfigSpec.Builder();
 
-    builder.push("client");
-    CLOUD_CHAMBER_FACTOR = builder
+    client.push("Visual");
+    CLOUD_CHAMBER_FACTOR = client
       .comment("Global modifier to amount of particles spawned in cloud chambers (Semi-Vibrant Glass)")
       .translation(TransHelper.CONFIG.toKey("cloudChamberFactor"))
       .defineInRange("cloudChamberFactor", 1, 0, Double.MAX_VALUE);
+    client.pop();
     
     // parts
-    builder.push("Parts");
-    EU_P2P = builder
-      .comment("Whether the EU P2P is enabled, !!Requires Game Restart!!")
+    common.push("Parts");
+    common.push("EU P2P");
+    EU_P2P = common
+      .comment("Whether the EU P2P (single or multi) is enabled. !!Requires Game Restart!!")
       .worldRestart()
       .translation(TransHelper.CONFIG.toKey("euP2P"))
-      .define("euP2P", true);
+      .define("enabled", true);
 
-    EU_P2P_NERF = builder
+    EU_P2P_NERF = common
       .comment(
         "Enable/Disable nerf to EU p2p. Nerf penalizes higher energy transfer rates across the entire ME network with higher taxes, but in such a way that stepping up voltage reduces tax. Also prevents EU p2ps from getting channels though an ME p2p")
       .translation(TransHelper.CONFIG.toKey("euP2PNerf"))
-      .define("euP2PNerf", false);
+      .define("nerf", false);
 
-    EU_P2P_NERF_FACTOR = builder
+    EU_P2P_NERF_FACTOR = common
       .comment(
         "A factor used in calculating the nerfed EU p2p's tax. Higher means the tax is higher. Linearly affects tax")
       .worldRestart()
       .translation(TransHelper.CONFIG.toKey("euP2PNerfFactor"))
-      .defineInRange("euP2PNerfFactor", 0.05, 0, Double.MAX_VALUE);
+      .defineInRange("nerfFactor", 0.05, 0, Double.MAX_VALUE);
+
+    common.pop();
 
     // tick rates
-    builder.push("Tick Rates");
-    FE_MIN_RATE = builder
+    common.push("FE Multi P2P");
+    FE_MIN_RATE = common
       .comment("Min tick rate for FE Multi P2P Tunnels")
       .translation(TransHelper.CONFIG.toKey("feMinRate"))
-      .defineInRange("feMinRate", 1, 1, Integer.MAX_VALUE);
-    FE_MAX_RATE = builder
+      .defineInRange("minRate", 1, 1, Integer.MAX_VALUE);
+    FE_MAX_RATE = common
       .comment("Max tick rate for FE Multi P2P Tunnels")
       .translation(TransHelper.CONFIG.toKey("feMaxRate"))
-      .defineInRange("feMaxRate", 1, 1, Integer.MAX_VALUE);
+      .defineInRange("maxRate", 1, 1, Integer.MAX_VALUE);
+    common.pop();
 
-    EU_MIN_RATE = builder
+    common.push("EU Multi P2P");
+    EU_MIN_RATE = common
       .comment("Min tick rate for EU Multi P2P Tunnels")
       .translation(TransHelper.CONFIG.toKey("euMinRate"))
-      .defineInRange("euMinRate", 1, 1, Integer.MAX_VALUE);
-    EU_MAX_RATE = builder
+      .defineInRange("minRate", 1, 1, Integer.MAX_VALUE);
+    EU_MAX_RATE = common
       .comment("Max tick rate for EU Multi P2P Tunnels")
       .translation(TransHelper.CONFIG.toKey("euMaxRate"))
-      .defineInRange("euMaxRate", 1, 1, Integer.MAX_VALUE);
+      .defineInRange("maxRate", 1, 1, Integer.MAX_VALUE);
+    common.pop();
 
-    PATTERN_MIN_RATE = builder
+    common.push("Pattern P2P");
+    PATTERN_MIN_RATE = common
       .comment("Minimum tick rate for Pattern (Multi) P2P Tunnels")
       .translation(TransHelper.CONFIG.toKey("patternMinRate"))
-      .defineInRange("patternMinRate", 5, 1, Integer.MAX_VALUE);
-    PATTERN_MAX_RATE = builder
+      .defineInRange("minRate", 5, 1, Integer.MAX_VALUE);
+    PATTERN_MAX_RATE = common
       .comment("Max tick rate for Pattern (Multi) P2P Tunnels")
       .translation(TransHelper.CONFIG.toKey("patternMaxRate"))
-      .defineInRange("patternMaxRate", 120, 1, Integer.MAX_VALUE);
-    builder.pop();
-    builder.pop();
+      .defineInRange("maxRate", 120, 1, Integer.MAX_VALUE);
+    common.pop();
+    common.pop();
 
-    SPEC = builder.build();
+    CLIENT = client.build();
+    COMMON = common.build();
   }
 }

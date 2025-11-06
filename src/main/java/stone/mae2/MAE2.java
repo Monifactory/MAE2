@@ -49,15 +49,21 @@ public class MAE2 {
 
     public MAE2() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModLoadingContext.get().registerConfig(Type.CLIENT,
+                                               MAE2Config.CLIENT);
         ModLoadingContext.get().registerConfig(Type.COMMON,
-            MAE2Config.SPEC);
+            MAE2Config.COMMON);
 
         // terrible, but forge doesn't want dynamic item registration for *some*
         // reason
         Path configPath = FMLPaths.CONFIGDIR.get().resolve("mae2-common.toml");
         CommentedConfig config = TomlFormat.instance().createParser()
             .parse(configPath, FileNotFoundAction.READ_NOTHING);
-        MAE2Config.SPEC.acceptConfig(config);
+        MAE2Config.COMMON.acceptConfig(config);
+        configPath = FMLPaths.CONFIGDIR.get().resolve("mae2-client.toml");
+        config = TomlFormat.instance().createParser()
+          .parse(configPath, FileNotFoundAction.READ_NOTHING);
+        MAE2Config.CLIENT.acceptConfig(config);
         MAE2Config.onLoad();
 
         DistExecutor.safeRunForDist(() -> Proxy::client,
