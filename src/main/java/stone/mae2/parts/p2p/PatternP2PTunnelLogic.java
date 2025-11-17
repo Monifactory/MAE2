@@ -15,6 +15,8 @@ import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTarget;
+import appeng.helpers.patternprovider.PatternProviderTargetCache;
+import appeng.util.ConfigManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -23,8 +25,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.checkerframework.checker.units.qual.C;
 
-import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.bootstrap.MAE2Items;
+import stone.mae2.util.LoadedModsHelper;
 import stone.mae2.util.TransHelper;
 
 import java.util.HashSet;
@@ -213,8 +215,25 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
     ServerLevel level();
 
     default PatternProviderTargetCache getCache() {
-      return new PatternProviderTargetCache(this.level(), this.pos(),
-        this.side(), this.source());
+      if (LoadedModsHelper.isFork) {
+        var be = this.getTargetBlockEntity();
+        if (be instanceof PatternProviderLogicHost beHost) {
+          return new PatternProviderTargetCache(this.level(), this.pos(),
+                  this.side(), this.source(), (ConfigManager) beHost.getLogic().getConfigManager());
+        } else if (be instanceof IPartHost iPartHost && iPartHost.getPart(side()) instanceof PatternProviderLogicHost partHost) {
+          return new PatternProviderTargetCache(this.level(), this.pos(),
+                  this.side(), this.source(), (ConfigManager) partHost.getLogic().getConfigManager());
+        }
+      }
+      // This reflection is valid if ae2 is not the fork
+      try {
+        var constructor = PatternProviderTargetCache.class.getDeclaredConstructor(ServerLevel.class, BlockPos.class, Direction.class, IActionSource.class);
+        constructor.setAccessible(true);
+        return constructor.newInstance(this.level(), this.pos(), this.side(), this.source());
+      } catch (Exception e) {
+        // NO-OP
+      }
+      return null;
     }
 
     boolean isValid();
