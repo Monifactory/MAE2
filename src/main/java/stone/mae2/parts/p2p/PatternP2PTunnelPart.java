@@ -20,8 +20,6 @@ import appeng.parts.p2p.P2PTunnelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -39,8 +37,7 @@ import java.util.List;
 
 public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   implements PatternP2PTunnel, PatternP2PPartLogicHost {
-  private static final P2PModels MODELS = new P2PModels(
-    new ResourceLocation(MAE2.MODID, "part/p2p/p2p_tunnel_pattern"));
+  private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/p2p_tunnel_pattern"));
 
   protected final IActionSource source;
   protected final LazyOptional<ICraftingMachine> logic;
