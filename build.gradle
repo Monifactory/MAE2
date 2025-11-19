@@ -52,10 +52,6 @@ repositories {
         url "https://maven.firstdarkdev.xyz/snapshots/"
     }
     maven {
-        name 'Quilt'
-        url 'https://maven.quiltmc.org/repository/release/'
-    }
-    maven {
         name = 'ParchmentMC'
         url = 'https://maven.parchmentmc.org'
     }
@@ -65,6 +61,14 @@ repositories {
             includeGroup "dev.latvian.mods"
         }
     }
+    maven {
+      name "Quilt"
+      url "https://maven.quiltmc.org/repository/release/"
+      content {
+        includeGroup "org.quiltmc"
+      }
+    }
+    
     maven { // Registrate
         url = "https://maven.tterrag.com/"
         content {
@@ -102,6 +106,14 @@ repositories {
         content {
             includeGroup 'appeng'
         }
+        }
+    maven {
+      name "GTCEu Maven"
+      url "https://maven.gtceu.com/"
+      content {
+        includeGroup 'appeng'
+        includeGroup 'com.gregtechceu.gtceu'
+      }
     }
 }
 
