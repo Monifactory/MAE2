@@ -1,6 +1,7 @@
 package stone.mae2.parts.p2p;
 
 import appeng.api.config.Actionable;
+import appeng.api.config.BlockingMode;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.IPatternDetails.IInput;
 import appeng.api.implementations.blockentities.ICraftingMachine;
@@ -13,6 +14,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
+import appeng.helpers.patternprovider.PatternProviderLogic;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTarget;
 import appeng.helpers.patternprovider.PatternProviderTargetCache;
@@ -41,6 +43,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   private int lastOutputIndex = 0;
 
   public static boolean isBlocking;
+  public static BlockingMode blockingMode;
 
   public PatternP2PTunnelLogic(PatternP2PTunnel tunnel) {
     this.tunnel = tunnel;
@@ -119,7 +122,9 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
    */
   public static boolean shouldBlock(boolean isBlocking,
     PatternProviderTarget target, Set<AEKey> inputs) {
-    return isBlocking && target.containsPatternInput(inputs);
+    return isBlocking && (LoadedModsHelper.isFork
+            ? target.containsPatternInput(inputs, blockingMode)
+            : target.containsPatternInput(inputs));
   }
 
   // TODO make this more incremental instead of resetting everything on any
@@ -208,7 +213,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
    * @param side  the side this target is *coming* from (not the side of the
    *              part)
    */
-  public static interface Target {
+  public interface Target {
     /**
      * the level this target is in
      */
@@ -216,24 +221,16 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
 
     default PatternProviderTargetCache getCache() {
       if (LoadedModsHelper.isFork) {
-        var be = this.getTargetBlockEntity();
-        if (be instanceof PatternProviderLogicHost beHost) {
-          return new PatternProviderTargetCache(this.level(), this.pos(),
-                  this.side(), this.source(), (ConfigManager) beHost.getLogic().getConfigManager());
-        } else if (be instanceof IPartHost iPartHost && iPartHost.getPart(side()) instanceof PatternProviderLogicHost partHost) {
-          return new PatternProviderTargetCache(this.level(), this.pos(),
-                  this.side(), this.source(), (ConfigManager) partHost.getLogic().getConfigManager());
+        var provider = this.getTargetCraftingProvider();
+        if (provider instanceof PatternProviderLogic ppLogic) {
+          return new PatternProviderTargetCache(this.level(), this.pos(), this.side(), this.source(), (ConfigManager) ppLogic.getConfigManager());
         }
       }
-      // This reflection is valid if ae2 is not the fork
-      try {
-        var constructor = PatternProviderTargetCache.class.getDeclaredConstructor(ServerLevel.class, BlockPos.class, Direction.class, IActionSource.class);
-        constructor.setAccessible(true);
-        return constructor.newInstance(this.level(), this.pos(), this.side(), this.source());
-      } catch (Exception e) {
-        // NO-OP
-      }
-      return null;
+      // This is valid in both cases, either as a fallback when the input is not a Pattern Provider,
+      // or when we're not using the fork
+      // Works fine because the fork has an alternate constructor,
+      // so we don't need to use reflection, and we AT both those to public
+      return new PatternProviderTargetCache(this.level(), this.pos(), this.side(), this.source());
     }
 
     boolean isValid();

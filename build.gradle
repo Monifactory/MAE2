@@ -147,8 +147,8 @@ modAccessor {
 }
 
 dependencies {
-    accessCompileOnly("appeng:appliedenergistics2-forge:$project.ae2_version")
-    modImplementation("appeng:appliedenergistics2-forge:$project.ae2_version")
+    accessCompileOnly("appeng:appliedenergistics2-forge:$project.ae2_version_cl")
+    modImplementation("appeng:appliedenergistics2-forge:$project.ae2_version_cl")
     modImplementation("org.appliedenergistics:guideme:$project.guideme_version")
 
     //modRuntimeOnly("dev.toma.configuration:configuration-forge-$project.minecraft_version:$project.configuration_version")
@@ -210,6 +210,14 @@ tasks.withType(Jar).configureEach {
     destinationDirectory.set(file("$rootDir/jar"))
 }
 mixin {
-    add sourceSets.main, "mixins.mae2.refmap.json"
-    config "mixins.mae2.json"
+    add sourceSets.main, "mixins.${mod_id}.refmap.json"
+    config "mixins.${mod_id}.json"
+}
+
+jar {
+    manifest {
+        attributes([
+                "MixinConfigs": "mixins.${mod_id}.json"
+        ])
+    }
 }
