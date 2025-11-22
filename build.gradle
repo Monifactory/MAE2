@@ -12,6 +12,7 @@ plugins {
     id 'net.neoforged.moddev.legacyforge' version '2.0.91'
     id "maven-publish"
     id "dev.vfyjxf.modaccessor" version "1.2.1"
+    id "eclipse"
 }
 
 base {
@@ -39,8 +40,6 @@ legacyForge {
             client()
             sourceSet = sourceSets.main
 
-            jvmArgument "-mixin.config=mixins.${mod_id}.json"
-            jvmArgument "-XX:+AllowEnhancedClassRedefinition"
             systemProperty 'forge.enabledGameTestNamespaces', mod_id
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             systemProperty 'forge.logging.console.level', 'debug'
