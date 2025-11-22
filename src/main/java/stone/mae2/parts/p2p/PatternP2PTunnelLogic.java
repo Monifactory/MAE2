@@ -122,6 +122,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
    */
   public static boolean shouldBlock(boolean isBlocking,
     PatternProviderTarget target, Set<AEKey> inputs) {
+    System.out.println(PatternP2PTunnelLogic.blockingMode);
     return isBlocking && (LoadedModsHelper.isFork
             ? target.containsPatternInput(inputs, blockingMode)
             : target.containsPatternInput(inputs));

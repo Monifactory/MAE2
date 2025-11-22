@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -57,8 +56,9 @@ public class PatternP2P {
         barrel
           .getCapability(ForgeCapabilities.ITEM_HANDLER)
           .ifPresent(handler -> {
-              helper.assertTrue(!handler.getStackInSlot(0).isEmpty(), "\"All Blocking Mode\" was not respected");
+              helper.assertTrue(handler.getStackInSlot(0).isEmpty(), "\"All Blocking Mode\" was not respected");
             });
       });
+    helper.runAtTickTime(100, helper::succeed);
   }
 }

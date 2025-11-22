@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 
 import stone.mae2.bootstrap.MAE2Config;
 import stone.mae2.bootstrap.Proxy;
+import stone.mae2.util.LoadedModsHelper;
 
 import java.nio.file.Path;
 
