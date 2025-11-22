@@ -12,6 +12,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.capabilities.Capabilities;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
+import appeng.helpers.patternprovider.PatternProviderTargetCache;
 import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
 import appeng.parts.p2p.P2PModels;
@@ -26,7 +27,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
 import stone.mae2.MAE2;
-import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.parts.p2p.PatternP2PPartLogic;
 import stone.mae2.parts.p2p.PatternP2PPartLogic.PatternP2PPartLogicHost;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic;
