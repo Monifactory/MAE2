@@ -1,6 +1,7 @@
 package stone.mae2.parts.p2p;
 
 import appeng.api.config.Actionable;
+import appeng.api.config.BlockingMode;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.IPatternDetails.IInput;
 import appeng.api.implementations.blockentities.ICraftingMachine;
@@ -13,8 +14,11 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.api.stacks.GenericStack;
 import appeng.api.stacks.KeyCounter;
+import appeng.helpers.patternprovider.PatternProviderLogic;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTarget;
+import appeng.helpers.patternprovider.PatternProviderTargetCache;
+import appeng.util.ConfigManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -23,8 +27,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.checkerframework.checker.units.qual.C;
 
-import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.bootstrap.MAE2Items;
+import stone.mae2.util.LoadedModsHelper;
 import stone.mae2.util.TransHelper;
 
 import java.util.HashSet;
@@ -39,6 +43,7 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   private int lastOutputIndex = 0;
 
   public static boolean isBlocking;
+  public static BlockingMode blockingMode;
 
   public PatternP2PTunnelLogic(PatternP2PTunnel tunnel) {
     this.tunnel = tunnel;
@@ -117,7 +122,10 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
    */
   public static boolean shouldBlock(boolean isBlocking,
     PatternProviderTarget target, Set<AEKey> inputs) {
-    return isBlocking && target.containsPatternInput(inputs);
+    System.out.println(PatternP2PTunnelLogic.blockingMode);
+    return isBlocking && (LoadedModsHelper.isFork
+            ? target.containsPatternInput(inputs, blockingMode)
+            : target.containsPatternInput(inputs));
   }
 
   // TODO make this more incremental instead of resetting everything on any
@@ -206,15 +214,24 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
    * @param side  the side this target is *coming* from (not the side of the
    *              part)
    */
-  public static interface Target {
+  public interface Target {
     /**
      * the level this target is in
      */
     ServerLevel level();
 
     default PatternProviderTargetCache getCache() {
-      return new PatternProviderTargetCache(this.level(), this.pos(),
-        this.side(), this.source());
+      if (LoadedModsHelper.isFork) {
+        var provider = this.getTargetCraftingProvider();
+        if (provider instanceof PatternProviderLogic ppLogic) {
+          return new PatternProviderTargetCache(this.level(), this.pos(), this.side(), this.source(), (ConfigManager) ppLogic.getConfigManager());
+        }
+      }
+      // This is valid in both cases, either as a fallback when the input is not a Pattern Provider,
+      // or when we're not using the fork
+      // Works fine because the fork has an alternate constructor,
+      // so we don't need to use reflection, and we AT both those to public
+      return new PatternProviderTargetCache(this.level(), this.pos(), this.side(), this.source());
     }
 
     boolean isValid();

@@ -32,10 +32,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.slf4j.Logger;
 
-import stone.mae2.bootstrap.ClientProxy;
 import stone.mae2.bootstrap.MAE2Config;
 import stone.mae2.bootstrap.Proxy;
-import stone.mae2.bootstrap.ServerProxy;
+import stone.mae2.util.LoadedModsHelper;
 
 import java.nio.file.Path;
 
@@ -71,7 +70,7 @@ public class MAE2 {
     }
 
     public static ResourceLocation toKey(String path) {
-        return new ResourceLocation(MAE2.MODID, path);
+        return ResourceLocation.fromNamespaceAndPath(MAE2.MODID, path);
     }
 
 }

@@ -34,10 +34,10 @@ public class PatternP2P {
 
   @GameTest(template = "single/fullblock/crafting")
   public static void singleFullblockCrafting(GameTestHelper helper) {
-    helper.setBlock(0, 2, 1, AEBlocks.CREATIVE_ENERGY_CELL.block());
+    helper.setBlock(0, 1, 1, AEBlocks.CREATIVE_ENERGY_CELL.block());
     helper.succeedWhen(() -> {
       // no I don't know why assertContainerContains doesn't work
-      BlockEntity barrel = helper.getBlockEntity(new BlockPos(1, 2, 0));
+      BlockEntity barrel = helper.getBlockEntity(new BlockPos(0, 2, 1));
       barrel
         .getCapability(ForgeCapabilities.ITEM_HANDLER)
         .ifPresent(handler -> {
@@ -46,5 +46,19 @@ public class PatternP2P {
               "no ladder");
         });
     });
+  }
+
+  @GameTest(template = "single/multipart/blocking/all")
+  public static void singleMultipartBlockingAll(GameTestHelper helper) {
+    helper.setBlock(1, 1, 0, AEBlocks.CREATIVE_ENERGY_CELL.block());
+    BlockEntity barrel = helper.getBlockEntity(new BlockPos(0, 2, 1));
+    helper.failIfEver(() -> {
+        barrel
+          .getCapability(ForgeCapabilities.ITEM_HANDLER)
+          .ifPresent(handler -> {
+              helper.assertTrue(handler.getStackInSlot(0).isEmpty(), "\"All Blocking Mode\" was not respected");
+            });
+      });
+    helper.runAtTickTime(100, helper::succeed);
   }
 }

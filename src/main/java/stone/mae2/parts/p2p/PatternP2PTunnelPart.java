@@ -12,6 +12,7 @@ import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.AEKey;
 import appeng.capabilities.Capabilities;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
+import appeng.helpers.patternprovider.PatternProviderTargetCache;
 import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
 import appeng.parts.p2p.P2PModels;
@@ -19,7 +20,6 @@ import appeng.parts.p2p.P2PTunnelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -28,7 +28,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
 import stone.mae2.MAE2;
-import stone.mae2.appeng.helpers.patternprovider.PatternProviderTargetCache;
 import stone.mae2.parts.p2p.PatternP2PPartLogic.PatternP2PPartLogicHost;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic.PatternP2PTunnel;
 import stone.mae2.parts.p2p.PatternP2PTunnelLogic.Target;
@@ -38,8 +37,7 @@ import java.util.List;
 
 public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   implements PatternP2PTunnel, PatternP2PPartLogicHost {
-  private static final P2PModels MODELS = new P2PModels(
-    new ResourceLocation(MAE2.MODID, "part/p2p/p2p_tunnel_pattern"));
+  private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/p2p_tunnel_pattern"));
 
   protected final IActionSource source;
   protected final LazyOptional<ICraftingMachine> logic;

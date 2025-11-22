@@ -2,11 +2,13 @@
   "required": true,
   "minVersion": "0.8.3",
   "package": "stone.mae2.mixins",
-  "refmap": "mae2-refmap.json",
+  "plugin": "stone.mae2.mixins.MAE2MixinPlugin",
+  "refmap": "mixins.mae2.refmap.json",
   "compatibilityLevel": "JAVA_11",
   "mixins": [
-    "PatternProviderLogicMixin",
-    "CraftingCPUClusterMixin"
+    "CraftingCPUClusterMixin",
+    "PatternProviderLogicCLMixin",
+    "PatternProviderLogicMixin"
   ],
   "client": [
     "ModelBakeryMixin"
