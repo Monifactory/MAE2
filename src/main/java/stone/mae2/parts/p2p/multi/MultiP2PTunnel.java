@@ -204,6 +204,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
       this.part = part;
     }
 
+    protected P getPart() {return this.part;}
     protected void onTunnelConfigChange() {}
 
     protected void onTunnelNetworkChange() {}
