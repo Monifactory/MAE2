@@ -218,8 +218,9 @@ public class PatternMultiP2PTunnel extends
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capabilityClass) {
-      if (this.logic != null && this.getFrequency() != 0)
-        return this.logic.getCapability(capabilityClass);
+      Optional<PatternMultiP2PTunnel.Logic> logic = this.getLogic();
+      if (logic.isPresent())
+        return logic.get().getCapability(capabilityClass);
       return LazyOptional.empty();
     }
 

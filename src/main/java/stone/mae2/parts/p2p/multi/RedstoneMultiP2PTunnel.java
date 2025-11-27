@@ -31,12 +31,12 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
       this.power = oldPower;
   }
 
+  private boolean loop = false;
+
   /**
    * 
    * @return if it actually updated outputs (isn't in an update loop)
    */
-  private boolean loop = false;
-
   public boolean updateOutputs() {
     if (loop)
       return false;
@@ -106,7 +106,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     protected void onMainNodeStateChanged(IGridNodeListener.State reason) {
       super.onMainNodeStateChanged(reason);
       if (getMainNode().hasGridBooted()) {
-        this.logic.updateState();
+        this.getLogic().updateState();
       }
     }
 
@@ -127,8 +127,8 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
           // if (b instanceof RedStoneWireBlock) {
           // srcSide = Direction.UP;
           // }
-          this.logic.offerInput(state.getSignal(level, pos, srcSide));
-        } else {}
+          this.logic.ifPresent((logic) -> logic.offerInput(state.getSignal(level, pos, srcSide)));
+        }
       }
     }
 
@@ -139,12 +139,17 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
 
     @Override
     public int isProvidingStrongPower() {
-      return this.isOutput() ? this.logic.getPower() : 0;
+      if (this.isOutput()) {
+        if (this.getLogic().isPresent()) {
+          return this.getLogic().get().getPower();
+        }
+      }
+      return 0;
     }
 
     @Override
     public int isProvidingWeakPower() {
-      return this.isOutput() ? this.logic.getPower() : 0;
+      return this.isProvidingStrongPower();
     }
 
     @Override
@@ -167,5 +172,4 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
   public Logic createLogic(Part part) {
     return part.setLogic(new Logic(part));
   }
-
 }

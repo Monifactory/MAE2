@@ -36,14 +36,15 @@ import org.jetbrains.annotations.Nullable;
 import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.me.service.MultiP2PService;
 
+import java.util.Optional;
 import java.util.Set;
 
 /*
  * I'm deeply sorry for anyone who has to read and understand this code. I can't
  * think of a better way to do this (though I'm sure I'll think of something
- * perfect once I'm done). On the bright it's actually pretty nice once you get
- * to the final concrete class implementations, so just don't think about this
- * too hard and you'll be fine.
+ * perfect once I'm done). On the bright side it's actually pretty nice once you
+ * get to the final concrete class implementations, so just don't think about
+ * this too hard and you'll be fine.
  */
 public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extends MultiP2PTunnel<T, L, P>.Logic, P extends MultiP2PTunnel.Part<T, L, P>> {
   public abstract L createLogic(P part);
@@ -215,7 +216,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     private boolean output;
     private short freq;
-    protected L logic;
+    private Optional<L> logic = Optional.empty();
 
     public Part(IPartItem<?> partItem) {
       super(partItem);
@@ -227,10 +228,10 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     abstract public Class<T> getTunnelClass();
 
-    public L getLogic() { return this.logic; }
+    public Optional<L> getLogic() { return this.getFrequency() != 0 ? this.logic : Optional.empty(); }
 
     protected final L setLogic(L logic) {
-      return this.logic = logic;
+      return this.logic = Optional.ofNullable(logic);
     }
 
     protected float getPowerDrainPerTick() { return 1.0f; }
