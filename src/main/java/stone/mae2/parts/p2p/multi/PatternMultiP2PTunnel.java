@@ -36,6 +36,7 @@ import stone.mae2.util.TransHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class PatternMultiP2PTunnel extends
   MultiP2PTunnel<PatternMultiP2PTunnel, PatternMultiP2PTunnel.Logic, PatternMultiP2PTunnel.Part>

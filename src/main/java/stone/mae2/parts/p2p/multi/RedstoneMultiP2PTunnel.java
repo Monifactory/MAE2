@@ -98,7 +98,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
 
     public void onNeighborChanged(BlockGetter level, BlockPos pos, BlockPos neighbor) {
       if (!this.getPart().isOutput())
-        this.offerInput(this.getPart().getPowerInput())
+        this.offerInput(this.getPart().getPowerInput());
     }
   }
 
@@ -136,7 +136,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     protected void onMainNodeStateChanged(IGridNodeListener.State reason) {
       super.onMainNodeStateChanged(reason);
       if (getMainNode().hasGridBooted()) {
-        this.getLogic().updateState();
+        this.getLogic().ifPresent(logic -> logic.updateState());
       }
     }
 
@@ -159,7 +159,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
         // if (b instanceof RedStoneWireBlock) {
         // srcSide = Direction.UP;
         // }
-        return state.getSignal(level, pos, srcSide);
+        return state.getSignal(this.getLevel(), target, srcSide.getOpposite());
       }
       return 0;
     }
