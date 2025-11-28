@@ -34,10 +34,10 @@ public class PatternP2P {
 
   @GameTest(template = "single/fullblock/crafting")
   public static void singleFullblockCrafting(GameTestHelper helper) {
-    helper.setBlock(0, 1, 1, AEBlocks.CREATIVE_ENERGY_CELL.block());
+    helper.setBlock(0, 2, 1, AEBlocks.CREATIVE_ENERGY_CELL.block());
     helper.succeedWhen(() -> {
       // no I don't know why assertContainerContains doesn't work
-      BlockEntity barrel = helper.getBlockEntity(new BlockPos(0, 2, 1));
+      BlockEntity barrel = helper.getBlockEntity(new BlockPos(1, 2, 0));
       barrel
         .getCapability(ForgeCapabilities.ITEM_HANDLER)
         .ifPresent(handler -> {

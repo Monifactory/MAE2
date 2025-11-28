@@ -114,12 +114,12 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
     if (part.isOutput()) {
       this.updateTunnels(true, false);
       boolean wasIn = outputs.remove(part.getLogic());
-      part.logic = null;
+      part.setLogic(null);
       return wasIn;
     } else {
       this.updateTunnels(false, false);
       boolean wasIn = inputs.remove(part.getLogic());
-      part.logic = null;
+      part.setLogic(null);
       return wasIn;
     }
 
@@ -232,7 +232,8 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
     public Optional<L> getLogic() { return this.getFrequency() != 0 ? this.logic : Optional.empty(); }
 
     protected final L setLogic(L logic) {
-      return this.logic = Optional.ofNullable(logic);
+      this.logic = Optional.ofNullable(logic);
+      return logic;
     }
 
     protected float getPowerDrainPerTick() { return 1.0f; }
@@ -400,7 +401,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
           }
         }
 
-        this.logic.onTunnelConfigChange();
+        this.getLogic().ifPresent(logic -> logic.onTunnelConfigChange());
 
         var type = getPartItem().asItem().getDescriptionId();
 
@@ -434,7 +435,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
         if (freq != this.freq || !settingOutput) {
           setOutput(settingOutput);
           setFrequency(freq);
-          this.logic.onTunnelNetworkChange();
+          this.getLogic().ifPresent(logic -> logic.onTunnelNetworkChange());
         }
       }
     }
