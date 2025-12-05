@@ -27,6 +27,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.checkerframework.checker.units.qual.C;
 
+import stone.mae2.MAE2;
 import stone.mae2.bootstrap.MAE2Items;
 import stone.mae2.util.LoadedModsHelper;
 import stone.mae2.util.TransHelper;
@@ -88,8 +89,11 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
           continue;
         }
 
-        if (isExternal) {
-          final PatternProviderTarget target = caches[i].find();
+          if (isExternal) {
+              if (caches == null || caches.length != outputs.size()) {
+                  refreshOutputs();
+              }
+              final PatternProviderTarget target = caches[i].find();
           if (target == null
             || shouldBlock(isBlocking, target, this.patternInputs))
             continue;
@@ -106,6 +110,8 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
           }
         }
       } while (i != lastOutputIndex);
+    } catch (Throwable t) {
+        MAE2.LOGGER.error(t.getLocalizedMessage());
     } finally {
       isRecursive = false;
     }
@@ -131,8 +137,10 @@ public class PatternP2PTunnelLogic implements ICraftingMachine {
   // change
   public void refreshOutputs() {
     List<? extends Target> outputs = tunnel.getPatternTunnelOutputs();
-    if (outputs.size() == 0)
+    if (outputs.isEmpty()){
+      this.caches = null;
       return;
+    }
     this.caches = new PatternProviderTargetCache[outputs.size()];
     for (int i = 0; i < this.caches.length; i++) {
       Target output = outputs.get(i);
