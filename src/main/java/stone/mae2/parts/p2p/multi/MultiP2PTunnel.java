@@ -111,14 +111,19 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
    * @return if the part was already in the tunnel
    */
   public boolean removeTunnel(P part) {
+    boolean wasIn = false;
+    Optional<L> logic = part.getLogic();
     if (part.isOutput()) {
       this.updateTunnels(true, false);
-      boolean wasIn = outputs.remove(part.getLogic());
+      if (logic.isPresent())
+        wasIn = this.outputs.remove(logic.get());
       part.setLogic(null);
       return wasIn;
     } else {
       this.updateTunnels(false, false);
-      boolean wasIn = inputs.remove(part.getLogic());
+      
+      if (logic.isPresent())
+        wasIn = this.inputs.remove(logic.get());
       part.setLogic(null);
       return wasIn;
     }
@@ -229,7 +234,8 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     abstract public Class<T> getTunnelClass();
 
-    public Optional<L> getLogic() { return this.getFrequency() != 0 ? this.logic : Optional.empty(); }
+    public Optional<L> getLogic() {
+      return this.getFrequency() != 0 && this.isActive() ? this.logic : Optional.empty(); }
 
     protected final L setLogic(L logic) {
       this.logic = Optional.ofNullable(logic);

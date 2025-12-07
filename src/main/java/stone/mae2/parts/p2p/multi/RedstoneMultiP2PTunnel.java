@@ -1,6 +1,7 @@
 package stone.mae2.parts.p2p.multi;
 
 import java.util.List;
+import java.util.Optional;
 
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNodeListener;
@@ -71,6 +72,11 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     this.power = 0;
   }
 
+  @Override
+  protected void updateTunnels(boolean updateOutputs, boolean configChange) {
+    super.updateTunnels(updateOutputs, configChange);
+  }
+
   public class Logic extends MultiP2PTunnel<RedstoneMultiP2PTunnel, Logic, Part>.Logic {
     private int oldPower;
     
@@ -135,9 +141,11 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     @Override
     protected void onMainNodeStateChanged(IGridNodeListener.State reason) {
       super.onMainNodeStateChanged(reason);
-      if (getMainNode().hasGridBooted()) {
-        this.getLogic().ifPresent(logic -> logic.updateState());
-      }
+      Optional<Logic> logic = this.getLogic();
+      if (logic.isPresent())
+        logic.get().updateState();
+      else
+        this.notifyNeighbors();
     }
 
     @Override
@@ -173,7 +181,8 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     public int isProvidingStrongPower() {
       if (this.isOutput()) {
         if (this.getLogic().isPresent()) {
-          return this.getLogic().get().getPower();
+          int power = this.getLogic().get().getPower();
+          return power;
         }
       }
       return 0;
