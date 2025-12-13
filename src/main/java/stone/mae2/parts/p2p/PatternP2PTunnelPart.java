@@ -40,7 +40,7 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   private static final P2PModels MODELS = new P2PModels(MAE2.toKey("part/p2p/p2p_tunnel_pattern"));
 
   protected final IActionSource source;
-  protected final LazyOptional<ICraftingMachine> logic;
+  protected final LazyOptional<PatternP2PTunnelLogic> logic;
 
   private PatternProviderTargetCache targetCache;
   private final PatternP2PPartLogic partLogic = new PatternP2PPartLogic(this);
@@ -71,6 +71,18 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   public void addToWorld() {
     super.addToWorld();
     this.targetCache = PatternP2PPartLogicHost.super.getCache();
+    if (this.isOutput()) {
+      PatternP2PTunnelPart input = this.getInput();
+      if (input != null) 
+        input.logic.ifPresent(logic -> logic.refreshOutputs());
+    }
+  }
+
+  @Override
+  public void removeFromWorld() {
+    super.removeFromWorld();
+    if (this.isOutput())
+      this.getInput().logic.ifPresent(logic -> logic.refreshOutputs());
   }
 
   public boolean isValid() { return this.partLogic.isValid(); }
