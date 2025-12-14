@@ -36,14 +36,15 @@ import org.jetbrains.annotations.Nullable;
 import stone.mae2.api.features.MultiP2PTunnelAttunement;
 import stone.mae2.me.service.MultiP2PService;
 
+import java.util.Optional;
 import java.util.Set;
 
 /*
  * I'm deeply sorry for anyone who has to read and understand this code. I can't
  * think of a better way to do this (though I'm sure I'll think of something
- * perfect once I'm done). On the bright it's actually pretty nice once you get
- * to the final concrete class implementations, so just don't think about this
- * too hard and you'll be fine.
+ * perfect once I'm done). On the bright side it's actually pretty nice once you
+ * get to the final concrete class implementations, so just don't think about
+ * this too hard and you'll be fine.
  */
 public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extends MultiP2PTunnel<T, L, P>.Logic, P extends MultiP2PTunnel.Part<T, L, P>> {
   public abstract L createLogic(P part);
@@ -110,15 +111,20 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
    * @return if the part was already in the tunnel
    */
   public boolean removeTunnel(P part) {
+    boolean wasIn = false;
+    Optional<L> logic = part.getLogic();
     if (part.isOutput()) {
       this.updateTunnels(true, false);
-      boolean wasIn = outputs.remove(part.getLogic());
-      part.logic = null;
+      if (logic.isPresent())
+        wasIn = this.outputs.remove(logic.get());
+      part.setLogic(null);
       return wasIn;
     } else {
       this.updateTunnels(false, false);
-      boolean wasIn = inputs.remove(part.getLogic());
-      part.logic = null;
+      
+      if (logic.isPresent())
+        wasIn = this.inputs.remove(logic.get());
+      part.setLogic(null);
       return wasIn;
     }
 
@@ -203,6 +209,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
       this.part = part;
     }
 
+    protected P getPart() {return this.part;}
     protected void onTunnelConfigChange() {}
 
     protected void onTunnelNetworkChange() {}
@@ -215,7 +222,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     private boolean output;
     private short freq;
-    protected L logic;
+    private Optional<L> logic = Optional.empty();
 
     public Part(IPartItem<?> partItem) {
       super(partItem);
@@ -227,10 +234,12 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
 
     abstract public Class<T> getTunnelClass();
 
-    public L getLogic() { return this.logic; }
+    public Optional<L> getLogic() {
+      return this.getFrequency() != 0 && this.isActive() ? this.logic : Optional.empty(); }
 
     protected final L setLogic(L logic) {
-      return this.logic = logic;
+      this.logic = Optional.ofNullable(logic);
+      return logic;
     }
 
     protected float getPowerDrainPerTick() { return 1.0f; }
@@ -398,7 +407,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
           }
         }
 
-        this.logic.onTunnelConfigChange();
+        this.getLogic().ifPresent(logic -> logic.onTunnelConfigChange());
 
         var type = getPartItem().asItem().getDescriptionId();
 
@@ -432,7 +441,7 @@ public abstract class MultiP2PTunnel<T extends MultiP2PTunnel<T, L, P>, L extend
         if (freq != this.freq || !settingOutput) {
           setOutput(settingOutput);
           setFrequency(freq);
-          this.logic.onTunnelNetworkChange();
+          this.getLogic().ifPresent(logic -> logic.onTunnelNetworkChange());
         }
       }
     }

@@ -1,6 +1,7 @@
 package stone.mae2.parts.p2p.multi;
 
 import java.util.List;
+import java.util.Optional;
 
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNodeListener;
@@ -19,6 +20,9 @@ import stone.mae2.MAE2;
 
 public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunnel, stone.mae2.parts.p2p.multi.RedstoneMultiP2PTunnel.Logic, stone.mae2.parts.p2p.multi.RedstoneMultiP2PTunnel.Part> {
   private int power;
+  // short because I'm assuming people won't get more than 32767 parts in a single tunnel
+  // no support for powers above 15 either, single p2p should handle them for that edge-case
+  private final short[] powers = new short[16];
 
   public RedstoneMultiP2PTunnel(short freq, IGrid grid) {
     super(freq, grid);
@@ -31,12 +35,12 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
       this.power = oldPower;
   }
 
+  private boolean loop = false;
+
   /**
    * 
    * @return if it actually updated outputs (isn't in an update loop)
    */
-  private boolean loop = false;
-
   public boolean updateOutputs() {
     if (loop)
       return false;
@@ -48,7 +52,34 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     return true;
   }
 
+  private void changeInput(int newPower, int oldPower) {
+    this.powers[oldPower]--;
+    this.powers[newPower]++;
+
+    if (oldPower >= this.power && this.powers[oldPower] <= 0)
+      updatePower();
+    else if (newPower > this.power)
+      updatePower();
+  }
+
+  private void updatePower() {
+    for (int i = 15; i > 0; i--) {
+      if (this.powers[i] > 0) {
+        this.power = i;
+        return;
+      }
+    }
+    this.power = 0;
+  }
+
+  @Override
+  protected void updateTunnels(boolean updateOutputs, boolean configChange) {
+    super.updateTunnels(updateOutputs, configChange);
+  }
+
   public class Logic extends MultiP2PTunnel<RedstoneMultiP2PTunnel, Logic, Part>.Logic {
+    private int oldPower;
+    
     public Logic(Part part) {
       super(part);
     }
@@ -58,8 +89,8 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     }
 
     public void offerInput(int newPower) {
-      if (newPower > power) {
-        setPower(newPower);
+      if (newPower != oldPower) {
+        RedstoneMultiP2PTunnel.this.changeInput(newPower, oldPower);
       }
     }
 
@@ -67,8 +98,13 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
       if (this.part.isOutput()) {
         ((Part) this.part).notifyNeighbors();
       } else {
-
+        this.offerInput(this.getPart().getPowerInput());
       }
+    }
+
+    public void onNeighborChanged(BlockGetter level, BlockPos pos, BlockPos neighbor) {
+      if (!this.getPart().isOutput())
+        this.offerInput(this.getPart().getPowerInput());
     }
   }
 
@@ -95,7 +131,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
       final Level level = this.getBlockEntity().getLevel();
       Platform.notifyBlocksOfNeighbors(level,
         this.getBlockEntity().getBlockPos());
-      // and this cause sometimes it can go thought walls.
+      // and this cause sometimes it can go though walls.
       for (Direction face : Direction.values()) {
         Platform.notifyBlocksOfNeighbors(level,
           this.getBlockEntity().getBlockPos().relative(face));
@@ -105,31 +141,35 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     @Override
     protected void onMainNodeStateChanged(IGridNodeListener.State reason) {
       super.onMainNodeStateChanged(reason);
-      if (getMainNode().hasGridBooted()) {
-        this.logic.updateState();
-      }
+      Optional<Logic> logic = this.getLogic();
+      if (logic.isPresent())
+        logic.get().updateState();
+      else
+        this.notifyNeighbors();
     }
 
-    // TODO figure out better algorithm to prevent frivolous checks
     @Override
     public void onNeighborChanged(BlockGetter level, BlockPos pos,
       BlockPos neighbor) {
-      if (!this.isOutput()) {
-        final BlockPos target = this.getBlockEntity().getBlockPos()
-          .relative(this.getSide());
+      this.getLogic().ifPresent(logic -> logic.onNeighborChanged(level, pos, neighbor));
+    }
 
-        final BlockState state = this.getBlockEntity().getLevel()
-          .getBlockState(target);
-        final Block b = state.getBlock();
-        if (b != null) {
-          Direction srcSide = this.getSide();
-          // maybe make it only read wires if they point into it?
-          // if (b instanceof RedStoneWireBlock) {
-          // srcSide = Direction.UP;
-          // }
-          this.logic.offerInput(state.getSignal(level, pos, srcSide));
-        } else {}
+    public int getPowerInput() {
+      final BlockPos target = this.getBlockEntity().getBlockPos()
+        .relative(this.getSide());
+
+      final BlockState state = this.getBlockEntity().getLevel()
+        .getBlockState(target);
+      final Block b = state.getBlock();
+      if (b != null) {
+        Direction srcSide = this.getSide();
+        // maybe make it only read wires if they point into it?
+        // if (b instanceof RedStoneWireBlock) {
+        // srcSide = Direction.UP;
+        // }
+        return state.getSignal(this.getLevel(), target, srcSide.getOpposite());
       }
+      return 0;
     }
 
     @Override
@@ -139,12 +179,18 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
 
     @Override
     public int isProvidingStrongPower() {
-      return this.isOutput() ? this.logic.getPower() : 0;
+      if (this.isOutput()) {
+        if (this.getLogic().isPresent()) {
+          int power = this.getLogic().get().getPower();
+          return power;
+        }
+      }
+      return 0;
     }
 
     @Override
     public int isProvidingWeakPower() {
-      return this.isOutput() ? this.logic.getPower() : 0;
+      return this.isProvidingStrongPower();
     }
 
     @Override
@@ -167,5 +213,4 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
   public Logic createLogic(Part part) {
     return part.setLogic(new Logic(part));
   }
-
 }

@@ -209,8 +209,9 @@ public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunne
     @Override
     public final <A> LazyOptional<A> getCapability(
       Capability<A> capabilityClass) {
-      if (this.logic != null) {
-        return this.logic.getCapability(capabilityClass);
+      var logic = this.getLogic();
+      if (logic.isPresent()) {
+        return logic.get().getCapability(capabilityClass);
       } else {
         return LazyOptional.empty();
       }
@@ -218,8 +219,9 @@ public abstract class CapabilityMultiP2PTunnel<T extends CapabilityMultiP2PTunne
 
     public void onNeighborChanged(BlockGetter level, BlockPos pos,
       BlockPos neighbor) {
-      if (this.logic != null)
-        this.logic.onNeighborChanged(level, pos, neighbor);
+      var logic = this.getLogic();
+      if (logic.isPresent())
+        logic.get().onNeighborChanged(level, pos, neighbor);
     }
   }
 }
