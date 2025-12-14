@@ -2,6 +2,7 @@ package stone.mae2.parts.p2p;
 
 import appeng.api.implementations.blockentities.ICraftingMachine;
 import appeng.api.implementations.blockentities.PatternContainerGroup;
+import appeng.api.networking.IGridNodeListener;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.security.IActionSource;
 import appeng.api.parts.IPart;
@@ -81,8 +82,11 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   @Override
   public void removeFromWorld() {
     super.removeFromWorld();
-    if (this.isOutput())
-      this.getInput().logic.ifPresent(logic -> logic.refreshOutputs());
+    if (this.isOutput()) {
+      PatternP2PTunnelPart input = this.getInput();
+      if (input != null) 
+        input.logic.ifPresent(logic -> logic.refreshOutputs());
+    }
   }
 
   public boolean isValid() { return this.partLogic.isValid(); }
