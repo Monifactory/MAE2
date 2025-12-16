@@ -39,6 +39,13 @@ public class RedstoneP2P {
     }));
   }
 
+  @GameTest(template = "multi/shared/simple")
+  public static void multiBrokenRedstone(GameTestHelper helper) {
+    helper.succeedWhen(new Helper("Redstone P2P failed to turn off after breaking redstone block", helper, (help) -> {
+          helper.setBlock(new BlockPos(2, 2, 0), Blocks.AIR);
+    }));
+  }
+
   public static class Helper implements Runnable {
     private final String message;
     private final GameTestHelper helper;

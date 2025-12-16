@@ -65,11 +65,11 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
   private void updatePower() {
     for (int i = 15; i > 0; i--) {
       if (this.powers[i] > 0) {
-        this.power = i;
+        this.setPower(i);
         return;
       }
     }
-    this.power = 0;
+    this.setPower(0);
   }
 
   @Override
@@ -78,7 +78,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
   }
 
   public class Logic extends MultiP2PTunnel<RedstoneMultiP2PTunnel, Logic, Part>.Logic {
-    private int oldPower;
+    private int oldPower = 0;
     
     public Logic(Part part) {
       super(part);
@@ -91,6 +91,7 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
     public void offerInput(int newPower) {
       if (newPower != oldPower) {
         RedstoneMultiP2PTunnel.this.changeInput(newPower, oldPower);
+        oldPower = newPower;
       }
     }
 
@@ -167,7 +168,8 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
         // if (b instanceof RedStoneWireBlock) {
         // srcSide = Direction.UP;
         // }
-        return state.getSignal(this.getLevel(), target, srcSide.getOpposite());
+        int power = state.getSignal(this.getLevel(), target, srcSide.getOpposite());
+        return power;
       }
       return 0;
     }
