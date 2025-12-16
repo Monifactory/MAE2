@@ -163,12 +163,11 @@ public class RedstoneMultiP2PTunnel extends MultiP2PTunnel<RedstoneMultiP2PTunne
         .getBlockState(target);
       final Block b = state.getBlock();
       if (b != null) {
-        Direction srcSide = this.getSide();
-        // maybe make it only read wires if they point into it?
+        // maybe makes it only read wires if they point into it?
         // if (b instanceof RedStoneWireBlock) {
         // srcSide = Direction.UP;
         // }
-        int power = state.getSignal(this.getLevel(), target, srcSide.getOpposite());
+        int power = state.getSignal(this.getLevel(), target, this.getSide());
         return power;
       }
       return 0;
