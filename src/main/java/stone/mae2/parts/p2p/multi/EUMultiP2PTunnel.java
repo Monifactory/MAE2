@@ -140,7 +140,7 @@ public class EUMultiP2PTunnel extends
     public long acceptEnergyFromNetwork(Direction side, long voltage,
       long amperage) {
       maxVoltage = Math.max(maxVoltage, voltage);
-      // breaks when voltage and amperage are significant fractions of max int,
+      // breaks when voltage and amperage are both significant fractions of max int,
       // too bad!
       if (!isSatisfied) {
         buffer += voltage * amperage;
