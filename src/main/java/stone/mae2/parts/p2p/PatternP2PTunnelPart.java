@@ -169,7 +169,8 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
 
   @Override
   public List<Target> getPatternTunnelInputs() {
-    return List.of(this.getInput());
+    Target input = this.getInput();
+    return input == null ? List.of() : List.of(input);
   }
 
   @Override
