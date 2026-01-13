@@ -13,6 +13,7 @@ import appeng.api.stacks.AEKey;
 import appeng.capabilities.Capabilities;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.helpers.patternprovider.PatternProviderTargetCache;
+import appeng.hooks.ticking.TickHandler;
 import appeng.items.parts.PartModels;
 import appeng.me.helpers.MachineSource;
 import appeng.parts.p2p.P2PModels;
@@ -22,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -160,6 +162,86 @@ public class PatternMultiP2PTunnel extends
         }
       }
       return LazyOptional.empty();
+    }
+
+        /**
+     * The position right in front of this P2P tunnel.
+     */
+    private BlockPos getFacingPos() {
+      return this.part
+        .getHost()
+        .getLocation()
+        .getPos()
+        .relative(this.part.getSide());
+    }
+
+    // Send a block update on p2p status change, or any update on another
+    // endpoint.
+    private boolean inBlockUpdate = false;
+
+    protected void sendBlockUpdate() {
+      // Prevent recursive block updates.
+      if (!inBlockUpdate) {
+        inBlockUpdate = true;
+
+        try {
+          // getHost().notifyNeighbors() would queue a callback, but we want to
+          // do an
+          // update synchronously!
+          // (otherwise we can't detect infinite recursion, it would just queue
+          // updates
+          // endlessly)
+          this.part.getHost().notifyNeighborNow(this.part.getSide());
+        } finally {
+          inBlockUpdate = false;
+        }
+      }
+    }
+
+    @Override
+    public void onTunnelNetworkChange() {
+      // This might be invoked while the network is being unloaded and we don't
+      // want
+      // to send a block update then, so
+      // we delay it until the next tick.
+      TickHandler.instance().addCallable(this.part.getLevel(), () -> {
+        if (this.part.getMainNode().isReady()) { // Check that the p2p tunnel is
+                                                 // still there.
+          sendBlockUpdate();
+        }
+      });
+    }
+
+    /**
+     * Forward block updates from the attached tile's position to the other end
+     * of the tunnel. Required for TE's on the other end to know that the
+     * available caps may have changed.
+     */
+    public void onNeighborChanged(BlockGetter level, BlockPos pos,
+      BlockPos neighbor) {
+      // We only care about block updates on the side this tunnel is facing
+      if (!getFacingPos().equals(neighbor)) {
+        return;
+      }
+
+      // Prevent recursive block updates.
+      if (!inBlockUpdate) {
+        inBlockUpdate = true;
+
+        try {
+          if (this.part.isOutput()) {
+            for (var output : PatternMultiP2PTunnel.this.getOutputs()) {
+              output.sendBlockUpdate();
+            }
+          } else {
+            for (var input : PatternMultiP2PTunnel.this.getInputs()) {
+              input.sendBlockUpdate();
+            }
+          }
+        } finally {
+          inBlockUpdate = false;
+        }
+      }
     }
   }
 

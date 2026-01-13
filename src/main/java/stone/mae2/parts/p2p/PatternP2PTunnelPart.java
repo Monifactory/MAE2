@@ -24,6 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -43,6 +44,8 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   protected final IActionSource source;
   protected final LazyOptional<PatternP2PTunnelLogic> logic;
 
+  // Prevents recursive block updates.
+  private boolean inBlockUpdate = false;
   private PatternProviderTargetCache targetCache;
   private final PatternP2PPartLogic partLogic = new PatternP2PPartLogic(this);
 
@@ -195,5 +198,61 @@ public class PatternP2PTunnelPart extends P2PTunnelPart<PatternP2PTunnelPart>
   @Override
   public IActionSource source() {
     return this.source;
+  }
+
+  /**
+   * The position right in front of this P2P tunnel.
+   */
+  private BlockPos getFacingPos() {
+    return getHost().getLocation().getPos().relative(getSide());
+  }
+
+  // Send a block update on p2p status change, or any update on another endpoint.
+  protected void sendBlockUpdate() {
+    // Prevent recursive block updates.
+    if (!inBlockUpdate) {
+      inBlockUpdate = true;
+
+      try {
+        // getHost().notifyNeighbors() would queue a callback, but we want to do an update synchronously!
+        // (otherwise we can't detect infinite recursion, it would just queue updates endlessly)
+        getHost().notifyNeighborNow(getSide());
+      } finally {
+        inBlockUpdate = false;
+      }
+    }
+  }
+  
+  /**
+   * Forward block updates from the attached tile's position to the other end of the tunnel. Required for TE's on the
+   * other end to know that the available caps may have changed.
+   */
+  @Override
+  public void onNeighborChanged(BlockGetter level, BlockPos pos, BlockPos neighbor) {
+    // We only care about block updates on the side this tunnel is facing
+    if (!this.getFacingPos().equals(neighbor)) {
+      return;
+    }
+
+    // Prevent recursive block updates.
+    if (!inBlockUpdate) {
+      inBlockUpdate = true;
+
+      try {
+        if (isOutput()) {
+          PatternP2PTunnelPart input = getInput();
+
+          if (input != null) {
+            input.sendBlockUpdate();
+          }
+        } else {
+          for (PatternP2PTunnelPart output : this.getOutputs()) {
+            output.sendBlockUpdate();
+          }
+        }
+      } finally {
+        inBlockUpdate = false;
+      }
+    }
   }
 }
