@@ -16,36 +16,39 @@ import stone.mae2.MAE2;
  */
 @GameTestHolder(MAE2.MODID)
 public class PatternP2P {
-  @GameTest(template = "single/multipart/crafting")
-  public static void singleMultipartCrafting(GameTestHelper helper) {
+  private static void runPatternP2PTest(GameTestHelper helper) {
     helper.setBlock(0, 2, 1, AEBlocks.CREATIVE_ENERGY_CELL.block());
     helper.succeedWhen(() -> {
-      // no I don't know why assertContainerContains doesn't work
-      BlockEntity barrel = helper.getBlockEntity(new BlockPos(1, 2, 0));
-      barrel
-        .getCapability(ForgeCapabilities.ITEM_HANDLER)
-        .ifPresent(handler -> {
-          helper
-            .assertTrue(handler.getStackInSlot(0).is(Items.LADDER),
-              "no ladder");
-        });
-    });
+        // no I don't know why assertContainerContains doesn't work
+        BlockEntity barrel = helper.getBlockEntity(new BlockPos(1, 2, 0));
+        barrel
+          .getCapability(ForgeCapabilities.ITEM_HANDLER)
+          .ifPresent(handler -> {
+              helper
+                .assertTrue(handler.getStackInSlot(0).is(Items.LADDER),
+                            "Failed to craft");
+            });
+      });
+  }
+  
+  @GameTest(template = "single/multipart/crafting")
+  public static void singleMultipartCrafting(GameTestHelper helper) {
+    runPatternP2PTest(helper);
   }
 
   @GameTest(template = "single/fullblock/crafting")
   public static void singleFullblockCrafting(GameTestHelper helper) {
-    helper.setBlock(0, 2, 1, AEBlocks.CREATIVE_ENERGY_CELL.block());
-    helper.succeedWhen(() -> {
-      // no I don't know why assertContainerContains doesn't work
-      BlockEntity barrel = helper.getBlockEntity(new BlockPos(1, 2, 0));
-      barrel
-        .getCapability(ForgeCapabilities.ITEM_HANDLER)
-        .ifPresent(handler -> {
-          helper
-            .assertTrue(handler.getStackInSlot(0).is(Items.LADDER),
-              "no ladder");
-        });
-    });
+    runPatternP2PTest(helper);
+  }
+
+  @GameTest(template = "multi/multipart/crafting")
+  public static void multiMultipartCrafting(GameTestHelper helper) {
+    runPatternP2PTest(helper);
+  }
+
+  @GameTest(template = "multi/fullblock/crafting")
+  public static void multiFullblockCrafting(GameTestHelper helper) {
+    runPatternP2PTest(helper);
   }
 
   @GameTest(template = "single/multipart/blocking/all")
