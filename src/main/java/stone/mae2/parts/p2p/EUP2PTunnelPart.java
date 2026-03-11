@@ -21,6 +21,7 @@ package stone.mae2.parts.p2p;
 import appeng.api.config.PowerUnits;
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridNode;
 import appeng.api.networking.IGridNodeListener.State;
 import appeng.api.parts.IPartItem;
 import appeng.api.parts.IPartModel;
@@ -79,9 +80,11 @@ public class EUP2PTunnelPart
     @Override
     public long acceptEnergyFromNetwork(Direction side, long voltage,
       long amperage) {
-      IGrid grid = EUP2PTunnelPart.this
-        .getGridNode()
-        .getGrid();
+      IGridNode node = EUP2PTunnelPart.this
+        .getGridNode();
+      if (node == null)
+        return 0;
+      IGrid grid = node.getGrid();
       if (grid == null)
         return 0;
       
