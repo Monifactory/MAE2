@@ -11,7 +11,8 @@
     "PatternProviderLogicMixin"
   ],
   "client": [
-    "ModelBakeryMixin"
+    "ModelBakeryMixin",
+    "CableBusModelMixin"
   ],
   "server": []
 }
