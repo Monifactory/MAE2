@@ -45,7 +45,7 @@ public class FaultyMemoryCardItem extends MemoryCardItem implements IMouseWheelI
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
     	// copying/special tool use
         if (context.isSecondaryUseActive()) {
-            return InteractionResult.PASS;
+            return FaultyCardMode.of(stack).onItemSecondaryUseFirst(stack, context);
         }
 
         Level level = context.getLevel();

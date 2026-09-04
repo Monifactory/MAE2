@@ -93,6 +93,13 @@ public class UberMode extends FaultyCardMode {
   }
 
   @Override
+  public InteractionResult onItemSecondaryUseFirst(ItemStack stack, UseOnContext context) {
+    this.start = null;
+    this.save(stack.getOrCreateTag());
+    return InteractionResult.PASS;
+  }
+
+  @Override
   protected FaultyCardMode load(CompoundTag tag) {
     if (tag.contains(START_POS)) {
       this.start = BlockPos.of(tag.getLong(START_POS));

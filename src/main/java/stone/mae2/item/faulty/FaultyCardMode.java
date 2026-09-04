@@ -84,6 +84,17 @@ public abstract class FaultyCardMode {
      */
     public abstract InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context);
 
+   /**
+    * Called for the card's secondary use (shift-clicked) on a block
+    *
+    * This is intended to let modes override or listen for the memory card
+    * copying data. Return {@link InteractionResult.PASS} to continue normal
+    * processing (I don't know how the rest of it works).
+    */
+    public InteractionResult onItemSecondaryUseFirst(ItemStack stack, UseOnContext context) {
+      return InteractionResult.PASS;
+    }
+
     /**
      * Called from the onItemUse method in the {@link FaultyMemoryCardItem}
      *
