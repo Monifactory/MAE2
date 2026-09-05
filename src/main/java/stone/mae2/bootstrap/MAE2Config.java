@@ -29,10 +29,10 @@ import stone.mae2.bootstrap.MAE2Config.TickRates.TickRate;
 import stone.mae2.util.TransHelper;
 
 @EventBusSubscriber(modid = MAE2.MODID, bus = EventBusSubscriber.Bus.MOD)
-public record MAE2Config(Client client, Parts parts) {
+public record MAE2Config(Client client, Parts parts, Faulty faulty) {
 
   @SubscribeEvent
-  static void onReload(final ModConfigEvent.Reloading event) {
+    static void onReload(final ModConfigEvent.Reloading event) {
     onReload();
   }
 
@@ -53,18 +53,19 @@ public record MAE2Config(Client client, Parts parts) {
         new TickRates
         (new TickRate(FE_MIN_RATE.get(), FE_MAX_RATE.get()),
          new TickRate(EU_MIN_RATE.get(), EU_MAX_RATE.get()),
-         new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get()))));
+         new TickRate(PATTERN_MIN_RATE.get(), PATTERN_MAX_RATE.get()))),
+       new Faulty(UBER_MAX_VOLUME.get()));
   }
 
   // load in things that require a restart here (ie item registation or p2p
   // attunements)
   public static void onLoad() {
-      onReload();
+    onReload();
   }
 
   @SubscribeEvent
-      static void onload(final ModConfigEvent.Loading event) {
-      onLoad();
+    static void onload(final ModConfigEvent.Loading event) {
+    onLoad();
   }
 
   public record Client(double cloudChamberFactor) {}
@@ -74,8 +75,10 @@ public record MAE2Config(Client client, Parts parts) {
 
   public record TickRates(TickRate FEMultiP2PTunnel, TickRate EUMultiP2PTunnel,
                           TickRate PatternP2PTunnel) {
-      public record TickRate(int minRate, int maxRate) {}
+    public record TickRate(int minRate, int maxRate) {}
   }
+
+  public record Faulty(int maxUberVolume) {}
 
   // client
   private static final ForgeConfigSpec.DoubleValue CLOUD_CHAMBER_FACTOR;
@@ -94,6 +97,9 @@ public record MAE2Config(Client client, Parts parts) {
 
   private static final ForgeConfigSpec.IntValue PATTERN_MIN_RATE;
   private static final ForgeConfigSpec.IntValue PATTERN_MAX_RATE;
+
+  // faulty card modes
+  private static final ForgeConfigSpec.IntValue UBER_MAX_VOLUME;
 
   public static final IConfigSpec<?> CLIENT;
   public static final IConfigSpec<?> COMMON;
@@ -120,13 +126,13 @@ public record MAE2Config(Client client, Parts parts) {
 
     EU_P2P_NERF = common
       .comment(
-        "Enable/Disable nerf to EU p2p. Nerf penalizes higher energy transfer rates across the entire ME network with higher taxes, but in such a way that stepping up voltage reduces tax. Also prevents EU p2ps from getting channels though an ME p2p")
+               "Enable/Disable nerf to EU p2p. Nerf penalizes higher energy transfer rates across the entire ME network with higher taxes, but in such a way that stepping up voltage reduces tax. Also prevents EU p2ps from getting channels though an ME p2p")
       .translation(TransHelper.CONFIG.toKey("euP2PNerf"))
       .define("nerf", false);
 
     EU_P2P_NERF_FACTOR = common
       .comment(
-        "A factor used in calculating the nerfed EU p2p's tax. Higher means the tax is higher. Linearly affects tax")
+               "A factor used in calculating the nerfed EU p2p's tax. Higher means the tax is higher. Linearly affects tax")
       .worldRestart()
       .translation(TransHelper.CONFIG.toKey("euP2PNerfFactor"))
       .defineInRange("nerfFactor", 0.05, 0, Double.MAX_VALUE);
@@ -167,6 +173,12 @@ public record MAE2Config(Client client, Parts parts) {
       .defineInRange("maxRate", 120, 1, Integer.MAX_VALUE);
     common.pop();
     common.pop();
+
+    common.push("Faulty Card Modes");
+    UBER_MAX_VOLUME = common
+      .comment("Max volume in blocks for uber mode of the faulty card")
+      .translation(TransHelper.CONFIG.toKey("uberMaxVolume"))
+      .defineInRange("uberMaxVolume", 32 * 32 * 32, 0, Integer.MAX_VALUE);
 
     CLIENT = client.build();
     COMMON = common.build();

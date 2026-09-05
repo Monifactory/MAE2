@@ -24,6 +24,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,6 +42,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent.Stage;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import stone.mae2.MAE2;
+import stone.mae2.bootstrap.MAE2Config;
 import stone.mae2.bootstrap.MAE2Items;
 import stone.mae2.util.TransHelper;
 
@@ -64,26 +66,32 @@ public class UberMode extends FaultyCardMode {
       Level level = context.getLevel();
       BlockEntity be = level.getBlockEntity(context.getClickedPos());
       Direction side = context.getClickedFace();
+      Player player = context.getPlayer();
       if (be instanceof IPartHost originalHost) {
         SelectedPart selectedPart = originalHost.selectPartWorld(context.getClickLocation());
         side = selectedPart.side;
       }
+      if (!isVolumeValid(end)) {
+        player.displayClientMessage(TransHelper.GUI.translatable("faulty.uber.failed"), true);
+      } else {
         boolean failed = false;
-        
+        InteractionHand hand = context.getHand();
+        Vec3 clickLocation = context.getClickLocation();
         for (BlockPos pos : BlockPos.betweenClosed(start, end)) {
           BlockEntity maybeCable = level.getBlockEntity(pos);
           if (maybeCable instanceof IPartHost aoePartHost) {
             IPart part = aoePartHost.getPart(side);
             if (part != null) {
               // no idea what the Vec pos argument does here, doesn't seem used in any implementation
-              failed |= !part.onActivate(context.getPlayer(), context.getHand(), context.getClickLocation());
+              failed |= !part.onActivate(player, hand, clickLocation);
             }
           }
+        }
 
         if (failed) {
-          context.getPlayer().displayClientMessage(Component.translatable(TransHelper.GUI.toKey("faulty", "multi", "failed")), true);
+          context.getPlayer().displayClientMessage(TransHelper.GUI.translatable("faulty.multi.failed"), true);
         } else {
-          context.getPlayer().displayClientMessage(Component.translatable(TransHelper.GUI.toKey("faulty", "multi", "succeeded")), true);
+          context.getPlayer().displayClientMessage(TransHelper.GUI.translatable("faulty.multi.succeeded"), true);
         }
       }
       this.start = null;
@@ -97,6 +105,14 @@ public class UberMode extends FaultyCardMode {
     this.start = null;
     this.save(stack.getOrCreateTag());
     return InteractionResult.PASS;
+  }
+
+  public boolean isVolumeValid(BlockPos end) {
+    int width = Math.abs(start.getX() - end.getX());
+    int height = Math.abs(start.getY() - end.getY());
+    int depth = Math.abs(start.getZ() - end.getZ());
+    int volume = width * height * depth;
+    return volume <= MAE2.CONFIG.faulty().maxUberVolume();
   }
 
   @Override
@@ -148,15 +164,13 @@ public class UberMode extends FaultyCardMode {
           poses.pushPose();
           Vec3 camera = event.getCamera().getPosition();
           poses.translate(-camera.x, -camera.y, -camera.z);
-          //VertexConsumer consumer =
-          //event.getMultiBufferSource().getBuffer(RenderType.lines());
           // this automatically figures out how to fit the entire corner blocks
           // into the bounding box
           BoundingBox box = BoundingBox.fromCorners(end, uber.start);
-          int color = AEColor.LIGHT_BLUE.whiteVariant;
-          float red   = ((color & 0xFF000000) >> 24) / 255f;
-          float green = ((color & 0x00FF0000) >> 16) / 255f;
-          float blue  = ((color & 0x0000FF00) >>  8) / 255f;
+          int color = uber.isVolumeValid(end) ? AEColor.LIGHT_BLUE.mediumVariant : AEColor.RED.mediumVariant;
+          float red   = ((color & 0xFF0000) >> 16) / 255f;
+          float green = ((color & 0x00FF00) >>  8) / 255f;
+          float blue  = ((color & 0x0000FF) >>  0) / 255f;
 
           // what is a tesselator? idk, but this lets me render stuff
           // feel like this should be bad, but idk. Should only be a problem when
@@ -174,6 +188,7 @@ public class UberMode extends FaultyCardMode {
     }
   }
 
+  // TODO move this to a shared utils class
   public static BlockHitResult rayTrace(Level level, Player player) {
     return rayTrace(level, player, player.getBlockReach());
   }
