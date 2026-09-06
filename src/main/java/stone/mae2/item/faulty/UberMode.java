@@ -13,6 +13,7 @@ import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
 import appeng.api.parts.SelectedPart;
 import appeng.api.util.AEColor;
+import appeng.block.AEBaseEntityBlock;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -32,6 +33,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -78,12 +80,17 @@ public class UberMode extends FaultyCardMode {
         InteractionHand hand = context.getHand();
         Vec3 clickLocation = context.getClickLocation();
         for (BlockPos pos : BlockPos.betweenClosed(start, end)) {
-          BlockEntity maybeCable = level.getBlockEntity(pos);
-          if (maybeCable instanceof IPartHost aoePartHost) {
-            IPart part = aoePartHost.getPart(side);
-            if (part != null) {
-              // no idea what the Vec pos argument does here, doesn't seem used in any implementation
-              failed |= !part.onActivate(player, hand, clickLocation);
+          BlockState state = level.getBlockState(pos);
+          if (state.getBlock() instanceof AEBaseEntityBlock baseBlock) {
+            baseBlock.use(state, level, pos, player, hand, new BlockHitResult(clickLocation, side, pos, false));
+          } else {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof IPartHost aoePartHost) {
+              IPart part = aoePartHost.getPart(side);
+              if (part != null) {
+                // no idea what the Vec pos argument does here, doesn't seem used in any implementation
+                failed |= !part.onActivate(player, hand, clickLocation);
+              }
             }
           }
         }
